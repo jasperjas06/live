@@ -19,15 +19,15 @@ export const navData = [
     icon: icon('ic-analytics'),
   },
   {
+    title: 'Projects',
+    path: '/projects',
+    icon: icon('ic-user'),
+  },
+  {
     title: 'NVT',
     path: '/nvt',
     icon: icon('ic-analytics'),
   },
-  // {
-  //   title: 'User',
-  //   path: '/user',
-  //   icon: icon('ic-user'),
-  // },
   // {
   //   title: 'Product',
   //   path: '/products',

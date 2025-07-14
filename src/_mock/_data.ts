@@ -36,6 +36,24 @@ export const _nvtUsers = [...Array(24)].map((_, index) => ({
   // avatarUrl: `/assets/images/avatar/avatar-${(index % 10) + 1}.webp`,
 }));
 
+export const _projects = [...Array(24)].map((_, index) => ({
+  id: `PROJ-${1000 + index}`,
+  volumeName: `Volume ${index + 1}`,
+  projectName: `Project ${index + 1}`,
+  description: `This is a sample project description for Project ${index + 1}`,
+  stockName: `STOCK-${String.fromCharCode(65 + (index % 26))}`,
+  duration: `${6 + (index % 12)} months`,
+  emiAmount: 1000 + (index * 100),
+  marketer: `Marketer ${index % 5 + 1}`,
+  schema: index % 2 === 0 ? 'Fixed Projects' : 'Variable Projects',
+  returns: 1 + (index % 5),
+  intrinsic: `Intrinsic value ${index % 10}`,
+  totalTrivestimate: 50000 + (index * 2000),
+  totalReturnAmount: 60000 + (index * 2500),
+  mod: index % 3 === 0,
+  status: index % 4 === 0 ? 'inactive' : 'active',
+  createdAt: new Date(Date.now() - index * 86400000).toISOString(), // Decrease by 1 day for each
+}));
 export const _users = [...Array(24)].map((_, index) => ({
   id: _id(index),
   name: _fullName(index),

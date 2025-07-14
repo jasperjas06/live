@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-imports */
 // NVTTablePage.tsx
 import { useState, useCallback } from 'react';
 
@@ -23,7 +24,7 @@ import { TableNoData } from '../user/table-no-data';
 
 import { _nvtUsers } from 'src/_mock';
 import { NVTTableRow } from 'src/pages/NVT/nvt-table-row';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; 
 
 export function NVTTable() {
   const table = useTable();

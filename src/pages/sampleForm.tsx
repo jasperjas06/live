@@ -1,3 +1,6 @@
+
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable perfectionist/sort-imports */
 import React from 'react';
 import {
   Grid,

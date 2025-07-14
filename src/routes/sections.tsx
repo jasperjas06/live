@@ -20,6 +20,8 @@ export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const NVTForm = lazy(()=>import("src/pages/sampleForm"))
+export const Projects = lazy(()=>import("src/pages/Projects/Projects"))
+export const ManageProjects = lazy(()=>import("src/pages/Projects/manage/ManageProjects"))
 
 const renderFallback = () => (
   <Box
@@ -52,7 +54,8 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
+      { path: 'projects', element: <Projects /> },
+      { path: 'projects/create', element: <ManageProjects /> },
       { path: 'nvt', element:<NVT/> },
       { path: 'nvt/create-nvt', element:<NVTForm/> },
       { path: 'products', element: <ProductsPage /> },
