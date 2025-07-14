@@ -1,5 +1,4 @@
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
-
 import { useEffect } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
 
@@ -83,7 +82,6 @@ export function NavMobile({
     if (open) {
       onClose();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return (
@@ -116,7 +114,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
 
       {slots?.topArea}
 
-      <WorkspacesPopover data={workspaces} sx={{ my: 2 }} />
+      <br />
 
       <Scrollbar fillContent>
         <Box
@@ -139,7 +137,10 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
             }}
           >
             {data.map((item) => {
-              const isActived = item.path === pathname;
+              const isActived =
+                item.path === '/'
+                  ? pathname === '/'
+                  : pathname.startsWith(item.path);
 
               return (
                 <ListItem disableGutters disablePadding key={item.title}>
@@ -187,8 +188,6 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
       </Scrollbar>
 
       {slots?.bottomArea}
-
-      {/* <NavUpgrade /> */}
     </>
   );
 }

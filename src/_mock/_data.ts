@@ -21,6 +21,21 @@ export const _myAccount = {
 
 // ----------------------------------------------------------------------
 
+export const _nvtUsers = [...Array(24)].map((_, index) => ({
+  id: `NVT-CUST-${1000 + index}`,
+  name: `Customer ${index + 1}`,
+  customerId: `CUST-${index + 1}`,
+  phoneNumber: `98765432${(10 + index).toString().slice(-2)}`,
+  introducer: `Introducer ${index % 5 + 1}`,
+  totalPayment: 16000 + index * 1000,
+  initialPayment: 1000 + index * 100,
+  emi: 1000,
+  conversion: index % 2 === 0 ? 'yes' : 'no',
+  mod: index % 3 === 0,
+  status: index % 4 === 0 ? 'banned' : 'active',
+  // avatarUrl: `/assets/images/avatar/avatar-${(index % 10) + 1}.webp`,
+}));
+
 export const _users = [...Array(24)].map((_, index) => ({
   id: _id(index),
   name: _fullName(index),

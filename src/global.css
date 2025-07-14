@@ -18,6 +18,12 @@
 /* chart */
 @import './components/chart/styles.css';
 
+/* tailwind */
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /** **************************************
 * Baseline
 *************************************** */
