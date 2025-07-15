@@ -28,6 +28,7 @@ export const ManageMOD = lazy(()=>import("src/pages/MOD/ManageMOD/ManageMOD"))
 export const LFC = lazy(()=>import("src/pages/LFC/LFC"))
 export const Customer = lazy(()=>import("src/pages/Customer/Customer"))
 export const MOD = lazy(()=>import("src/pages/MOD/MOD"))
+export const Profile = lazy(()=>import("src/pages/Profile/Profile"))
 
 
 const renderFallback = () => (
@@ -73,6 +74,8 @@ export const routesSection: RouteObject[] = [
       { path: 'nvt/create-nvt', element:<NVTForm/> },
       { path: 'products', element: <ProductsPage /> },
       { path: 'blog', element: <BlogPage /> },
+      { path: 'profile', element: <Profile /> },
+      
     ],
   },
   {
