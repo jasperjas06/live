@@ -1,6 +1,4 @@
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable perfectionist/sort-imports */
-
 import {
   Box,
   Button,
@@ -10,40 +8,48 @@ import {
   TableContainer,
   TablePagination,
   Typography,
+  Checkbox,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 import React, { useState } from 'react';
-import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { Iconify } from 'src/components/iconify';
 import { UserTableToolbar } from '../user/user-table-toolbar';
 import { Scrollbar } from 'src/components/scrollbar';
 import { UserTableHead } from '../user/user-table-head';
 import { useTable } from '../user/view';
-import { useNavigate } from 'react-router-dom';
-import { _projects } from 'src/_mock';
-import { applyFilter, emptyRows, getComparator } from '../user/utils';
 import { TableEmptyRows } from '../user/table-empty-rows';
 import { TableNoData } from '../user/table-no-data';
-import { ProjectTableRow } from 'src/pages/Projects/project-table-row';
+import { applyFilter, emptyRows, getComparator } from '../user/utils';
+import { _mods } from 'src/_mock';
+import { MODTableRow } from 'src/pages/MOD/mod-table-row';
+import { useNavigate } from 'react-router-dom';
 
-const ProjectsTable = () => {
+// MOCK DATA
+
+
+// ROW COMPONENT
+
+
+// MAIN COMPONENT
+const MODTable = () => {
   const table = useTable();
   const [filterName, setFilterName] = useState('');
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const projectsWithMeta = _projects.map((project) => ({
-    ...project,
-    name: project.projectName || '',
+  const dataFiltered = applyFilter({
+  inputData: _mods.map((mod) => ({
+    ...mod,
     role: '',
     company: '',
     avatarUrl: '',
     isVerified: false,
-  }));
+  })),
+  comparator: getComparator(table.order, table.orderBy),
+  filterName,
+});
 
-  const dataFiltered = applyFilter({
-    inputData: projectsWithMeta,
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
-  });
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -51,15 +57,15 @@ const ProjectsTable = () => {
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Projects
+          MOD List
         </Typography>
         <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => navigate('create')}
+          onClick={()=>navigate('create')}
         >
-          New Project
+          New MOD
         </Button>
       </Box>
 
@@ -79,29 +85,26 @@ const ProjectsTable = () => {
               <UserTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={projectsWithMeta.length}
+                rowCount={_mods.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    projectsWithMeta.map((proj) => proj.id)
+                    _mods.map((row) => row.id)
                   )
                 }
                 headLabel={[
                   { id: 'id', label: 'ID' },
-                  { id: 'volumeName', label: 'Volume' },
-                  { id: 'projectName', label: 'Project' },
-                  { id: 'stockName', label: 'Stock' },
-                  { id: 'duration', label: 'Duration' },
-                  { id: 'emiAmount', label: 'EMI' },
-                  { id: 'marketer', label: 'Marketer' },
-                  { id: 'returns', label: 'Returns', align: 'center' },
-                  { id: 'mod', label: 'MOD', align: 'center' },
+                  { id: 'name', label: 'Name' },
+                  { id: 'headBy', label: 'Head By' },
+                  { id: 'head', label: 'Head' },
+                  { id: 'phoneNumber', label: 'Phone' },
+                  { id: 'address', label: 'Address' },
                   { id: 'status', label: 'Status' },
-                  // { id: '' },
                 ]}
               />
+
               <TableBody>
                 {dataFiltered
                   .slice(
@@ -109,7 +112,7 @@ const ProjectsTable = () => {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ProjectTableRow
+                    <MODTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
@@ -122,7 +125,7 @@ const ProjectsTable = () => {
                   emptyRows={emptyRows(
                     table.page,
                     table.rowsPerPage,
-                    projectsWithMeta.length
+                    _mods.length
                   )}
                 />
 
@@ -135,7 +138,7 @@ const ProjectsTable = () => {
         <TablePagination
           component="div"
           page={table.page}
-          count={projectsWithMeta.length}
+          count={_mods.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -146,4 +149,4 @@ const ProjectsTable = () => {
   );
 };
 
-export default ProjectsTable;
+export default MODTable;

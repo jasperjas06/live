@@ -19,20 +19,22 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { UserTableHead } from '../user/user-table-head';
 import { useTable } from '../user/view';
 import { useNavigate } from 'react-router-dom';
-import { _projects } from 'src/_mock';
 import { applyFilter, emptyRows, getComparator } from '../user/utils';
 import { TableEmptyRows } from '../user/table-empty-rows';
-import { TableNoData } from '../user/table-no-data';
-import { ProjectTableRow } from 'src/pages/Projects/project-table-row';
+import { TableNoData } from '../user/table-no-data'; // <-- Create this component
+import { _lfcProjects } from 'src/_mock';
+import { LFCProjectTableRow } from 'src/pages/LFC/lfc-project-table-row';
 
-const ProjectsTable = () => {
+const LFCTable = () => {
   const table = useTable();
   const [filterName, setFilterName] = useState('');
   const navigate = useNavigate();
 
-  const projectsWithMeta = _projects.map((project) => ({
+  const lfcProjectsWithMeta = _lfcProjects.map((project) => ({
     ...project,
-    name: project.projectName || '',
+    id: project.customerId ?? '', // Use customerId as unique id
+    status: 'active', // Provide a default 'status'
+    name: project.customerName || '',
     role: '',
     company: '',
     avatarUrl: '',
@@ -40,7 +42,7 @@ const ProjectsTable = () => {
   }));
 
   const dataFiltered = applyFilter({
-    inputData: projectsWithMeta,
+    inputData: lfcProjectsWithMeta,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -51,7 +53,7 @@ const ProjectsTable = () => {
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Projects
+          LFC 
         </Typography>
         <Button
           variant="contained"
@@ -59,7 +61,7 @@ const ProjectsTable = () => {
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
         >
-          New Project
+          New LFC 
         </Button>
       </Box>
 
@@ -79,28 +81,29 @@ const ProjectsTable = () => {
               <UserTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={projectsWithMeta.length}
+                rowCount={lfcProjectsWithMeta.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    projectsWithMeta.map((proj) => proj.id)
+                    lfcProjectsWithMeta.map((proj) => proj.id)
                   )
                 }
                 headLabel={[
-                  { id: 'id', label: 'ID' },
-                  { id: 'volumeName', label: 'Volume' },
-                  { id: 'projectName', label: 'Project' },
-                  { id: 'stockName', label: 'Stock' },
-                  { id: 'duration', label: 'Duration' },
-                  { id: 'emiAmount', label: 'EMI' },
-                  { id: 'marketer', label: 'Marketer' },
-                  { id: 'returns', label: 'Returns', align: 'center' },
-                  { id: 'mod', label: 'MOD', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  // { id: '' },
-                ]}
+  { id: 'customerId', label: 'Customer ID' },
+  { id: 'customerName', label: 'Customer Name' },
+  { id: 'pl', label: 'PL' },
+  { id: 'introductionName', label: 'Introducer' },
+  { id: 'ent', label: 'Ent' },
+  { id: 'fustral', label: 'Fustral' },
+  { id: 'payout', label: 'Payout' },
+  { id: 'plotNo', label: 'Plot No' },
+  { id: 'needHos', label: 'Need HOS' },
+  { id: 'registration', label: 'Registration' },
+  { id: 'conversion', label: 'Converted' },
+]}
+
               />
               <TableBody>
                 {dataFiltered
@@ -109,7 +112,7 @@ const ProjectsTable = () => {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ProjectTableRow
+                    <LFCProjectTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
@@ -122,7 +125,7 @@ const ProjectsTable = () => {
                   emptyRows={emptyRows(
                     table.page,
                     table.rowsPerPage,
-                    projectsWithMeta.length
+                    lfcProjectsWithMeta.length
                   )}
                 />
 
@@ -135,7 +138,7 @@ const ProjectsTable = () => {
         <TablePagination
           component="div"
           page={table.page}
-          count={projectsWithMeta.length}
+          count={lfcProjectsWithMeta.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -146,4 +149,4 @@ const ProjectsTable = () => {
   );
 };
 
-export default ProjectsTable;
+export default LFCTable;

@@ -1,6 +1,4 @@
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable perfectionist/sort-imports */
-
 import {
   Box,
   Button,
@@ -10,37 +8,53 @@ import {
   TableContainer,
   TablePagination,
   Typography,
+  Checkbox,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 import React, { useState } from 'react';
-import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { Iconify } from 'src/components/iconify';
 import { UserTableToolbar } from '../user/user-table-toolbar';
 import { Scrollbar } from 'src/components/scrollbar';
 import { UserTableHead } from '../user/user-table-head';
 import { useTable } from '../user/view';
-import { useNavigate } from 'react-router-dom';
-import { _projects } from 'src/_mock';
-import { applyFilter, emptyRows, getComparator } from '../user/utils';
 import { TableEmptyRows } from '../user/table-empty-rows';
 import { TableNoData } from '../user/table-no-data';
-import { ProjectTableRow } from 'src/pages/Projects/project-table-row';
+import { applyFilter, emptyRows, getComparator } from '../user/utils';
+import { _customers } from 'src/_mock';
+import { CustomerTableRow } from 'src/pages/Customer/customer-table-row';
+import { useNavigate } from 'react-router-dom';
 
-const ProjectsTable = () => {
+
+
+// MAIN COMPONENT
+const CustomerTable = () => {
   const table = useTable();
   const [filterName, setFilterName] = useState('');
-  const navigate = useNavigate();
-
-  const projectsWithMeta = _projects.map((project) => ({
-    ...project,
-    name: project.projectName || '',
-    role: '',
-    company: '',
-    avatarUrl: '',
-    isVerified: false,
-  }));
+  const navigate = useNavigate()
 
   const dataFiltered = applyFilter({
-    inputData: projectsWithMeta,
+    inputData: _customers.map((customer) => ({
+      id: customer.customerId,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      state: customer.state,
+      pincode: customer.pincode,
+      marketerName: customer.marketerName,
+      paymentTerms: customer.paymentTerms,
+      emiAmount: customer.emiAmount,
+      duration: customer.duration,
+      // Provide default values for missing UserProps fields
+      role: 'customer',
+      status: 'active',
+      company: '',
+      avatarUrl: '',
+      isVerified: false,
+    })),
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -51,15 +65,15 @@ const ProjectsTable = () => {
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Projects
+          Customers
         </Typography>
         <Button
           variant="contained"
           color="inherit"
+          onClick={()=>navigate("create")}
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => navigate('create')}
         >
-          New Project
+          New Customer
         </Button>
       </Box>
 
@@ -79,29 +93,31 @@ const ProjectsTable = () => {
               <UserTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={projectsWithMeta.length}
+                rowCount={_customers.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    projectsWithMeta.map((proj) => proj.id)
+                    _customers.map((row) => row.customerId)
                   )
                 }
                 headLabel={[
-                  { id: 'id', label: 'ID' },
-                  { id: 'volumeName', label: 'Volume' },
-                  { id: 'projectName', label: 'Project' },
-                  { id: 'stockName', label: 'Stock' },
+                  { id: 'customerId', label: 'Customer ID' },
+                  { id: 'name', label: 'Name' },
+                  { id: 'email', label: 'Email' },
+                  { id: 'phone', label: 'Phone' },
+                  { id: 'address', label: 'Address' },
+                  { id: 'city', label: 'City' },
+                  { id: 'state', label: 'State' },
+                  { id: 'pincode', label: 'Pincode' },
+                  { id: 'marketerName', label: 'Marketer' },
+                  { id: 'paymentTerms', label: 'Payment Terms' },
+                  { id: 'emiAmount', label: 'EMI Amount' },
                   { id: 'duration', label: 'Duration' },
-                  { id: 'emiAmount', label: 'EMI' },
-                  { id: 'marketer', label: 'Marketer' },
-                  { id: 'returns', label: 'Returns', align: 'center' },
-                  { id: 'mod', label: 'MOD', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  // { id: '' },
                 ]}
               />
+
               <TableBody>
                 {dataFiltered
                   .slice(
@@ -109,7 +125,7 @@ const ProjectsTable = () => {
                     table.page * table.rowsPerPage + table.rowsPerPage
                   )
                   .map((row) => (
-                    <ProjectTableRow
+                    <CustomerTableRow
                       key={row.id}
                       row={row}
                       selected={table.selected.includes(row.id)}
@@ -122,7 +138,7 @@ const ProjectsTable = () => {
                   emptyRows={emptyRows(
                     table.page,
                     table.rowsPerPage,
-                    projectsWithMeta.length
+                    _customers.length
                   )}
                 />
 
@@ -135,7 +151,7 @@ const ProjectsTable = () => {
         <TablePagination
           component="div"
           page={table.page}
-          count={projectsWithMeta.length}
+          count={_customers.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -146,4 +162,4 @@ const ProjectsTable = () => {
   );
 };
 
-export default ProjectsTable;
+export default CustomerTable;

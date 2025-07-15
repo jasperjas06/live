@@ -21,12 +21,27 @@ export const navData = [
   {
     title: 'Projects',
     path: '/projects',
+    icon: icon('ic-lock'),
+  },
+  {
+    title: 'LFC',
+    path: '/lfc',
+    icon: icon('ic-disabled'),
+  },
+  {
+    title: 'Customer',
+    path: '/customer',
     icon: icon('ic-user'),
   },
   {
     title: 'NVT',
     path: '/nvt',
-    icon: icon('ic-analytics'),
+    icon: icon('ic-blog'),
+  },
+  {
+    title: 'MOD',
+    path: '/mod',
+    icon: icon('ic-cart'),
   },
   // {
   //   title: 'Product',

@@ -22,6 +22,13 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const NVTForm = lazy(()=>import("src/pages/sampleForm"))
 export const Projects = lazy(()=>import("src/pages/Projects/Projects"))
 export const ManageProjects = lazy(()=>import("src/pages/Projects/manage/ManageProjects"))
+export const ManageLFC = lazy(()=>import("src/pages/LFC/Manage/ManageLFC"))
+export const ManageCustomer = lazy(()=>import("src/pages/Customer/ManageCustomer/ManageCustomer"))
+export const ManageMOD = lazy(()=>import("src/pages/MOD/ManageMOD/ManageMOD"))
+export const LFC = lazy(()=>import("src/pages/LFC/LFC"))
+export const Customer = lazy(()=>import("src/pages/Customer/Customer"))
+export const MOD = lazy(()=>import("src/pages/MOD/MOD"))
+
 
 const renderFallback = () => (
   <Box
@@ -56,6 +63,12 @@ export const routesSection: RouteObject[] = [
       { index: true, element: <DashboardPage /> },
       { path: 'projects', element: <Projects /> },
       { path: 'projects/create', element: <ManageProjects /> },
+      { path: 'lfc', element: <LFC /> },
+      { path: 'lfc/create', element: <ManageLFC /> },
+      { path: 'customer', element: <Customer /> },
+      { path: 'customer/create', element: <ManageCustomer /> },
+      { path: 'mod', element: <MOD /> },
+      { path: 'mod/create', element: <ManageMOD /> },
       { path: 'nvt', element:<NVT/> },
       { path: 'nvt/create-nvt', element:<NVTForm/> },
       { path: 'products', element: <ProductsPage /> },

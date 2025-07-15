@@ -54,6 +54,27 @@ export const _projects = [...Array(24)].map((_, index) => ({
   status: index % 4 === 0 ? 'inactive' : 'active',
   createdAt: new Date(Date.now() - index * 86400000).toISOString(), // Decrease by 1 day for each
 }));
+export const _lfcProjects = [...Array(10)].map((_, index) => ({
+  customerName: `Customer ${index + 1}`,
+  customerId: `CUST-${1000 + index}`,
+  pl: `PL-${index + 1}`,
+  introductionName: `Introducer ${index % 3 + 1}`,
+  totalPayments: {
+    ent: 10000 + index * 500,
+    fustral: 8000 + index * 400,
+    payout: 5000 + index * 300,
+  },
+  landDetails: {
+    sayFe: `SayFe-${index + 1}`,
+    sayTask: `SayTask-${index + 1}`,
+    plotNo: `Plot-${index + 10}`,
+  },
+  needHos: index % 2 === 0,
+  registration: index % 2 === 0 ? 'open' : 'closed',
+  conversion: index % 3 === 0,
+  conversionCustomerId: index % 3 === 0 ? `CUST-${2000 + index}` : '',
+}));
+
 export const _users = [...Array(24)].map((_, index) => ({
   id: _id(index),
   name: _fullName(index),
@@ -74,6 +95,31 @@ export const _users = [...Array(24)].map((_, index) => ({
       'Front End Developer',
       'Full Stack Developer',
     ][index] || 'UI Designer',
+}));
+
+export const _customers = [...Array(10)].map((_, index) => ({
+  customerId: `CUST-${1000 + index}`,
+  name: `Customer ${index + 1}`,
+  email: `customer${index + 1}@example.com`,
+  phone: `98765432${(10 + index) % 100}`,
+  address: `Address ${index + 1}`,
+  city: `City ${index % 5 + 1}`,
+  state: `State ${index % 3 + 1}`,
+  pincode: `6000${index + 10}`,
+  marketerName: `Marketer ${index % 4 + 1}`,
+  paymentTerms: index % 2 === 0 ? 'Monthly' : 'Quarterly',
+  emiAmount: 1000 + index * 250,
+  duration: `${6 + index % 6} months`,
+}));
+
+export const _mods = [...Array(12)].map((_, index) => ({
+  id: `MOD-${100 + index}`,
+  name: `MOD ${index + 1}`,
+  headBy: `Leader ${index % 3 + 1}`,
+  head: `Head ${index + 1}`,
+  phoneNumber: `98765432${(10 + index) % 100}`,
+  address: `Address Block ${index + 1}`,
+  status: index % 2 === 0 ? 'active' : 'inactive',
 }));
 
 // ----------------------------------------------------------------------
