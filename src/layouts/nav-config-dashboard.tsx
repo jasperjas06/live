@@ -8,9 +8,11 @@ const icon = (name: string) => <SvgColor src={`/assets/icons/navbar/${name}.svg`
 export type NavItem = {
   title: string;
   path: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode; // <-- made optional
   info?: React.ReactNode;
+  children?: NavItem[];
 };
+
 
 export const navData = [
   {
@@ -19,20 +21,31 @@ export const navData = [
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Projects',
-    path: '/projects',
-    icon: icon('ic-lock'),
-  },
-  {
-    title: 'LFC',
-    path: '/lfc',
-    icon: icon('ic-disabled'),
-  },
-  {
     title: 'Customer',
     path: '/customer',
     icon: icon('ic-user'),
   },
+  {
+    title: 'Projects',
+    path: '/projects',
+    icon: icon('ic-lock'),
+    children: [
+      {
+        title: 'All Projects',
+        path: '/projects/all',
+        
+      },
+      {
+        title: "Project Details",
+        path: "/projects/details"
+      }
+    ]
+  },
+  // {
+  //   title: 'LFC',
+  //   path: '/lfc',
+  //   icon: icon('ic-disabled'),
+  // },
   {
     title: 'NVT',
     path: '/nvt',
@@ -43,16 +56,16 @@ export const navData = [
     path: '/mod',
     icon: icon('ic-cart'),
   },
-  // {
-  //   title: 'Product',
-  //   path: '/products',
-  //   icon: icon('ic-cart'),
-  //   info: (
-  //     <Label color="error" variant="inverted">
-  //       +3
-  //     </Label>
-  //   ),
-  // },
+  {
+    title: 'Marketer',
+    path: '/marketer',
+    icon: icon('ic-cart'),
+    info: (
+      <Label color="error" variant="inverted">
+        +3
+      </Label>
+    ),
+  },
   // {
   //   title: 'Blog',
   //   path: '/blog',

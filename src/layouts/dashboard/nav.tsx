@@ -1,5 +1,8 @@
+/* eslint-disable perfectionist/sort-imports */
+/* eslint-disable import/no-unresolved */
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
-import { useEffect } from 'react';
+// import ExpandLess from '@mui/icons-material/ExpandLess';
+// import ExpandMore from '@mui/icons-material/ExpandMore';
 import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
@@ -19,6 +22,8 @@ import { WorkspacesPopover } from '../components/workspaces-popover';
 
 import type { NavItem } from '../nav-config-dashboard';
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
+import { useEffect, useState } from 'react';
+import { Collapse } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -107,6 +112,7 @@ export function NavMobile({
 
 export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
   const pathname = usePathname();
+  const theme = useTheme();
 
   return (
     <>
@@ -137,52 +143,91 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
             }}
           >
             {data.map((item) => {
-              const isActived =
-                item.path === '/'
-                  ? pathname === '/'
-                  : pathname.startsWith(item.path);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [open, setOpen] = useState(false);
+  
+  // const isActive = pathname === item.path;
+  const isActive =
+  pathname === item.path ||
+  pathname.startsWith(`${item.path}/`) ||
+  item.children?.some((child) => pathname === child.path || pathname.startsWith(`${child.path}/`));
+  
+  useEffect(() => {
+  if (isActive) {
+    setOpen(true);
+  }
+}, [isActive]);
 
-              return (
-                <ListItem disableGutters disablePadding key={item.title}>
-                  <ListItemButton
-                    disableGutters
-                    component={RouterLink}
-                    href={item.path}
-                    sx={[
-                      (theme) => ({
-                        pl: 2,
-                        py: 1,
-                        gap: 2,
-                        pr: 1.5,
-                        borderRadius: 0.75,
-                        typography: 'body2',
-                        fontWeight: 'fontWeightMedium',
-                        color: theme.vars.palette.text.secondary,
-                        minHeight: 44,
-                        ...(isActived && {
-                          fontWeight: 'fontWeightSemiBold',
-                          color: theme.vars.palette.primary.main,
-                          bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
-                          '&:hover': {
-                            bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
-                          },
-                        }),
-                      }),
-                    ]}
-                  >
-                    <Box component="span" sx={{ width: 24, height: 24 }}>
-                      {item.icon}
-                    </Box>
 
-                    <Box component="span" sx={{ flexGrow: 1 }}>
-                      {item.title}
-                    </Box>
+  const handleToggle = () => {
+    setOpen((prev) => !prev);
+  };
 
-                    {item.info && item.info}
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
+  if (item.children) {
+    return (
+      <Box key={item.title}>
+        <ListItem disableGutters disablePadding>
+          <ListItemButton onClick={handleToggle} sx={{ pl: 2, py: 1, gap: 2 }}>
+            <Box component="span" sx={{ width: 24, height: 24 }}>{item.icon}</Box>
+            <Box component="span" sx={{ flexGrow: 1 }}>{item.title}</Box>
+            {/* {open ? <ExpandLess /> : <ExpandMore />} */}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          {item.children.map((child) => {
+            const isChildActive = pathname.startsWith(child.path || '');
+            return (
+              <ListItem key={child.title} disableGutters disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  href={child.path}
+                  sx={{
+                    pl: 5,
+                    py: 1,
+                    fontWeight: isChildActive ? 'fontWeightSemiBold' : 'fontWeightMedium',
+                    color: isChildActive ? theme.vars.palette.primary.main : theme.vars.palette.text.secondary,
+                  }}
+                >
+                  {child.title}
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </Collapse>
+      </Box>
+    );
+  }
+
+  return (
+    <ListItem disableGutters disablePadding key={item.title}>
+      <ListItemButton
+        component={RouterLink}
+        href={item.path}
+        sx={{
+          pl: 2,
+          py: 1,
+          gap: 2,
+          pr: 1.5,
+          borderRadius: 0.75,
+          typography: 'body2',
+          fontWeight: isActive ? 'fontWeightSemiBold' : 'fontWeightMedium',
+          color: isActive ? theme.vars.palette.primary.main : theme.vars.palette.text.secondary,
+          bgcolor: isActive ? varAlpha(theme.vars.palette.primary.mainChannel, 0.08) : undefined,
+          '&:hover': {
+            bgcolor: isActive
+              ? varAlpha(theme.vars.palette.primary.mainChannel, 0.16)
+              : varAlpha(theme.vars.palette.grey['500Channel'], 0.04),
+          },
+        }}
+      >
+        <Box component="span" sx={{ width: 24, height: 24 }}>{item.icon}</Box>
+        <Box component="span" sx={{ flexGrow: 1 }}>{item.title}</Box>
+        {item.info && item.info}
+      </ListItemButton>
+    </ListItem>
+  );
+})}
+
           </Box>
         </Box>
       </Scrollbar>

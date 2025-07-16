@@ -44,7 +44,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 const customerSchema = yup.object().shape({
   // Step-4 fields
   name: yup.string().required('Name is required'),
-  customerId: yup.string().required('Customer ID is required'),
+  // customerId: yup.string().required('Customer ID is required'),
   address: yup.string().required('Address is required'),
   phone: yup.string()
     .required('Phone is required')
@@ -71,7 +71,7 @@ const customerSchema = yup.object().shape({
 export interface CustomerFormData {
  
   name: string;
-  customerId: string;
+  // customerId: string;
   address: string;
   phone: string;
   city: string;
@@ -97,7 +97,7 @@ const CustomerForm = () => {
     resolver: yupResolver(customerSchema),
     defaultValues: {
       name: '',
-      customerId: '',
+      // customerId: '',
       address: '',
       phone: '',
       city: '',
@@ -144,18 +144,9 @@ const CustomerForm = () => {
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Customer ID"
-                    {...register('customerId')}
-                    error={!!errors.customerId}
-                    helperText={errors.customerId?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
+                
 
-                <Grid size={{ xs: 12,}}>
+                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
                     label="Address"
                     {...register('address')}

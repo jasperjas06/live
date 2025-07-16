@@ -53,7 +53,7 @@ const LFCTable = () => {
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          LFC 
+          Project Details 
         </Typography>
         <Button
           variant="contained"
@@ -61,7 +61,7 @@ const LFCTable = () => {
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
         >
-          New LFC 
+          New  
         </Button>
       </Box>
 

@@ -27,35 +27,32 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 // Yup validation schema
 const projectSchema = yup.object().shape({
-  volumeName: yup.string().required('Volume Name is required'),
   projectName: yup.string().required('Project Name is required'),
   description: yup.string().required(),
-  stockName: yup.string().required(),
+  shortName: yup.string().required(),
   duration: yup.string().required(),
   emiAmount: yup.number().typeError('EMI Amount must be a number').required('EMI Amount is required'),
   marketer: yup.string().required(),
   schema: yup.string().required('Schema is required'),
   returns: yup.number().typeError('Returns must be a number').required('Returns is required'),
-  intrinsic: yup.string().required(),
-  totalTrivestimate: yup.number().typeError('Total Trivestimate must be a number').required('Total Trivestimate is required'),
+  intrest: yup.string().required(),
+  totalInvestimate: yup.number().typeError('Total Trivestimate must be a number').required('Total Trivestimate is required'),
   totalReturnAmount: yup.number().typeError('Total Return Amount must be a number').required('Total Return Amount is required'),
-  mod: yup.boolean().required(),
 });
 
 export interface ProjectFormData {
-  volumeName: string;
+  // volumeName: string;
   projectName: string;
   description: string;
-  stockName: string;
+  shortName: string;
   duration: string;
   emiAmount: number;
   marketer: string;
   schema: string;
   returns: number;
-  intrinsic: string;
-  totalTrivestimate: number;
+  intrest: string;
+  totalInvestimate: number;
   totalReturnAmount: number;
-  mod: boolean;
 }
 
 const ProjectCreationForm = () => {
@@ -67,19 +64,18 @@ const ProjectCreationForm = () => {
   } = useForm<ProjectFormData>({
     resolver: yupResolver(projectSchema),
     defaultValues: {
-      volumeName: '',
+      // volumeName: '',
       projectName: '',
       description: '',
-      stockName: '',
+      shortName: '',
       duration: '',
       emiAmount: 0,
       marketer: '',
-      schema: 'Fixed Projects',
+      schema: 'Fixed Deposit',
       returns: 1,
-      intrinsic: '',
-      totalTrivestimate: 0,
+      intrest: '',
+      totalInvestimate: 0,
       totalReturnAmount: 0,
-      mod: false,
     },
   });
 
@@ -98,15 +94,7 @@ const ProjectCreationForm = () => {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={3}>
-              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                <TextField
-                  label="Volume Name"
-                  {...register('volumeName')}
-                  error={!!errors.volumeName}
-                  helperText={errors.volumeName?.message}
-                  fullWidth
-                />
-              </Grid>
+              
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
@@ -132,10 +120,10 @@ const ProjectCreationForm = () => {
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
-                  label="Stock Name"
-                  {...register('stockName')}
-                  error={!!errors.stockName}
-                  helperText={errors.stockName?.message}
+                  label="Short Name"
+                  {...register('shortName')}
+                  error={!!errors.shortName}
+                  helperText={errors.shortName?.message}
                   fullWidth
                 />
               </Grid>
@@ -194,20 +182,20 @@ const ProjectCreationForm = () => {
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
-                  label="Intrinsic"
-                  {...register('intrinsic')}
-                  error={!!errors.intrinsic}
-                  helperText={errors.intrinsic?.message}
+                  label="Intrest"
+                  {...register('intrest')}
+                  error={!!errors.intrest}
+                  helperText={errors.intrest?.message}
                   fullWidth
                 />
               </Grid>
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
-                  label="Total Trivestimate"
-                  {...register('totalTrivestimate')}
-                  error={!!errors.totalTrivestimate}
-                  helperText={errors.totalTrivestimate?.message}
+                  label="Total Investimate"
+                  {...register('totalInvestimate')}
+                  error={!!errors.totalInvestimate}
+                  helperText={errors.totalInvestimate?.message}
                   fullWidth
                 />
               </Grid>
@@ -221,20 +209,7 @@ const ProjectCreationForm = () => {
                   fullWidth
                 />
               </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <Controller
-                  name="mod"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControlLabel
-                      control={<Checkbox {...field} checked={field.value || false} />}
-                      label="MOD"
-                    />
-                  )}
-                />
-              </Grid>
-
+              
               <Grid size={{ xs: 12 }}>
                 <Divider sx={{ my: 2 }} />
                 <Button variant="contained" size="large" color="primary" fullWidth type="submit">

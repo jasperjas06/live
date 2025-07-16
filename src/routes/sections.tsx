@@ -62,9 +62,9 @@ export const routesSection: RouteObject[] = [
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'projects', element: <Projects /> },
+      { path: 'projects/all', element: <Projects /> },
       { path: 'projects/create', element: <ManageProjects /> },
-      { path: 'lfc', element: <LFC /> },
+      { path: 'projects/details', element: <LFC /> },
       { path: 'lfc/create', element: <ManageLFC /> },
       { path: 'customer', element: <Customer /> },
       { path: 'customer/create', element: <ManageCustomer /> },
