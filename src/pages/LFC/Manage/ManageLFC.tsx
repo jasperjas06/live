@@ -33,16 +33,15 @@ const StyledCard = styled(Card)(({ theme }) => ({
 export const lfcSchema = yup.object({
   customerName: yup.string().required('Customer name is required'),
   customerId: yup.string().required('Customer ID is required'),
-  pl: yup.string().required('PL is required'),
+  phoneNumber: yup.string().required('phone number is required'),
   introductionName: yup.string().required('Introducer name is required'),
   totalPayments: yup.object({
-    ent: yup.number().required(),
-    fustral: yup.number().required(),
-    payout: yup.number().required(),
+    emi: yup.number().required(),
+    initial: yup.number().required(),
   }).required(),
   landDetails: yup.object({
-    sayFe: yup.string().required(),
-    sayTask: yup.string().required(),
+    sq_feet: yup.string().required(),
+    sq_feet_amt: yup.string().required(),
     plotNo: yup.string().required(),
   }).required(),
   needHos: yup.boolean().required(),
@@ -54,16 +53,15 @@ export const lfcSchema = yup.object({
 export interface LFCFormData {
   customerName: string ;
   customerId: string;
-  pl: string;
+  phoneNumber: string;
   introductionName: string;
   totalPayments: {
-    ent: number;
-    fustral: number;
-    payout: number;
+    emi: number;
+    initial: number;
   };
   landDetails: {
-    sayFe: string;
-    sayTask: string;
+    sq_feet: string;
+    sq_feet_amt: string;
     plotNo: string;
   };
   needHos: boolean;
@@ -84,16 +82,15 @@ const LFCForm = () => {
     defaultValues: {
       customerName: '',
       customerId: '',
-      pl: '',
+      phoneNumber: '',
       introductionName: '',
       totalPayments: {
-        ent: 0,
-        fustral: 0,
-        payout: 0,
+        emi: 0,
+        initial: 0,
       },
       landDetails: {
-        sayFe: '',
-        sayTask: '',
+        sq_feet: '',
+        sq_feet_amt: '',
         plotNo: '',
       },
       needHos: false,
@@ -143,10 +140,10 @@ const LFCForm = () => {
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
-                  label="PL"
-                  {...register('pl')}
-                  error={!!errors.pl}
-                  helperText={errors.pl?.message}
+                  label="Customer Phone Number"
+                  {...register('phoneNumber')}
+                  error={!!errors.phoneNumber}
+                  helperText={errors.phoneNumber?.message}
                   fullWidth
                 />
               </Grid>
@@ -170,10 +167,10 @@ const LFCForm = () => {
 
               <Grid size={{ xs: 4, sm: 6 }}>
                 <TextField
-                  label="E NT"
-                  {...register('totalPayments.ent')}
-                  error={!!errors.totalPayments?.ent}
-                  helperText={errors.totalPayments?.ent?.message}
+                  label="EMI"
+                  {...register('totalPayments.emi')}
+                  error={!!errors.totalPayments?.emi}
+                  helperText={errors.totalPayments?.emi?.message}
                   fullWidth
                   type="number"
                 />
@@ -181,25 +178,16 @@ const LFCForm = () => {
 
               <Grid size={{ xs: 4, sm: 6 }}>
                 <TextField
-                  label="Fustral"
-                  {...register('totalPayments.fustral')}
-                  error={!!errors.totalPayments?.fustral}
-                  helperText={errors.totalPayments?.fustral?.message}
+                  label="Initial"
+                  {...register('totalPayments.initial')}
+                  error={!!errors.totalPayments?.initial}
+                  helperText={errors.totalPayments?.initial?.message}
                   fullWidth
                   type="number"
                 />
               </Grid>
 
-              <Grid size={{ xs: 4, sm: 6 }}>
-                <TextField
-                  label="Payout"
-                  {...register('totalPayments.payout')}
-                  error={!!errors.totalPayments?.payout}
-                  helperText={errors.totalPayments?.payout?.message}
-                  fullWidth
-                  type="number"
-                />
-              </Grid>
+              
 
               {/* LAND Details Section */}
               <Grid size={{ xs: 12,}}>
@@ -210,20 +198,20 @@ const LFCForm = () => {
 
               <Grid size={{ xs: 4, sm: 6 }}>
                 <TextField
-                  label="Say.FE"
-                  {...register('landDetails.sayFe')}
-                  error={!!errors.landDetails?.sayFe}
-                  helperText={errors.landDetails?.sayFe?.message}
+                  label="Total Sq Feet"
+                  {...register('landDetails.sq_feet')}
+                  error={!!errors.landDetails?.sq_feet}
+                  helperText={errors.landDetails?.sq_feet?.message}
                   fullWidth
                 />
               </Grid>
 
               <Grid size={{ xs: 4, sm: 6 }}>
                 <TextField
-                  label="Say.task"
-                  {...register('landDetails.sayTask')}
-                  error={!!errors.landDetails?.sayTask}
-                  helperText={errors.landDetails?.sayTask?.message}
+                  label="Sq Feet Amount"
+                  {...register('landDetails.sq_feet_amt')}
+                  error={!!errors.landDetails?.sq_feet_amt}
+                  helperText={errors.landDetails?.sq_feet_amt?.message}
                   fullWidth
                 />
               </Grid>
@@ -241,14 +229,14 @@ const LFCForm = () => {
               {/* HOS Selection */}
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Do you need HOS?</FormLabel>
+                  <FormLabel component="legend">Do you need MOD?</FormLabel>
                   <Controller
                     name="needHos"
                     control={control}
                     render={({ field }) => (
                       <RadioGroup row {...field}>
                         <FormControlLabel
-                          value={true}
+                          // value={true}
                           control={<Radio />}
                           label="Yes"
                         />
