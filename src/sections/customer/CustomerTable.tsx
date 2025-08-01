@@ -1,65 +1,71 @@
-/* eslint-disable perfectionist/sort-imports */
+import type { Column } from 'src/custom/dataTable/dataTable';
+
+import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+
 import {
   Box,
-  Button,
   Card,
-  Table,
-  TableBody,
-  TableContainer,
-  TablePagination,
+  Button,
   Typography,
-  Checkbox,
-  TableRow,
-  TableCell,
+  IconButton,
+  Stack,
 } from '@mui/material';
-import React, { useState } from 'react';
+
+import { deleteCustomer, getAllCustomer } from 'src/utils/api.service';
+
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Iconify } from 'src/components/iconify';
-import { UserTableToolbar } from '../user/user-table-toolbar';
-import { Scrollbar } from 'src/components/scrollbar';
-import { UserTableHead } from '../user/user-table-head';
-import { useTable } from '../user/view';
-import { TableEmptyRows } from '../user/table-empty-rows';
-import { TableNoData } from '../user/table-no-data';
-import { applyFilter, emptyRows, getComparator } from '../user/utils';
-import { _customers } from 'src/_mock';
-import { CustomerTableRow } from 'src/pages/Customer/customer-table-row';
-import { useNavigate } from 'react-router-dom';
+import { ActionMenu, DataTable } from 'src/custom/dataTable/dataTable';
 
+type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+};
 
+const CustomerPage = () => {
+  const navigate = useNavigate();
+  const [data, setData] = useState<Customer[]>([]);
 
-// MAIN COMPONENT
-const CustomerTable = () => {
-  const table = useTable();
-  const [filterName, setFilterName] = useState('');
-  const navigate = useNavigate()
+  const getCustomerData = async () => {
+    try {
+      const res = await getAllCustomer();
+      if (res?.status === 200) {
+        setData(res?.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const dataFiltered = applyFilter({
-    inputData: _customers.map((customer) => ({
-      id: customer.customerId,
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address,
-      city: customer.city,
-      state: customer.state,
-      pincode: customer.pincode,
-      marketerName: customer.marketerName,
-      paymentTerms: customer.paymentTerms,
-      emiAmount: customer.emiAmount,
-      duration: customer.duration,
-      // Provide default values for missing UserProps fields
-      role: 'customer',
-      status: 'active',
-      company: '',
-      avatarUrl: '',
-      isVerified: false,
-    })),
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
-  });
+  useEffect(() => {
+    getCustomerData();
+  }, []);
 
-  const notFound = !dataFiltered.length && !!filterName;
+ const customerColumns: Column<Customer>[] = [
+  { id: 'name', label: 'Name', sortable: true },
+  { id: 'email', label: 'Email', sortable: true },
+  { id: 'phone', label: 'Phone', sortable: false },
+// {
+//     id: 'id', // key used for rendering
+//     label: 'Actions',
+//     render: (_, row) => <ActionMenu row={row} onDelete={handleDelete} />,
+//   },
+];
+
+const handleDelete = async (id: string | number) => {
+  const confirmed = window.confirm('Are you sure you want to delete this customer?');
+  if (!confirmed) return;
+
+  try {
+    await deleteCustomer(String(id)); // convert to string if needed by API
+    getCustomerData(); // re-fetch data (not getAllCustomer again)
+  } catch (error) {
+    console.error('Failed to delete customer:', error);
+  }
+};
+
 
   return (
     <DashboardContent>
@@ -70,96 +76,23 @@ const CustomerTable = () => {
         <Button
           variant="contained"
           color="inherit"
-          onClick={()=>navigate("create")}
-          startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={() => navigate("create")}
         >
           New Customer
         </Button>
       </Box>
 
       <Card>
-        <UserTableToolbar
-          numSelected={table.selected.length}
-          filterName={filterName}
-          onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setFilterName(event.target.value);
-            table.onResetPage();
-          }}
-        />
-
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 1000 }}>
-              <UserTableHead
-                order={table.order}
-                orderBy={table.orderBy}
-                rowCount={_customers.length}
-                numSelected={table.selected.length}
-                onSort={table.onSort}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    _customers.map((row) => row.customerId)
-                  )
-                }
-                headLabel={[
-                  { id: 'customerId', label: 'Customer ID' },
-                  { id: 'name', label: 'Name' },
-                  { id: 'email', label: 'Email' },
-                  { id: 'phone', label: 'Phone' },
-                  { id: 'address', label: 'Address' },
-                  { id: 'city', label: 'City' },
-                  { id: 'state', label: 'State' },
-                  { id: 'pincode', label: 'Pincode' },
-                  { id: 'marketerName', label: 'Marketer' },
-                  { id: 'paymentTerms', label: 'Payment Terms' },
-                  { id: 'emiAmount', label: 'EMI Amount' },
-                  { id: 'duration', label: 'Duration' },
-                ]}
-              />
-
-              <TableBody>
-                {dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
-                    <CustomerTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
-                    />
-                  ))}
-
-                <TableEmptyRows
-                  height={68}
-                  emptyRows={emptyRows(
-                    table.page,
-                    table.rowsPerPage,
-                    _customers.length
-                  )}
-                />
-
-                {notFound && <TableNoData searchQuery={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
-
-        <TablePagination
-          component="div"
-          page={table.page}
-          count={_customers.length}
-          rowsPerPage={table.rowsPerPage}
-          onPageChange={table.onChangePage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onRowsPerPageChange={table.onChangeRowsPerPage}
+        <DataTable
+          title="Customer Table"
+          data={data}
+          columns={customerColumns}
+          searchBy="name"
+          onDelete={handleDelete}
         />
       </Card>
     </DashboardContent>
   );
 };
 
-export default CustomerTable;
+export default CustomerPage;

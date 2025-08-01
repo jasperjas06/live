@@ -13,6 +13,7 @@ const router = createBrowserRouter([
     Component: () => (
       <App>
         <Outlet />
+        
       </App>
     ),
     errorElement: <ErrorBoundary />,
@@ -23,7 +24,5 @@ const router = createBrowserRouter([
 const root = createRoot(document.getElementById('root')!);
 
 root.render(
-  <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>
 );

@@ -1,10 +1,8 @@
 import * as yup from 'yup';
 
 export const validationSchema = yup.object().shape({
-  name: yup.string().required('Customer name is required'),
-  customerId: yup.string().required('Customer ID is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-  introducer: yup.string().required("introducer is required"), 
+  customer: yup.string().required('Customer name is required'),
+  introducerName: yup.string().required("introducer is required"), 
   totalPayment: yup
     .number()
     .typeError('Total payment must be a number')
@@ -18,5 +16,5 @@ export const validationSchema = yup.object().shape({
     .typeError('Initial payment must be a number')
     .required('Initial payment is required'),
   conversion: yup.string().required('Conversion is required'),
-  mod: yup.boolean().required("mod is required"), // Changed from optional() to notRequired()
+  needMod: yup.boolean().required("mod is required"), // Changed from optional() to notRequired()
 });

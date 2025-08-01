@@ -1,4 +1,4 @@
-import React from 'react'
+/* eslint-disable arrow-body-style */
 import CustomerTable from 'src/sections/customer/CustomerTable'
 
 const Customer = () => {

@@ -1,13 +1,14 @@
 import type { RouteObject } from 'react-router';
 
 import { lazy, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
 import { varAlpha } from 'minimal-shared/utils';
+import { Outlet ,Navigate} from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
+import ViewLFC from 'src/pages/LFC/view/ViewLFC';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
 // ----------------------------------------------------------------------
@@ -21,14 +22,26 @@ export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const NVTForm = lazy(()=>import("src/pages/sampleForm"))
 export const Projects = lazy(()=>import("src/pages/Projects/Projects"))
+export const ProjectView = lazy(()=>import("src/pages/Projects/view/Projects"))
 export const ManageProjects = lazy(()=>import("src/pages/Projects/manage/ManageProjects"))
 export const ManageLFC = lazy(()=>import("src/pages/LFC/Manage/ManageLFC"))
 export const ManageCustomer = lazy(()=>import("src/pages/Customer/ManageCustomer/ManageCustomer"))
 export const ManageMOD = lazy(()=>import("src/pages/MOD/ManageMOD/ManageMOD"))
 export const LFC = lazy(()=>import("src/pages/LFC/LFC"))
 export const Customer = lazy(()=>import("src/pages/Customer/Customer"))
+export const CustomerView = lazy(()=>import("src/pages/Customer/view/customer"))
 export const MOD = lazy(()=>import("src/pages/MOD/MOD"))
 export const Profile = lazy(()=>import("src/pages/Profile/Profile"))
+export const Marketer = lazy(()=>import("src/pages/Marketer/index"))
+export const CreateMarketer = lazy(()=>import("src/pages/Marketer/Manage/ManageMarketer"))
+export const CreateMarketingHead = lazy(()=>import("src/pages/MarketingHead/manage/ManageMarketingHead"))
+export const MarketingHead = lazy(()=>import("src/pages/MarketingHead/MarketingHead"))
+export const ViewMarketingHead = lazy(()=>import("src/pages/MarketingHead/view/MarkingHead"))
+export const ViewMOD = lazy(()=>import("src/pages/MOD/view/Mod"))
+export const ViewNVT = lazy(()=>import("src/pages/NVT/view/ViewNVT"))
+export const ViewMarketer = lazy(()=>import("src/pages/Marketer/view/ViewMarketer"))
+export const Percentage = lazy(()=>import("src/pages/Percentage/Percentage"))
+
 
 
 const renderFallback = () => (
@@ -61,21 +74,38 @@ export const routesSection: RouteObject[] = [
       </DashboardLayout>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
+      // { index: true, element: <DashboardPage /> },/
+      { index: true, element: <Navigate to="/customer" replace /> },
       { path: 'projects/all', element: <Projects /> },
-      { path: 'projects/create', element: <ManageProjects /> },
+      { path: 'projects/all/create', element: <ManageProjects /> },
+      { path: 'projects/all/edit/:id', element: <ManageProjects /> },
+      { path: 'projects/all/view/:id', element: <ProjectView /> },
       { path: 'projects/details', element: <LFC /> },
-      { path: 'lfc/create', element: <ManageLFC /> },
+      { path: 'projects/details/create', element: <ManageLFC /> },
+      { path: 'projects/details/view/:id', element: <ViewLFC /> },
+      { path: 'projects/details/edit/:id', element: <ManageLFC /> },
       { path: 'customer', element: <Customer /> },
+      { path: 'customer/view/:id', element: <CustomerView /> },
       { path: 'customer/create', element: <ManageCustomer /> },
+      { path: 'customer/edit/:id', element: <ManageCustomer /> },
       { path: 'mod', element: <MOD /> },
+      { path: 'mod/view/:id', element: <ViewMOD /> },
       { path: 'mod/create', element: <ManageMOD /> },
       { path: 'nvt', element:<NVT/> },
       { path: 'nvt/create-nvt', element:<NVTForm/> },
+      { path: 'nvt/edit/:id', element:<NVTForm/> },
+      { path: 'nvt/view/:id', element:<ViewNVT/> },
       { path: 'products', element: <ProductsPage /> },
       { path: 'blog', element: <BlogPage /> },
       { path: 'profile', element: <Profile /> },
-      
+      { path: 'marketer', element: <Marketer /> },
+      { path: 'marketer/create', element: <CreateMarketer /> },
+      { path: 'marketer/view/:id', element: <ViewMarketer /> },
+      { path: 'marketing-head', element: <MarketingHead /> },
+      { path: 'marketing-head/create', element: <CreateMarketingHead /> },
+      { path: 'marketing-head/edit/:id', element: <CreateMarketingHead /> },
+      { path: 'marketing-head/view/:id', element: <ViewMarketingHead /> },
+      { path: 'percentage' , element: <Percentage/>}
     ],
   },
   {

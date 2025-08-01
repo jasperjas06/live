@@ -1,6 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Grid,
   Typography,
@@ -13,17 +13,20 @@ import {
   Tabs,
   Tab,
   Box,
+  CircularProgress,
 } from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   padding: theme.spacing(3),
   boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-  // backgroundColor: '#fff',
 }));
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -40,45 +43,28 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   color: '#3f51b5',
 }));
 
-// Yup validation schema
 const customerSchema = yup.object().shape({
-  // Step-4 fields
   name: yup.string().required('Name is required'),
-  // customerId: yup.string().required('Customer ID is required'),
   address: yup.string().required('Address is required'),
-  phone: yup.string()
-    .required('Phone is required')
-    .matches(/^[0-9]{10}$/, 'Phone must be 10 digits'),
+  phone: yup.string().required('Phone is required').matches(/^[0-9]{10}$/, 'Phone must be 10 digits'),
   city: yup.string().required('City is required'),
   state: yup.string().required('State is required'),
-  pincode: yup.string()
-    .required('Pincode is required')
-    .matches(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
-  email: yup.string()
-    .required('Email is required')
-    .email('Invalid email format'),
-  
-  // Step-2 fields
+  pincode: yup.string().required('Pincode is required').matches(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
+  email: yup.string().required('Email is required').email('Invalid email format'),
   marketerName: yup.string().required('Marketer Name is required'),
   paymentTerms: yup.string().required('Payment Terms are required'),
-  emiAmount: yup.number()
-    .typeError('EMI Amount must be a number')
-    .required('EMI Amount is required')
-    .positive('EMI Amount must be positive'),
+  emiAmount: yup.number().typeError('EMI Amount must be a number').required('EMI Amount is required').positive('EMI Amount must be positive'),
   duration: yup.string().required('Duration is required'),
 });
 
 export interface CustomerFormData {
- 
   name: string;
-  // customerId: string;
   address: string;
   phone: string;
   city: string;
   state: string;
   pincode: string;
   email: string;
-
   marketerName: string;
   paymentTerms: string;
   emiAmount: number;
@@ -87,17 +73,20 @@ export interface CustomerFormData {
 
 const CustomerForm = () => {
   const [activeTab, setActiveTab] = useState(0);
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const { id } = useParams();
+  const navigate = useNavigate()
+
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
+    reset,
   } = useForm<CustomerFormData>({
     resolver: yupResolver(customerSchema),
     defaultValues: {
       name: '',
-      // customerId: '',
       address: '',
       phone: '',
       city: '',
@@ -115,10 +104,45 @@ const CustomerForm = () => {
     setActiveTab(newValue);
   };
 
-  const onSubmit = (data: CustomerFormData) => {
-    console.log('Submitted:', data);
-    alert('Customer Form Submitted Successfully!');
+  const onSubmit = async (data: CustomerFormData) => {
+    try {
+      const response = id
+        ? await updateCustomer({ ...data, _id: id })
+        : await createCustomer(data);
+
+      if (response.status === 200) {
+        toast.success(response.message)
+        navigate(-1)
+        // alert(`Customer ${id ? 'updated' : 'created'} successfully!`);
+      } else {
+        alert(`Error: ${response.message}`);
+      }
+    } catch (error:any) {
+      console.error('Submission error:', error);
+       toast.error(error)
+    }
   };
+
+   const getDataByID = async () => {
+    if (!id) return;
+    try {
+      setIsLoading(true);
+      const response = await getACustomer(id);
+      const customerData = response?.data?.data;
+      if (customerData) {
+        reset(customerData);
+      }
+    } catch (error:any) {
+      toast.error(error)
+      console.log('Error fetching customer data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getDataByID();
+  }, [id]);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -127,11 +151,18 @@ const CustomerForm = () => {
       </Typography>
 
       <StyledCard>
+        
         <CardContent>
+          {
+            isLoading ? (
+               <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
+              <CircularProgress size={40} />
+            </Box>
+            ) :(
+
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Step-4 Section */}
             <FormSection>
-              <SectionTitle variant="h6"> Customer Information</SectionTitle>
+              <SectionTitle variant="h6">Customer Information</SectionTitle>
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
@@ -143,8 +174,6 @@ const CustomerForm = () => {
                     variant="outlined"
                   />
                 </Grid>
-
-                
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
@@ -216,20 +245,19 @@ const CustomerForm = () => {
               </Grid>
             </FormSection>
 
-            {/* Step-2 Section */}
             <FormSection>
-              <SectionTitle variant="h6"> Estimate Details</SectionTitle>
-              
-              <Tabs 
-                value={activeTab} 
-                onChange={handleTabChange} 
+              <SectionTitle variant="h6">Estimate Details</SectionTitle>
+
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
                 sx={{ mb: 3 }}
               >
                 <Tab label="General" />
                 <Tab label="EMI" />
                 <Tab label="Marketer" />
               </Tabs>
-              
+
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
@@ -279,13 +307,13 @@ const CustomerForm = () => {
             </FormSection>
 
             <Divider sx={{ my: 4 }} />
-            
+
             <Grid container justifyContent="flex-end">
-              <Grid >
-                <Button 
-                  variant="contained" 
-                  size="large" 
-                  color="primary" 
+              <Grid>
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="primary"
                   type="submit"
                   sx={{ minWidth: 150 }}
                 >
@@ -294,6 +322,8 @@ const CustomerForm = () => {
               </Grid>
             </Grid>
           </form>
+            )
+          }
         </CardContent>
       </StyledCard>
     </DashboardContent>

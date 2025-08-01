@@ -1,6 +1,7 @@
 import 'src/global.css';
 
 import { useEffect } from 'react';
+import {Toaster} from "react-hot-toast"
 
 import Fab from '@mui/material/Fab';
 
@@ -9,7 +10,6 @@ import { usePathname } from 'src/routes/hooks';
 import { ThemeProvider } from 'src/theme/theme-provider';
 
 import { Iconify } from 'src/components/iconify';
-
 // ----------------------------------------------------------------------
 
 type AppProps = {
@@ -42,6 +42,10 @@ export default function App({ children }: AppProps) {
     <ThemeProvider>
       {children}
       {/* {githubButton()} */}
+      <Toaster
+  position="top-right"
+  reverseOrder={false}
+/>
     </ThemeProvider>
   );
 }

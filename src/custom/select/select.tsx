@@ -1,12 +1,15 @@
+import type {
+  SelectChangeEvent} from '@mui/material';
+
 import React from 'react';
+
 import {
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  FormHelperText,
-  SelectChangeEvent,
+  InputLabel,
+  FormControl,
   OutlinedInput,
+  FormHelperText,
 } from '@mui/material';
 
 interface Option {
@@ -36,8 +39,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   helperText = '',
   fullWidth = true,
   disabled = false,
-}) => {
-  return (
+}) => (
     <FormControl
       fullWidth={fullWidth}
       error={error}
@@ -63,6 +65,5 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
-};
 
 export default CustomSelect;

@@ -1,6 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 // NVTTablePage.tsx
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -25,29 +25,64 @@ import { TableNoData } from '../user/table-no-data';
 import { _nvtUsers } from 'src/_mock';
 import { NVTTableRow } from 'src/pages/NVT/nvt-table-row';
 import { useNavigate } from 'react-router-dom'; 
+import { deleteNVT, getAllNVT } from 'src/utils/api.service';
+import { Column, DataTable } from 'src/custom/dataTable/dataTable';
+
+interface Project {
+     id: string;
+    customerName: string;
+    introducerName: string;
+    totalPayment: number;
+    initialPayment:number;
+    emi:number
+}
 
 export function NVTTable() {
   const table = useTable();
   const [filterName, setFilterName] = useState('');
+  const [data,setData] = useState([])
   const navigate = useNavigate()
 
-  // Map NVT users to UserProps shape to satisfy type requirements
-  const nvtUsersWithProps = _nvtUsers.map((user) => ({
-    ...user,
-    role: '', // or a default value
-    company: '', // or a default value
-    avatarUrl: '', // or a default value
-    isVerified: false, // or a default value
-  }));
+const getData = async () => {
+  try {
+    const response = await getAllNVT();
+    if (response.status) {
+      const enrichedData = response.data.data.map((item: any) => ({
+        ...item,
+        customerName: item.customer?.name || 'N/A', // fallback if name is missing
+      }));
 
-  const dataFiltered = applyFilter({
-    inputData: nvtUsersWithProps,
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
-  });
+      setData(enrichedData);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-  const notFound = !dataFiltered.length && !!filterName;
+useEffect(() => {
+  getData();
+}, []);
+  const handleDelete = async (id: string | number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this NVT?",
+    );
+    if (!confirmed) return;
 
+    try {
+      console.log(id);
+      await deleteNVT(String(id)); // convert to string if needed by API
+      getData(); // re-fetch data (not getAllCustomer again)
+    } catch (error) {
+      console.error("Failed to delete customer:", error);
+    }
+  };
+       const customerColumns: Column<Project>[] = [
+       { id: 'customerName', label: 'Customer Name', sortable: true },
+       { id: 'introducerName', label: 'Introducer Name', sortable: true },
+       { id: 'totalPayment', label: 'Total Payment', sortable: true },
+       { id: 'initialPayment', label: 'Initial Payment', sortable: true },
+       { id: 'emi', label: 'EMI', sortable: true },
+     ];
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
@@ -63,86 +98,15 @@ export function NVTTable() {
           New NVT
         </Button>
       </Box>
-
-      <Card>
-        <UserTableToolbar
-          numSelected={table.selected.length}
-          filterName={filterName}
-          onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setFilterName(event.target.value);
-            table.onResetPage();
-          }}
-        />
-
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
-              <UserTableHead
-                order={table.order}
-                orderBy={table.orderBy}
-                rowCount={_nvtUsers.length}
-                numSelected={table.selected.length}
-                onSort={table.onSort}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    _nvtUsers.map((user) => user.id)
-                  )
-                }
-                headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'customerId', label: 'Customer ID' },
-                  { id: 'phoneNumber', label: 'Phone Number' },
-                  { id: 'introducer', label: 'Introducer' },
-                  { id: 'totalPayment', label: 'Total Payment' },
-                  { id: 'initialPayment', label: 'Initial Payment' },
-                  { id: 'emi', label: 'EMI' },
-                  { id: 'conversion', label: 'Conversion', align: 'center' },
-                  { id: 'mod', label: 'MOD', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  { id: '' },
-                ]}
-              />
-              <TableBody>
-                {dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
-                    <NVTTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
-                    />
-                  ))}
-
-                <TableEmptyRows
-                  height={68}
-                  emptyRows={emptyRows(
-                    table.page,
-                    table.rowsPerPage,
-                    _nvtUsers.length
-                  )}
-                />
-
-                {notFound && <TableNoData searchQuery={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
-
-        <TablePagination
-          component="div"
-          page={table.page}
-          count={_nvtUsers.length}
-          rowsPerPage={table.rowsPerPage}
-          onPageChange={table.onChangePage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onRowsPerPageChange={table.onChangeRowsPerPage}
-        />
-      </Card>
+      <DataTable
+                  title="NVT Table"
+                  data={data}
+                  columns={customerColumns}
+                  searchBy="customerName"
+                  // onEdit={handleEdith}
+                  onDelete={handleDelete}
+                  />
+     
     </DashboardContent>
   );
 }

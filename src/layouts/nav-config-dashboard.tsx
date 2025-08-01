@@ -1,4 +1,5 @@
-import { Label } from 'src/components/label';
+import { User, Users, Folder, Percent, ReceiptText, AppWindowMac, BadgeIndianRupee } from 'lucide-react';
+
 import { SvgColor } from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -15,20 +16,20 @@ export type NavItem = {
 
 
 export const navData = [
-  {
-    title: 'Dashboard',
-    path: '/',
-    icon: icon('ic-analytics'),
-  },
+  // {
+  //   title: 'Dashboard',
+  //   path: '/',
+  //   icon: icon('ic-analytics'),
+  // },
   {
     title: 'Customer',
     path: '/customer',
-    icon: icon('ic-user'),
+    icon: <Users/>,
   },
   {
     title: 'Projects',
     path: '/projects',
-    icon: icon('ic-lock'),
+    icon: <Folder/>,
     children: [
       {
         title: 'All Projects',
@@ -41,30 +42,30 @@ export const navData = [
       }
     ]
   },
-  // {
-  //   title: 'LFC',
-  //   path: '/lfc',
-  //   icon: icon('ic-disabled'),
-  // },
+  {
+    title: 'Percentage',
+    path: '/percentage',
+    icon: <Percent/>,
+  },
   {
     title: 'NVT',
     path: '/nvt',
-    icon: icon('ic-blog'),
+    icon: <AppWindowMac/>,
   },
   {
     title: 'MOD',
     path: '/mod',
-    icon: icon('ic-cart'),
+    icon: <ReceiptText/>,
   },
   {
     title: 'Marketer',
     path: '/marketer',
-    icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
+    icon: <BadgeIndianRupee/>,
+  },
+  {
+    title: 'Marketing Head',
+    path: '/marketing-head',
+    icon: <User/>,
   },
   // {
   //   title: 'Blog',

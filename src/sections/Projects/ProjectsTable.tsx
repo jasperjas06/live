@@ -5,47 +5,102 @@ import {
   Box,
   Button,
   Card,
-  Table,
-  TableBody,
-  TableContainer,
-  TablePagination,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { UserTableToolbar } from '../user/user-table-toolbar';
-import { Scrollbar } from 'src/components/scrollbar';
-import { UserTableHead } from '../user/user-table-head';
-import { useTable } from '../user/view';
 import { useNavigate } from 'react-router-dom';
-import { _projects } from 'src/_mock';
-import { applyFilter, emptyRows, getComparator } from '../user/utils';
-import { TableEmptyRows } from '../user/table-empty-rows';
-import { TableNoData } from '../user/table-no-data';
-import { ProjectTableRow } from 'src/pages/Projects/project-table-row';
+import { deleteProject, getAllProjects } from 'src/utils/api.service';
+import { ActionMenu, Column, DataTable } from 'src/custom/dataTable/dataTable';
+
+interface Project {
+  _id?: any;
+  projectName: string;
+  stortName: string;
+  duration: string;
+  emiAmount: number;
+  marketer: string;
+  schema: string;
+  returns: number;
+  intrest: string;
+  totalInvestimate: number;
+  totalReturnAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const ProjectsTable = () => {
-  const table = useTable();
   const [filterName, setFilterName] = useState('');
+  const [data, setData] = useState<Project[]>([]);
   const navigate = useNavigate();
 
-  const projectsWithMeta = _projects.map((project) => ({
-    ...project,
-    name: project.projectName || '',
-    role: '',
-    company: '',
-    avatarUrl: '',
-    isVerified: false,
-  }));
+  const getProjectsData = async () => {
+    try {
+      const res = await getAllProjects();
+      if (res?.status === 200) {
+        setData(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  const dataFiltered = applyFilter({
-    inputData: projectsWithMeta,
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
-  });
+  useEffect(() => {
+    getProjectsData();
+  }, []);
 
-  const notFound = !dataFiltered.length && !!filterName;
+  type ProjectWithId = Project & { id: string };
+
+const tableData: ProjectWithId[] = data.map((item) => ({
+  ...item,
+  id: item._id,
+}));
+ const projectColumns: Column<ProjectWithId>[] = [
+  {
+    id: 'projectName',
+    label: 'Project Name',
+    sortable: true,
+  },
+  // {
+  //   id: 'description',
+  //   label: 'Description',
+  // },
+  {
+    id: 'duration',
+    label: 'Duration',
+  },
+  {
+    id: 'emiAmount',
+    label: 'EMI Amount',
+  },
+  {
+    id: 'returns',
+    label: 'Returns',
+  },
+  {
+    id: 'intrest',
+    label: 'Interest',
+  },
+  // {
+  //     id: 'id', // key used for rendering
+  //     label: 'Actions',
+  //     render: (_, row) => <ActionMenu row={row} onDelete={handleDelete} />,
+  //   },
+];
+const handleDelete = async (id: string | number) => {
+  const confirmed = window.confirm('Are you sure you want to delete this customer?');
+  if (!confirmed) return;
+
+  try {
+    console.log(id)
+    await deleteProject(String(id)); // convert to string if needed by API
+    getProjectsData(); // re-fetch data (not getAllCustomer again)
+  } catch (error) {
+    console.error('Failed to delete customer:', error);
+  }
+};
+
 
   return (
     <DashboardContent>
@@ -64,83 +119,14 @@ const ProjectsTable = () => {
       </Box>
 
       <Card>
-        <UserTableToolbar
-          numSelected={table.selected.length}
-          filterName={filterName}
-          onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setFilterName(event.target.value);
-            table.onResetPage();
-          }}
-        />
+        <DataTable
+  title="Projects Table"
+  data={data.map((item) => ({ ...item, id: item._id }))}
+  columns={projectColumns}
+  searchBy="projectName"
+  onDelete={handleDelete}
+/>
 
-        <Scrollbar>
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 1000 }}>
-              <UserTableHead
-                order={table.order}
-                orderBy={table.orderBy}
-                rowCount={projectsWithMeta.length}
-                numSelected={table.selected.length}
-                onSort={table.onSort}
-                onSelectAllRows={(checked) =>
-                  table.onSelectAllRows(
-                    checked,
-                    projectsWithMeta.map((proj) => proj.id)
-                  )
-                }
-                headLabel={[
-                  { id: 'id', label: 'ID' },
-                  { id: 'volumeName', label: 'Volume' },
-                  { id: 'projectName', label: 'Project' },
-                  { id: 'stockName', label: 'Stock' },
-                  { id: 'duration', label: 'Duration' },
-                  { id: 'emiAmount', label: 'EMI' },
-                  { id: 'marketer', label: 'Marketer' },
-                  { id: 'returns', label: 'Returns', align: 'center' },
-                  { id: 'mod', label: 'MOD', align: 'center' },
-                  { id: 'status', label: 'Status' },
-                  // { id: '' },
-                ]}
-              />
-              <TableBody>
-                {dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
-                    <ProjectTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
-                    />
-                  ))}
-
-                <TableEmptyRows
-                  height={68}
-                  emptyRows={emptyRows(
-                    table.page,
-                    table.rowsPerPage,
-                    projectsWithMeta.length
-                  )}
-                />
-
-                {notFound && <TableNoData searchQuery={filterName} />}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Scrollbar>
-
-        <TablePagination
-          component="div"
-          page={table.page}
-          count={projectsWithMeta.length}
-          rowsPerPage={table.rowsPerPage}
-          onPageChange={table.onChangePage}
-          rowsPerPageOptions={[5, 10, 25]}
-          onRowsPerPageChange={table.onChangeRowsPerPage}
-        />
       </Card>
     </DashboardContent>
   );

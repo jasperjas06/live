@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable import/no-unresolved */
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
@@ -24,6 +25,7 @@ import type { NavItem } from '../nav-config-dashboard';
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
 import { useEffect, useState } from 'react';
 import { Collapse } from '@mui/material';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ----------------------------------------------------------------------
 
@@ -167,10 +169,25 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
     return (
       <Box key={item.title}>
         <ListItem disableGutters disablePadding>
-          <ListItemButton onClick={handleToggle} sx={{ pl: 2, py: 1, gap: 2 }}>
+          <ListItemButton onClick={handleToggle} sx={{
+          pl: 2,
+          py: 1,
+          gap: 2,
+          pr: 1.5,
+          borderRadius: 0.75,
+          typography: 'body2',
+          fontWeight: isActive ? 'fontWeightSemiBold' : 'fontWeightMedium',
+          color: isActive ? theme.vars.palette.primary.main : theme.vars.palette.text.secondary,
+          bgcolor: isActive ? varAlpha(theme.vars.palette.primary.mainChannel, 0.08) : undefined,
+          '&:hover': {
+            bgcolor: isActive
+              ? varAlpha(theme.vars.palette.primary.mainChannel, 0.16)
+              : varAlpha(theme.vars.palette.grey['500Channel'], 0.04),
+          },
+        }}>
             <Box component="span" sx={{ width: 24, height: 24 }}>{item.icon}</Box>
             <Box component="span" sx={{ flexGrow: 1 }}>{item.title}</Box>
-            {/* {open ? <ExpandLess /> : <ExpandMore />} */}
+            {open ? <ChevronUp /> : <ChevronDown />}
           </ListItemButton>
         </ListItem>
         <Collapse in={open} timeout="auto" unmountOnExit>
