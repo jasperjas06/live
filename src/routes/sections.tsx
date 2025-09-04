@@ -29,6 +29,8 @@ export const ManageCustomer = lazy(()=>import("src/pages/Customer/ManageCustomer
 export const ManageMOD = lazy(()=>import("src/pages/MOD/ManageMOD/ManageMOD"))
 export const LFC = lazy(()=>import("src/pages/LFC/LFC"))
 export const Customer = lazy(()=>import("src/pages/Customer/Customer"))
+export const CustomerDetails = lazy(()=>import("src/pages/CustomerDetails/CustomerDetails"))
+export const ManageCustomerDetails = lazy(()=>import("src/pages/CustomerDetails/ManageCustomer/ManageCustomerDetails"))
 export const CustomerView = lazy(()=>import("src/pages/Customer/view/customer"))
 export const MOD = lazy(()=>import("src/pages/MOD/MOD"))
 export const Profile = lazy(()=>import("src/pages/Profile/Profile"))
@@ -41,6 +43,13 @@ export const ViewMOD = lazy(()=>import("src/pages/MOD/view/Mod"))
 export const ViewNVT = lazy(()=>import("src/pages/NVT/view/ViewNVT"))
 export const ViewMarketer = lazy(()=>import("src/pages/Marketer/view/ViewMarketer"))
 export const Percentage = lazy(()=>import("src/pages/Percentage/Percentage"))
+export const Roles = lazy(() => import('src/pages/Role/Role'));
+export const RoleMenuMapping = lazy(() => import('src/pages/Mapping/RoleMenuMapping'));
+export const RoleMenuForm = lazy(() => import('src/pages/Mapping/ManageMapping/ManageMapping'));
+export const ManageRole = lazy(() => import('src/pages/Role/ManageRole/ManageRole'));
+export const ManageEmployee = lazy(() => import('src/pages/Employee/Manage/ManageEmployee'));
+export const Employee = lazy(() => import('src/pages/Employee/Employee'));
+export const ViewMenu = lazy(() => import('src/pages/Mapping/view/RoleMenuMappingView'));
 
 
 
@@ -85,8 +94,10 @@ export const routesSection: RouteObject[] = [
       { path: 'projects/details/view/:id', element: <ViewLFC /> },
       { path: 'projects/details/edit/:id', element: <ManageLFC /> },
       { path: 'customer', element: <Customer /> },
+      { path: 'customer/details', element: <CustomerDetails /> },
       { path: 'customer/view/:id', element: <CustomerView /> },
       { path: 'customer/create', element: <ManageCustomer /> },
+      { path: 'customer/details/create', element: <ManageCustomerDetails /> },
       { path: 'customer/edit/:id', element: <ManageCustomer /> },
       { path: 'mod', element: <MOD /> },
       { path: 'mod/view/:id', element: <ViewMOD /> },
@@ -105,7 +116,16 @@ export const routesSection: RouteObject[] = [
       { path: 'marketing-head/create', element: <CreateMarketingHead /> },
       { path: 'marketing-head/edit/:id', element: <CreateMarketingHead /> },
       { path: 'marketing-head/view/:id', element: <ViewMarketingHead /> },
-      { path: 'percentage' , element: <Percentage/>}
+      { path: 'percentage' , element: <Percentage/>},
+      { path: 'role', element: <Roles /> },
+      { path: 'role&menu-mapping', element: <RoleMenuMapping /> },
+      { path: 'role&menu-mapping/create', element: <RoleMenuForm /> },
+      { path: 'role&menu-mapping/edit/:id', element: <RoleMenuForm /> },
+      { path: 'role&menu-mapping/view/:id', element: <ViewMenu /> },
+      { path: 'employee', element: <Employee /> },
+      { path: 'employee/create', element: <ManageEmployee /> },
+      { path: 'employee/edit/:id', element: <ManageEmployee /> },
+
     ],
   },
   {

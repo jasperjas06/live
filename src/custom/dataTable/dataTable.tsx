@@ -44,6 +44,7 @@ type DataTableProps<T> = {
   columns: Column<T>[];
   searchBy?: keyof T;
   isView?:boolean;
+  isDelete?:boolean;
   onDelete?: (id: string | number) => Promise<void> | void;
   onEdit?: (id: string | number) => void;
   onView?: (id: string | number) => void;
@@ -57,7 +58,8 @@ export function DataTable<T extends { id: string | number }>({
   onDelete,
   onEdit,
   onView,
-  isView = true
+  isView = true,
+  isDelete = true,
 }: DataTableProps<T>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -220,6 +222,7 @@ export function DataTable<T extends { id: string | number }>({
                     onEdit={onEdit}
                     onView={onView}
                     isView={isView}
+                    isDelete={isDelete}
                   />
                 </TableCell>
               </TableRow>
@@ -267,9 +270,10 @@ type ActionMenuProps<T> = {
   onEdit?: (id: string | number) => void;
   onView?: (id: string | number) => void;
   isView?: boolean;
+  isDelete?: boolean;
 };
 
-export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true }: ActionMenuProps<T>) {
+export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isDelete= true }: ActionMenuProps<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -361,6 +365,8 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true }: A
         <MenuItem onClick={() => handleAction('edit')} dense>
           Edit
         </MenuItem>
+        {
+          isDelete && 
         <MenuItem 
           onClick={() => handleAction('delete')} 
           dense
@@ -369,6 +375,7 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true }: A
         >
           {isDeleting ? 'Deleting...' : 'Delete'}
         </MenuItem>
+        }
       </Menu>
     </div>
   );

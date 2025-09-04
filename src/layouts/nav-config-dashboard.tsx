@@ -1,4 +1,5 @@
-import { User, Users, Folder, Percent, ReceiptText, AppWindowMac, BadgeIndianRupee } from 'lucide-react';
+
+import { User, Users, Folder, Percent, ReceiptText, AppWindowMac, BadgeIndianRupee, IdCard, Route,  } from 'lucide-react';
 
 import { SvgColor } from 'src/components/svg-color';
 
@@ -25,6 +26,14 @@ export const navData = [
     title: 'Customer',
     path: '/customer',
     icon: <Users/>,
+    children: [
+      {
+        title: 'Manage Customer',
+        path: '/customer/',
+      },
+      {title: 'Customer Details',
+      path: '/customer/details',}
+    ]
   },
   {
     title: 'Projects',
@@ -67,11 +76,26 @@ export const navData = [
     path: '/marketing-head',
     icon: <User/>,
   },
-  // {
-  //   title: 'Blog',
-  //   path: '/blog',
-  //   icon: icon('ic-blog'),
-  // },
+  {
+    title : "Roles",
+    path: '/role',
+    icon: <IdCard/>
+  },
+  {
+    title: 'Employee',
+    path: '/employee',
+    icon: <Users/>
+  },
+  {
+    title : "Role And Menu Mapping",
+    path: '/role&menu-mapping',
+    icon: <Route/>
+  },
+  {
+    title: 'Billing',
+    path: '/billing',
+    icon: <ReceiptText />,
+  },
   // {
   //   title: 'Sign in',
   //   path: '/sign-in',
