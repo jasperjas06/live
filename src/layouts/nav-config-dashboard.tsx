@@ -1,5 +1,7 @@
 
-import { User, Users, Folder, Percent, ReceiptText, AppWindowMac, BadgeIndianRupee, IdCard, Route,  } from 'lucide-react';
+import { User, Users, Folder, Percent, ReceiptText, AppWindowMac, BadgeIndianRupee, IdCard, Route, House,  } from 'lucide-react';
+
+import { AllInclusive } from '@mui/icons-material';
 
 import { SvgColor } from 'src/components/svg-color';
 
@@ -96,11 +98,16 @@ export const navData = [
     path: '/billing',
     icon: <ReceiptText />,
   },
-  // {
-  //   title: 'Sign in',
-  //   path: '/sign-in',
-  //   icon: icon('ic-lock'),
-  // },
+  {
+    title: 'Life Alliance',
+    path: '/life-alliance',
+    icon: <AllInclusive/>,
+  },
+  {
+    title: 'Life Housing',
+    path: '/life-housing',
+    icon: <House/>,
+  },
   // {
   //   title: 'Not found',
   //   path: '/404',

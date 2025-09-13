@@ -50,6 +50,8 @@ export const ManageRole = lazy(() => import('src/pages/Role/ManageRole/ManageRol
 export const ManageEmployee = lazy(() => import('src/pages/Employee/Manage/ManageEmployee'));
 export const Employee = lazy(() => import('src/pages/Employee/Employee'));
 export const ViewMenu = lazy(() => import('src/pages/Mapping/view/RoleMenuMappingView'));
+export const LifeAlliance = lazy(() => import('src/pages/LifeAlliance/LifeAlliance'));
+export const LifeHousing = lazy(() => import('src/pages/LifeHousing/LifeHousing'));
 
 
 
@@ -125,6 +127,8 @@ export const routesSection: RouteObject[] = [
       { path: 'employee', element: <Employee /> },
       { path: 'employee/create', element: <ManageEmployee /> },
       { path: 'employee/edit/:id', element: <ManageEmployee /> },
+      { path: 'life-alliance', element: <LifeAlliance /> },
+      { path: 'life-housing', element: <LifeHousing /> },
 
     ],
   },
