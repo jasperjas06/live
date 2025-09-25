@@ -71,25 +71,25 @@ const handleDelete = async (id: string | number) => {
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
-          Customer Details
+          Estimate Details
         </Typography>
         <Button
           variant="contained"
           color="inherit"
           onClick={() => navigate("create")}
         >
-          Add New Details
+          Add New Estimate
         </Button>
       </Box>
 
       <Card>
-        <DataTable
+        {/* <DataTable
           title="Customer Table"
           data={data}
           columns={customerColumns}
           searchBy="name"
           onDelete={handleDelete}
-        />
+        /> */}
       </Card>
     </DashboardContent>
   );

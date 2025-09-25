@@ -28,31 +28,41 @@ const CustomerPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Customer[]>([]);
 
-  const getCustomerData = async () => {
-    try {
-      const res = await getAllCustomer();
-      if (res?.status === 200) {
-        setData(res?.data.data);
-      }
-    } catch (error) {
-      console.log(error);
+ const getCustomerData = async () => {
+  try {
+    const res = await getAllCustomer();
+    if (res?.status === 200) {
+      const mapped = res.data.data.map((c: any) => ({
+        ...c,
+        id: c._id,   // 👈 normalize _id → id
+      }));
+      setData(mapped);
     }
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 
   useEffect(() => {
     getCustomerData();
   }, []);
 
- const customerColumns: Column<Customer>[] = [
+const customerColumns: Column<Customer>[] = [
   { id: 'name', label: 'Name', sortable: true },
   { id: 'email', label: 'Email', sortable: true },
   { id: 'phone', label: 'Phone', sortable: false },
-// {
-//     id: 'id', // key used for rendering
-//     label: 'Actions',
-//     render: (_, row) => <ActionMenu row={row} onDelete={handleDelete} />,
-//   },
+  { 
+    id: 'id',   // 👈 match the API field
+    label: 'Estimate Details',
+    sortable: false,
+    render: (_value: string, row: Customer) => (
+      <button style={{background:"#2c2c2cff", padding:"5px", borderRadius:"5px", paddingRight:"10px", paddingLeft:"10px", cursor:"pointer", color:"white"}} onClick={() => navigate(`${row.id}/estimate`)}>Estimate</button>
+    )
+  }
 ];
+
+
 
 const handleDelete = async (id: string | number) => {
   const confirmed = window.confirm('Are you sure you want to delete this customer?');

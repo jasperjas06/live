@@ -1,10 +1,13 @@
+/* eslint-disable consistent-return */
 import * as yup from "yup";
-import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Tabs, Tab, Box, Button, Typography } from "@mui/material";
+
+import { getAllMarkingHead } from "src/utils/api.service";
 
 import { DashboardContent } from "src/layouts/dashboard";
 
@@ -14,11 +17,15 @@ import Plot from "./Plot";
 import General from "./General";
 import Marketer from "./Marketer";
 
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
+
+
+
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -44,6 +51,7 @@ const schema = yup.object().shape({
 const ManageCustomerDetails = () => {
   const { id } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
+  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string }[]>([]); 
 
   // ✅ Setup react-hook-form
   const methods = useForm({
@@ -63,6 +71,27 @@ const ManageCustomerDetails = () => {
     setTabIndex(newValue);
   };
 
+  const getMarketerNames = async () => {
+  try {
+    const response = await getAllMarkingHead();
+    if (response?.status === 200) {
+      const marketers = response.data.data.map((m: any) => ({
+        label: m.name,   // 👈 display text
+        value: m._id,    // 👈 unique identifier
+      }));
+      setMarketerOptions(marketers);
+      // return marketers; // 👈 return so you can setState/use it
+    }
+  } catch (error) {
+    console.error("Error fetching marketers:", error);
+    return [];
+  }
+};
+
+  useEffect(()=>{
+    getMarketerNames()
+  },[])
+
   const onSubmit = (data: any) => {
     console.log("Form Data:", data);
   };
@@ -70,8 +99,8 @@ const ManageCustomerDetails = () => {
   return (
     <DashboardContent>
         <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
-                Customer Details
-                 Form
+                Estimate Details
+                 
               </Typography>
       <Box sx={{ width: "100%" }}>
         <FormProvider {...methods}>
@@ -93,7 +122,7 @@ const ManageCustomerDetails = () => {
 
             {/* Tab Panels */}
             <TabPanel value={tabIndex} index={0}>
-              <General control={control} errors={errors} />
+              <General marketer={marketerOptions} control={control} errors={errors} />
             </TabPanel>
             <TabPanel value={tabIndex} index={1}>
               <Plot control={control} errors={errors} />

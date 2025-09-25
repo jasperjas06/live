@@ -26,16 +26,16 @@ export const navData = [
   // },
   {
     title: 'Customer',
-    path: '/customer',
+    path: '/customer/',
     icon: <Users/>,
-    children: [
-      {
-        title: 'Manage Customer',
-        path: '/customer/',
-      },
-      {title: 'Customer Details',
-      path: '/customer/details',}
-    ]
+    // children: [
+    //   {
+    //     title: 'Manage Customer',
+    //     path: '/customer/',
+    //   },
+    //   {title: 'Customer Details',
+    //   path: '/customer/details',}
+    // ]
   },
   {
     title: 'Projects',

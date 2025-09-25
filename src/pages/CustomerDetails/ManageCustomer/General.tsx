@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as yup from "yup";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm, Controller, FieldErrors, Control } from "react-hook-form";
 
 import {
@@ -11,64 +11,113 @@ import {
   Select,
   InputLabel,
   FormControl,
-  FormHelperText,
   Typography,
+  LinearProgress,
 } from "@mui/material";
+
+import { fileUpload } from "src/utils/api.service";
 
 interface PlotProps {
   control: Control<any>;
   errors: FieldErrors<any>;
-//   handleCalculateTotal: () => void;
+  marketer?: { label: string; value: string }[];
 }
 
-const General: React.FC<PlotProps> = ({control,errors}) => {
-  const i=""
+const General: React.FC<PlotProps> = ({ control, errors, marketer }) => {
+  const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
+  const [fileNames, setFileNames] = useState<{ [key: string]: string }>({});
+  const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
+
+  // helper to handle uploads
+  const handleFileUpload = async (field: any, file: File, name: string) => {
+    if (!file) return;
+    setUploading((prev) => ({ ...prev, [name]: true }));
+    setUploadError((prev) => ({ ...prev, [name]: "" }));
+    try {
+      // prepare FormData
+      const formData = new FormData();
+      formData.append("files", file);
+
+      // send to BE (assuming fileUpload accepts FormData)
+      const res = await fileUpload(formData);
+
+      // push backend response (e.g. file URL or id) into RHF state
+      field.onChange(res);
+
+      // show file name in UI
+      setFileNames((prev) => ({ ...prev, [name]: file.name }));
+    } catch (err: any) {
+      setUploadError((prev) => ({
+        ...prev,
+        [name]: "Upload failed. Try again.",
+      }));
+    } finally {
+      setUploading((prev) => ({ ...prev, [name]: false }));
+    }
+  };
+
   return (
-<div>
+    <div>
       <Grid container spacing={2}>
         {/* Marketer Dropdown */}
-        <Grid size={{ xs: 12, sm: 6, }}>
-          <Controller
-            name="marketer"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth error={!!errors.marketer}>
-                <InputLabel>Marketer Name</InputLabel>
-                <Select {...field} label="Marketer Name">
-                  {/* {marketers?.map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      {m.name}
-                    </MenuItem>
-                  ))} */}
-                </Select>
-              </FormControl>
-            )}
-          />
-        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+  <Controller
+    name="marketer"
+    control={control}
+    render={({ field }) => (
+      <FormControl fullWidth error={!!errors.marketer}>
+        <InputLabel>Marketer Name</InputLabel>
+        <Select {...field} label="Marketer Name">
+          {marketer.map((m) => (
+            <MenuItem key={m.value} value={m.value}>
+              {m.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    )}
+  />
+</Grid>
 
         {/* Sale Deed Doc */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="saleDeed"
             control={control}
             render={({ field }) => (
               <>
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Sale Deed Doc (PDF)
+                <Button
+                  variant="outlined"
+                  component="label"
+                  fullWidth
+                  disabled={uploading.saleDeed}
+                >
+                  {uploading.saleDeed
+                    ? "Uploading..."
+                    : fileNames.saleDeed || "Upload Sale Deed Doc (PDF)"}
                   <input
                     type="file"
                     accept="application/pdf"
                     hidden
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                    onChange={(e) =>
+                      e.target.files &&
+                      handleFileUpload(field, e.target.files[0], "saleDeed")
+                    }
                   />
                 </Button>
+                {uploading.saleDeed && <LinearProgress />}
+                {uploadError.saleDeed && (
+                  <Typography color="error" variant="caption">
+                    {uploadError.saleDeed}
+                  </Typography>
+                )}
               </>
             )}
           />
         </Grid>
 
         {/* Payment Terms */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="paymentTerms"
             control={control}
@@ -78,14 +127,13 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                 label="Payment Terms"
                 fullWidth
                 error={!!errors.paymentTerms}
-                // helperText={errors.paymentTerms?.message}
               />
             )}
           />
         </Grid>
 
         {/* EMI Amount */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="emiAmount"
             control={control}
@@ -96,14 +144,13 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                 label="EMI Amount"
                 fullWidth
                 error={!!errors.emiAmount}
-                // helperText={errors.emiAmount?.message}
               />
             )}
           />
         </Grid>
 
         {/* No. of Installments */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="installments"
             control={control}
@@ -114,40 +161,50 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                 label="No. of Installments"
                 fullWidth
                 error={!!errors.installments}
-                // helperText={errors.installments?.message}
               />
             )}
           />
         </Grid>
 
         {/* Mother Doc */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="motherDoc"
             control={control}
             render={({ field }) => (
               <>
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Mother Doc (PDF)
+                <Button
+                  variant="outlined"
+                  component="label"
+                  fullWidth
+                  disabled={uploading.motherDoc}
+                >
+                  {uploading.motherDoc
+                    ? "Uploading..."
+                    : fileNames.motherDoc || "Upload Mother Doc (PDF)"}
                   <input
                     type="file"
                     accept="application/pdf"
                     hidden
-                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                    onChange={(e) =>
+                      e.target.files &&
+                      handleFileUpload(field, e.target.files[0], "motherDoc")
+                    }
                   />
                 </Button>
-                {/* {errors.motherDoc && (
+                {uploading.motherDoc && <LinearProgress />}
+                {uploadError.motherDoc && (
                   <Typography color="error" variant="caption">
-                    {errors.motherDoc.message}
+                    {uploadError.motherDoc}
                   </Typography>
-                )} */}
+                )}
               </>
             )}
           />
         </Grid>
 
         {/* Status */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="status"
             control={control}
@@ -159,14 +216,13 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                   <MenuItem value="Blocked">Blocked</MenuItem>
                   <MenuItem value="Vacant">Vacant</MenuItem>
                 </Select>
-                {/* <FormHelperText>{errors.status?.message}</FormHelperText> */}
               </FormControl>
             )}
           />
         </Grid>
 
         {/* Loan */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="loan"
             control={control}
@@ -177,14 +233,13 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                   <MenuItem value="Yes">Yes</MenuItem>
                   <MenuItem value="No">No</MenuItem>
                 </Select>
-                {/* <FormHelperText>{errors.loan?.message}</FormHelperText> */}
               </FormControl>
             )}
           />
         </Grid>
 
         {/* Offered */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="offered"
             control={control}
@@ -195,14 +250,13 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                   <MenuItem value="Yes">Yes</MenuItem>
                   <MenuItem value="No">No</MenuItem>
                 </Select>
-                {/* <FormHelperText>{errors.offered?.message}</FormHelperText> */}
               </FormControl>
             )}
           />
         </Grid>
 
         {/* Edit / Delete Reason */}
-        <Grid size={{ xs: 12, sm: 6, }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="reason"
             control={control}
@@ -212,13 +266,10 @@ const General: React.FC<PlotProps> = ({control,errors}) => {
                 label="Edit / Delete Reason"
                 fullWidth
                 error={!!errors.reason}
-                // helperText={errors.reason?.message}
               />
             )}
           />
         </Grid>
-
-        
       </Grid>
     </div>
   );

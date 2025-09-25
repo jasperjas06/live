@@ -1127,3 +1127,54 @@ export const deleteMenuMapping = async (id) => {
     };
   }
 };
+
+export const fileUpload = async (data, token) => {
+  try {
+    const response = await axios.post(
+      `${base_url}api/common/upload`,
+      data, // this should be FormData object
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const commonCreate = async ( data, token) => {
+  try {
+     
+    const response = await axios.delete(`${base_url}api/common/create/all`, {
+      data,
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}

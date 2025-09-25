@@ -245,7 +245,7 @@ const CustomerForm = () => {
               </Grid>
             </FormSection>
 
-            <FormSection>
+            {/* <FormSection>
               <SectionTitle variant="h6">Estimate Details</SectionTitle>
 
               <Tabs
@@ -304,9 +304,9 @@ const CustomerForm = () => {
                   />
                 </Grid>
               </Grid>
-            </FormSection>
+            </FormSection> */}
 
-            <Divider sx={{ my: 4 }} />
+            {/* <Divider sx={{ my: 4 }} /> */}
 
             <Grid container justifyContent="flex-end">
               <Grid>
