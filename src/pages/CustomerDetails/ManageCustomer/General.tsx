@@ -68,7 +68,7 @@ const General: React.FC<PlotProps> = ({ control, errors, marketer }) => {
       <FormControl fullWidth error={!!errors.marketer}>
         <InputLabel>Marketer Name</InputLabel>
         <Select {...field} label="Marketer Name">
-          {marketer.map((m) => (
+          {marketer?.map((m) => (
             <MenuItem key={m.value} value={m.value}>
               {m.label}
             </MenuItem>

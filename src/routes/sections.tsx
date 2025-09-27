@@ -10,6 +10,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import ViewLFC from 'src/pages/LFC/view/ViewLFC';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import Billing from 'src/pages/Billing/Billing';
 
 // ----------------------------------------------------------------------
 
@@ -52,6 +53,7 @@ export const Employee = lazy(() => import('src/pages/Employee/Employee'));
 export const ViewMenu = lazy(() => import('src/pages/Mapping/view/RoleMenuMappingView'));
 export const LifeAlliance = lazy(() => import('src/pages/LifeAlliance/LifeAlliance'));
 export const LifeHousing = lazy(() => import('src/pages/LifeHousing/LifeHousing'));
+export const ManageBilling = lazy(()=>import('src/pages/Billing/Manage/ManageBilling'))
 
 
 
@@ -129,6 +131,10 @@ export const routesSection: RouteObject[] = [
       { path: 'employee/edit/:id', element: <ManageEmployee /> },
       { path: 'life-alliance', element: <LifeAlliance /> },
       { path: 'life-housing', element: <LifeHousing /> },
+      { path: 'billing', element: <Billing /> },
+      { path: 'billing/create', element: <ManageBilling /> },
+      // { path: 'billing/edit/:id', element: <ManageBilling /> },
+      // { path: 'billing/view/:id', element: <ViewBilling /> },
 
     ],
   },

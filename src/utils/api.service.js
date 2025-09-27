@@ -1178,3 +1178,148 @@ export const commonCreate = async ( data, token) => {
     };
   }
 }
+
+export const getAllBilling = async () => {
+  try {
+    const response = await axios.get(`${base_url}api/common/billing/get/all`, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching employees:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const getBillingById = async (id)=>{
+ try {
+    const response = await axios.get(`${base_url}api/common/billing/get/${id}`, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching employee:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const createbilling = async (data) => {
+  try {
+    const response = await axios.post(`${base_url}api/common/create/billing`, data);
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log(error,"man");
+    
+    return {
+      data: null,
+      message: error.response?.data?.error || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const getAllGeneral = async (customer) => {
+  try {
+    let url=`${base_url}api/common/general/get/all`
+    console.log("Ap",customer)
+    if(customer){
+      url=`${base_url}api/common/general/get/all?customerId=${customer}`
+    }
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching employees:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const getGeneralById = async (id)=>{
+ try {
+    const response = await axios.get(`${base_url}api/common/general/get/${id}`, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching employee:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const getAllEmi = async ({customerId,paid})=>{
+  try {
+    let url=`${base_url}api/common/emi/get/all`
+    if(customerId){
+      url=`${base_url}api/common/emi/get/all?customerId=${customerId}`
+    }
+    if(paid){
+      if(url.includes("?")){
+        url=`${url}&paid=${paid}`
+      }else{
+        url=`${url}?paid=${paid}`
+      }
+    }
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching employees:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}

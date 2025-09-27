@@ -303,10 +303,10 @@ const LFCForm = () => {
                       name="customer"
                       value={field.value}
                      onChange={(e) => {
-        const selectedId = e.target.value;
-        field.onChange(selectedId); // updates RHF form state
-        setCusId(selectedId);       // updates local state
-      }}
+                        const selectedId = e.target.value;
+                        field.onChange(selectedId); // updates RHF form state
+                        setCusId(selectedId);       // updates local state
+                      }}
                       options={options}
                       error={!!fieldState.error}
                       helperText={fieldState.error?.message}

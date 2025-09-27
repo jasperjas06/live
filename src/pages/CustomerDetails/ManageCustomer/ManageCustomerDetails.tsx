@@ -115,8 +115,8 @@ const ManageCustomerDetails = () => {
             >
               <Tab label="General" id="tab-0" aria-controls="tabpanel-0" />
               <Tab label="Plot" id="tab-1" aria-controls="tabpanel-1" />
-              <Tab label="Merketer" id="tab-2" aria-controls="tabpanel-2" />
-              <Tab label="EMI" id="tab-3" aria-controls="tabpanel-3" />
+              {/* <Tab label="Merketer" id="tab-2" aria-controls="tabpanel-2" />
+              <Tab label="EMI" id="tab-3" aria-controls="tabpanel-3" /> */}
               <Tab label="Flat" id="tab-4" aria-controls="tabpanel-4" />
             </Tabs>
 
