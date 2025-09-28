@@ -1,21 +1,133 @@
+import * as yup from "yup";
 import React from "react";
-import { Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { Grid, TextField } from "@mui/material";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 interface FlatProps {
   control: any;
   errors: any;
 }
 
+export type FlatFormData = {
+  block: string;
+  floor: string;
+  bedRoom: number;
+  udsSqft: number;
+  guideRateSqft: number;
+  propertyTax: number;
+  carPark: string;
+  onBookingPercent: number;
+  lintelPercent: number;
+  roofPercent: number;
+  plasterPercent: number;
+  flooringPercent: number;
+  landValue: number;
+  landRegValue: number;
+  constCost: number;
+  constRegValue: number;
+  carParkCost: number;
+  ebDeposit: number;
+  paymentTerm: string;
+  sewageWaterTax: number;
+  gst: number;
+  corpusFund: number;
+  additionalCharges: number;
+  totalValue: number;
+};
+
+
+export const flatSchema = yup.object({
+  block: yup.string().required("Block is required"),
+  floor: yup.string().required("Floor is required"),
+  bedRoom: yup.number().required("Bedroom count is required").min(1),
+  udsSqft: yup.number().required("UDS Sqft is required").positive(),
+  guideRateSqft: yup.number().required("Guide rate per sqft is required"),
+  propertyTax: yup.number().required("Property tax is required"),
+  carPark: yup.string().required("Car park is required"),
+  onBookingPercent: yup.number().required().min(0).max(100),
+  lintelPercent: yup.number().required().min(0).max(100),
+  roofPercent: yup.number().required().min(0).max(100),
+  plasterPercent: yup.number().required().min(0).max(100),
+  flooringPercent: yup.number().required().min(0).max(100),
+  landValue: yup.number().required(),
+  landRegValue: yup.number().required(),
+  constCost: yup.number().required(),
+  constRegValue: yup.number().required(),
+  carParkCost: yup.number().required(),
+  ebDeposit: yup.number().required(),
+  paymentTerm: yup.string().required(),
+  sewageWaterTax: yup.number().required(),
+  gst: yup.number().required(),
+  corpusFund: yup.number().required(),
+  additionalCharges: yup.number().required(),
+  totalValue: yup.number().required(),
+});
+
+const defaultFlatValues: FlatFormData = {
+  block: "Block An",
+  floor: "1",
+  bedRoom: 0,
+  udsSqft: 0,
+  guideRateSqft: 0,
+  propertyTax: 0,
+  carPark: "",
+  onBookingPercent: 0,
+  lintelPercent: 0,
+  roofPercent: 0,
+  plasterPercent: 0,
+  flooringPercent: 0,
+  landValue: 0,
+  landRegValue: 0,
+  constCost: 0,
+  constRegValue: 0,
+  carParkCost: 0,
+  ebDeposit: 0,
+  paymentTerm: "",
+  sewageWaterTax: 0,
+  gst: 0,
+  corpusFund: 0,
+  additionalCharges: 0,
+  totalValue: 0,
+};
+
+
 const Flat: React.FC<FlatProps> = ({ control, errors }) => {
+
+//   const {
+//   control,
+//   handleSubmit,
+//   formState: { errors },
+//   reset,
+// } = useForm<FlatFormData>({
+//   resolver: yupResolver(flatSchema),
+//   defaultValues: defaultFlatValues,
+// });
     const g = ""
   return (
+    
     <Grid container spacing={2}>
+      {/* Flat */}
+      <Grid size={{ xs: 12, sm: 6, }}>
+        <Controller
+          name="flat.flat"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Flat"
+              fullWidth
+              error={!!errors.flat}
+              helperText={errors.flat?.message}
+            />
+          )}
+        />
+      </Grid>
       {/* Block */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="block"
+          name="flat.block"
           control={control}
           render={({ field }) => (
             <TextField
@@ -32,7 +144,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Floor */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="floor"
+          name="flat.floor"
           control={control}
           render={({ field }) => (
             <TextField
@@ -49,7 +161,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Bed Room */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="bedRoom"
+          name="flat.bedRoom"
           control={control}
           render={({ field }) => (
             <TextField
@@ -67,7 +179,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* UDS Sqft */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="udsSqft"
+          name="flat.udsSqft"
           control={control}
           render={({ field }) => (
             <TextField
@@ -85,7 +197,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Guide Rate/Sq. Ft */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="guideRate"
+          name="flat.guideRate"
           control={control}
           render={({ field }) => (
             <TextField
@@ -103,7 +215,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Property Tax */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="propertyTax"
+          name="flat.propertyTax"
           control={control}
           render={({ field }) => (
             <TextField
@@ -121,7 +233,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Car Park */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="carPark"
+          name="flat.carPark"
           control={control}
           render={({ field }) => (
             <TextField
@@ -139,7 +251,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* On Booking % */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="onBooking"
+          name="flat.onBooking"
           control={control}
           render={({ field }) => (
             <TextField
@@ -157,7 +269,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Lintel % */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="lintel"
+          name="flat.lintel"
           control={control}
           render={({ field }) => (
             <TextField
@@ -175,7 +287,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Roof % */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="roof"
+          name="flat.roof"
           control={control}
           render={({ field }) => (
             <TextField
@@ -193,7 +305,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* In/Out Plastering % */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="plastering"
+          name="flat.plastering"
           control={control}
           render={({ field }) => (
             <TextField
@@ -211,7 +323,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Flooring % */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="flooring"
+          name="flat.flooring"
           control={control}
           render={({ field }) => (
             <TextField
@@ -229,7 +341,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Land Value */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="landValue"
+          name="flat.landValue"
           control={control}
           render={({ field }) => (
             <TextField
@@ -247,7 +359,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Land Reg Value */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="landRegValue"
+          name="flat.landRegValue"
           control={control}
           render={({ field }) => (
             <TextField
@@ -265,7 +377,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Const. Cost */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="constructionCost"
+          name="flat.constructionCost"
           control={control}
           render={({ field }) => (
             <TextField
@@ -283,7 +395,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Construction Reg Value */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="constructionRegValue"
+          name="flat.constructionRegValue"
           control={control}
           render={({ field }) => (
             <TextField
@@ -301,7 +413,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* CarPark Cost */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="carParkCost"
+          name="flat.carParkCost"
           control={control}
           render={({ field }) => (
             <TextField
@@ -319,7 +431,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* EB Deposit */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="ebDeposit"
+          name="flat.ebDeposit"
           control={control}
           render={({ field }) => (
             <TextField
@@ -337,7 +449,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Payment Term */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="paymentTerm"
+          name="flat.paymentTerm"
           control={control}
           render={({ field }) => (
             <TextField
@@ -354,7 +466,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Sewage Water Tax */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="sewageWaterTax"
+          name="flat.sewageWaterTax"
           control={control}
           render={({ field }) => (
             <TextField
@@ -372,7 +484,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* GST */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="gst"
+          name="flat.gst"
           control={control}
           render={({ field }) => (
             <TextField
@@ -390,7 +502,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Corpus Fund */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="corpusFund"
+          name="flat.corpusFund"
           control={control}
           render={({ field }) => (
             <TextField
@@ -408,7 +520,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Add. Chg. */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="additionalCharges"
+          name="flat.additionalCharges"
           control={control}
           render={({ field }) => (
             <TextField
@@ -426,7 +538,7 @@ const Flat: React.FC<FlatProps> = ({ control, errors }) => {
       {/* Total Value */}
       <Grid size={{ xs: 12, sm: 6, }}>
         <Controller
-          name="totalValue"
+          name="flat.totalValue"
           control={control}
           render={({ field }) => (
             <TextField

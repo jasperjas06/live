@@ -6,18 +6,18 @@ import { Grid, TextField, Button, Box } from "@mui/material";
 interface PlotProps {
   control: Control<any>;
   errors: FieldErrors<any>;
-//   handleCalculateTotal: () => void;
+  //   handleCalculateTotal: () => void;
 }
 
 const Plot: React.FC<PlotProps> = ({ control, errors }) => {
-    const l = "Plot Component Rendered";
+  const l = "Plot Component Rendered";
   return (
     <div>
       <Grid container spacing={2}>
         {/* Guide Rate / Sq. Ft */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="guideRateSqFt"
+            name="plot.guideRateSqFt"
             control={control}
             render={({ field }) => (
               <TextField
@@ -36,7 +36,7 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
         {/* Guide Land Value */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="guideLandValue"
+            name="plot.guideLandValue"
             control={control}
             render={({ field }) => (
               <TextField
@@ -55,7 +55,7 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
         {/* Land Value */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="landValue"
+            name="plot.landValue"
             control={control}
             render={({ field }) => (
               <TextField
@@ -74,7 +74,7 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
         {/* Reg Value */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="regValue"
+            name="plot.regValue"
             control={control}
             render={({ field }) => (
               <TextField
@@ -93,7 +93,7 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
         {/* Additional Charges */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="additionalCharges"
+            name="plot.additionalCharges"
             control={control}
             render={({ field }) => (
               <TextField
@@ -112,7 +112,7 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
         {/* Total Value */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
-            name="totalValue"
+            name="plot.totalValue"
             control={control}
             render={({ field }) => (
               <TextField
@@ -127,8 +127,6 @@ const Plot: React.FC<PlotProps> = ({ control, errors }) => {
             )}
           />
         </Grid>
-
-       
       </Grid>
     </div>
   );

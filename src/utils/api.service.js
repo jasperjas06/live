@@ -1232,8 +1232,6 @@ export const createbilling = async (data) => {
       status: 200,
     };
   } catch (error) {
-    console.log(error,"man");
-    
     return {
       data: null,
       message: error.response?.data?.error || error.message || 'An error occurred',
@@ -1270,7 +1268,7 @@ export const getAllGeneral = async (customer) => {
 }
 
 export const getGeneralById = async (id)=>{
- try {
+  try {
     const response = await axios.get(`${base_url}api/common/general/get/${id}`, {
       headers: {
         Authorization: `Bearer <your_token_here>`,
@@ -1323,3 +1321,80 @@ export const getAllEmi = async ({customerId,paid})=>{
     };
   }
 }
+
+export const createCustomerEstimate = async (data) => {
+  try {
+    const response = await axios.post(`${base_url}api/common/create/all`, data);
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const getAllDetailByCustomerOrGeneral = async ({cusId,genId}) => {
+  try {
+    let url=`${base_url}api/common/get/all/detail/`
+    if(cusId){
+      url=`${base_url}api/common/get/all/detail/?customerId=${cusId}`
+    }
+    if(genId){
+      if(url.includes("?")){
+        url=`${url}&generalId=${genId}`
+      }else{
+        url=`${url}?generalId=${genId}`
+      }
+    }
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching details:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const getAllEstimateByCustomerId = async ({cusId}) => {
+  try {
+    let url=`${base_url}api/common/get/all/estimate/`
+    if(cusId){
+      url=`${base_url}api/common/get/all/estimate/?customerId=${cusId}`
+    }
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching details:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+

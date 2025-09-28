@@ -1,13 +1,12 @@
 /* eslint-disable consistent-return */
 import * as yup from "yup";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Tabs, Tab, Box, Button, Typography } from "@mui/material";
 
-import { getAllMarkingHead } from "src/utils/api.service";
+import { createCustomerEstimate, getAllMarkingHead, updateEmployee } from "src/utils/api.service";
 
 import { DashboardContent } from "src/layouts/dashboard";
 
@@ -15,17 +14,19 @@ import EMI from "./EMI";
 import Flat from "./Flat";
 import Plot from "./Plot";
 import General from "./General";
-import Marketer from "./Marketer";
+import toast from "react-hot-toast";
 
+export type RootFormData = {
+  general?: Record<string, any>;
+  plot?: Record<string, any>;
+  flat?: Record<string, any>;
+};
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
-
-
-
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -42,66 +43,89 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-// ✅ Schema (all fields optional, no required validation)
-const schema = yup.object().shape({
-  marketerName: yup.string().nullable(),
-  emiAmount: yup.number().nullable(),
-});
-
 const ManageCustomerDetails = () => {
   const { id } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
-  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string }[]>([]); 
+  const [saleType, setSaleType] = useState("");
+  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string }[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  // ✅ Setup react-hook-form
-  const methods = useForm({
-    resolver: yupResolver(schema),
+  console.log("id", id);
+
+  const methods = useForm<RootFormData>({
     defaultValues: {
-      marketerName: "",
+      general: {},
+      plot: {},
+      flat: {},
     },
+    mode: "onBlur",
   });
 
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-  } = methods;
+  const { handleSubmit, trigger } = methods;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
   const getMarketerNames = async () => {
-  try {
-    const response = await getAllMarkingHead();
-    if (response?.status === 200) {
-      const marketers = response.data.data.map((m: any) => ({
-        label: m.name,   // 👈 display text
-        value: m._id,    // 👈 unique identifier
-      }));
-      setMarketerOptions(marketers);
-      // return marketers; // 👈 return so you can setState/use it
+    try {
+      const response = await getAllMarkingHead();
+      if (response?.status === 200) {
+        const marketers = response.data.data.map((m: any) => ({
+          label: m.name,
+          value: m._id,
+        }));
+        setMarketerOptions(marketers);
+      }
+    } catch (error) {
+      console.error("Error fetching marketers:", error);
     }
-  } catch (error) {
-    console.error("Error fetching marketers:", error);
-    return [];
-  }
-};
+  };
 
-  useEffect(()=>{
-    getMarketerNames()
-  },[])
+  useEffect(() => {
+    getMarketerNames();
+  }, []);
 
-  const onSubmit = (data: any) => {
-    console.log("Form Data:", data);
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    let correct: any = {}
+    correct.general = data.general
+    correct.customerId = id
+    if (saleType.toLowerCase() === "plot") correct.plot = data.plot
+    if (saleType.toLowerCase() === "flat") correct.flat = data.flat
+    try {
+      const response = await createCustomerEstimate(correct);
+      if (response.status === 200) {
+        toast.success(response.message);
+        navigate(-1);
+      } else {
+        console.error('Submission error 1:', response);
+        toast.error(response.message);
+      }
+    } catch (error: any) {
+      console.error('Submission error:', error);
+      toast.error(error.message || 'Failed to save billing');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNextFromGeneral = async () => {
+    const valid = await trigger("general"); // validate all general fields
+    if (valid) {
+      // Decide next tab based on saleType
+      if (saleType.toLowerCase() === "plot") setTabIndex(1);
+      else if (saleType.toLowerCase() === "flat") setTabIndex(1);
+      else setTabIndex(0); // default
+    }
   };
 
   return (
     <DashboardContent>
-        <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
-                Estimate Details
-                 
-              </Typography>
+      <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
+        Estimate Details
+      </Typography>
       <Box sx={{ width: "100%" }}>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -114,35 +138,39 @@ const ManageCustomerDetails = () => {
               indicatorColor="primary"
             >
               <Tab label="General" id="tab-0" aria-controls="tabpanel-0" />
-              <Tab label="Plot" id="tab-1" aria-controls="tabpanel-1" />
-              {/* <Tab label="Merketer" id="tab-2" aria-controls="tabpanel-2" />
-              <Tab label="EMI" id="tab-3" aria-controls="tabpanel-3" /> */}
-              <Tab label="Flat" id="tab-4" aria-controls="tabpanel-4" />
+              {saleType.toLowerCase() === "plot" && <Tab label="Plot" id="tab-1" aria-controls="tabpanel-1" />}
+              {saleType.toLowerCase() === "flat" && <Tab label="Flat" id="tab-1" aria-controls="tabpanel-1" />}
             </Tabs>
 
             {/* Tab Panels */}
             <TabPanel value={tabIndex} index={0}>
-              <General marketer={marketerOptions} control={control} errors={errors} />
-            </TabPanel>
-            <TabPanel value={tabIndex} index={1}>
-              <Plot control={control} errors={errors} />
-            </TabPanel>
-            <TabPanel value={tabIndex} index={2}>
-              <Marketer control={control} errors={errors} />
-            </TabPanel>
-            <TabPanel value={tabIndex} index={3}>
-              <EMI control={control} errors={errors} />
-            </TabPanel>
-            <TabPanel value={tabIndex} index={4}>
-              <Flat control={control} errors={errors} />
+              <General
+                marketer={marketerOptions}
+                saleType={saleType}
+                setSaleType={setSaleType}
+                handleNext={handleNextFromGeneral}
+                setTabIndex={setTabIndex}
+              />
             </TabPanel>
 
+            {saleType.toLowerCase() === "plot" && (
+              <TabPanel value={tabIndex} index={1}>
+                <Plot control={methods.control} errors={methods.formState.errors} />
+              </TabPanel>
+            )}
+
+            {saleType.toLowerCase() === "flat" && (
+              <TabPanel value={tabIndex} index={1}>
+                <Flat control={methods.control} errors={methods.formState.errors} />
+              </TabPanel>
+            )}
+
             {/* Save Button */}
-            <Box mt={2}>
+            {tabIndex === 1 && <Box mt={2}>
               <Button type="submit" variant="contained">
                 Save
               </Button>
-            </Box>
+            </Box>}
           </form>
         </FormProvider>
       </Box>

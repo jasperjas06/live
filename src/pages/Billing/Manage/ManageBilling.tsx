@@ -56,6 +56,7 @@ const roleSchema = yup.object().shape({
     modeOfPayment: yup.string().required('Mode Of Payment is required'),
     saleType: yup.string().required('Sale Type is required'),
     paymentDate: yup.string().required('Payment Date is required'),
+    amount: yup.number().required('Amount is required'),
 });
 
 export interface BillingFormData {
@@ -68,6 +69,7 @@ export interface BillingFormData {
     saleType: string;
     status: string;
     remarks: string;
+    amount: number;
 }
 
 /*************  ✨ Windsurf Command 🌟  *************/
@@ -123,6 +125,7 @@ const BillingForm = () => {
             saleType: '',
             status: '',
             remarks: '',
+            amount:0
         },
     });
 
@@ -356,6 +359,25 @@ const BillingForm = () => {
                                                         { value: 'flat', label: 'Flat' },
                                                         { value: 'villa', label: 'Villa' },
                                                     ]}
+                                                    error={!!fieldState.error}
+                                                    helperText={fieldState.error?.message}
+                                                />
+                                            )}
+                                        />
+                                    </Grid>
+                                    {/* //Amount */}
+                                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                                        <Controller
+                                            name="amount"
+                                            control={control}
+                                            // defaultValue=0
+                                            rules={{ required: 'Amount is required' }}
+                                            render={({ field, fieldState }) => (
+                                                <TextField
+                                                    {...field}
+                                                    label="Amount"
+                                                    type="number"
+                                                    fullWidth
                                                     error={!!fieldState.error}
                                                     helperText={fieldState.error?.message}
                                                 />
