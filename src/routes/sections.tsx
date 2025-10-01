@@ -54,6 +54,7 @@ export const ViewMenu = lazy(() => import('src/pages/Mapping/view/RoleMenuMappin
 export const LifeAlliance = lazy(() => import('src/pages/LifeAlliance/LifeAlliance'));
 export const LifeHousing = lazy(() => import('src/pages/LifeHousing/LifeHousing'));
 export const ManageBilling = lazy(()=>import('src/pages/Billing/Manage/ManageBilling'))
+export const CustomerEstimateView = lazy(()=>import('src/pages/CustomerDetails/ManageCustomer/ViewCustomerDetails'))
 
 
 
@@ -102,6 +103,7 @@ export const routesSection: RouteObject[] = [
       { path: 'customer/view/:id', element: <CustomerView /> },
       { path: 'customer/create', element: <ManageCustomer /> },
       { path: 'customer/:id/estimate/create', element: <ManageCustomerDetails /> },
+      { path: 'customer/:id/estimate/view/:estimateId', element: <CustomerEstimateView /> },
       { path: 'customer/edit/:id', element: <ManageCustomer /> },
       { path: 'mod', element: <MOD /> },
       { path: 'mod/view/:id', element: <ViewMOD /> },

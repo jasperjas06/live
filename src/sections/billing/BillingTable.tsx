@@ -1,6 +1,6 @@
 import type { Column} from 'src/custom/dataTable/dataTable';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 
 import { Box, Button, Typography } from '@mui/material';
@@ -18,6 +18,7 @@ type Customer = {
   customerName: string;
   marketerName: string;
   emiNo: number;
+  emiId: string;
   paidAmount: string;
   paidDate : string;
 };
@@ -25,6 +26,10 @@ type Customer = {
 const BillingTable = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Customer[]>([]);
+
+  let { id } = useParams();
+
+
 
   const getAllData = async () =>{
     try {
@@ -35,7 +40,8 @@ const BillingTable = () => {
             data = data.map((item:any) => ({
                 ...item,
                 marketerName: item.introducer?.name || 'N/A',
-                paidDate: item.emi?.paidDate || 'N/A',
+                paidDate: item.emi?.paidDate?.split('T')[0] || 'N/A',
+                emiId: item.emi?._id || 'N/A',
                 paidAmount: item.emi?.paidAmt || 'N/A',
             }))
             setData(data)
@@ -52,6 +58,7 @@ const BillingTable = () => {
     { id: 'customerName', label: 'Name', sortable: true },
     { id: 'marketerName', label: 'Marketer Name', sortable: true },
     { id: 'emiNo', label: 'Emi No', sortable: true },
+    { id: 'emiId', label: 'Emi Id', sortable: true },
     { id: 'paidAmount', label: 'Paid Amount', sortable: true },
     { id: 'paidDate', label: 'Paid Date', sortable: true },
     // { id: 'age', label: 'Age', sortable: true },
@@ -91,6 +98,7 @@ const BillingTable = () => {
                 data={data}
                 columns={customerColumns}
                 searchBy="customerName"
+                onDropDown={false}
                 // onDelete={handleDelete}
               />
     </DashboardContent>

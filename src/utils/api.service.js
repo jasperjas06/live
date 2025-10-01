@@ -1398,3 +1398,46 @@ export const getAllEstimateByCustomerId = async ({cusId}) => {
   }
 }
 
+export const getOneEstimateByGeneralId = async ({genId}) => {
+  try {
+    if(!genId){
+      return;
+    }
+    let url=`${base_url}api/common/get/all/estimate/${genId}`
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer <your_token_here>`,
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching details:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const checkEmi = async(data)=>{
+  try {
+    const response = await axios.post(`${base_url}api/common/check/emi`,data);
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+

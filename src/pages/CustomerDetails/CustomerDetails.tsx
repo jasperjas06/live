@@ -21,14 +21,17 @@ type Customer = {
   id: string;
   name: string;
   marketer: string;
+  status: string;
   saleType: string;
   noEmiPaid: number;
+  noOfInstallments: number;
   noEmiPending: number;
 };
 
 const CustomerDetails = () => {
 
     const { id } = useParams();
+    console.log(useParams(),"params");
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
 
@@ -38,14 +41,15 @@ const CustomerDetails = () => {
         cusId: id
       });
       if (res?.status === 200) {
-        console.log(res,"res");
         let newData = res?.data.data.map((item: any) => {
           return {
-            id: item._id,
+            id: item.general?._id,
             name: item?.general?.customer?.name || 'N/A',
             marketer: item?.general?.marketer?.name || 'N/A',
+            status: item?.general?.status || 'N/A',
             saleType: item.plot.length > 0 ? 'Plot' : item.flat.length > 0 ? 'Flat' : 'N/A',
             noEmiPaid: item.emi.filter((emi: any) => emi.paidDate).length || "N/A",
+            noOfInstallments: item.general?.noOfInstallments || "N/A",
             noEmiPending: item.emi.filter((emi: any) => !emi.paidDate).length || "N/A",
           }
         })
@@ -65,9 +69,10 @@ const CustomerDetails = () => {
   { id: 'name', label: 'Name', sortable: true },
   { id: 'saleType', label: 'Sale Type', sortable: true },
   { id: 'marketer', label: 'Marketer', sortable: false },
+  { id: "status", label: "Status", sortable: false },
+  { id: 'noOfInstallments', label: 'No of Installments', sortable: true },
   { id: 'noEmiPaid', label: 'Paid EMI', sortable: true },
   { id: 'noEmiPending', label: 'Pending EMI', sortable: true },
-
 ];
 
 const handleDelete = async (id: string | number) => {
@@ -81,7 +86,6 @@ const handleDelete = async (id: string | number) => {
     console.error('Failed to delete customer:', error);
   }
 };
-
 
   return (
     <DashboardContent>
@@ -104,7 +108,11 @@ const handleDelete = async (id: string | number) => {
           data={data}
           columns={customerColumns}
           searchBy="name"
-          onDelete={handleDelete}
+          // onDelete={handleDelete}
+          // onView={}
+          // isView={false}
+          isDelete={false}
+          isEdit={false}
         />
       </Card>
     </DashboardContent>

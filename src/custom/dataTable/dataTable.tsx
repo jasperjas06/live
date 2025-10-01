@@ -45,6 +45,8 @@ type DataTableProps<T> = {
   searchBy?: keyof T;
   isView?:boolean;
   isDelete?:boolean;
+  onDropDown?:boolean;
+  isEdit?:boolean;
   onDelete?: (id: string | number) => Promise<void> | void;
   onEdit?: (id: string | number) => void;
   onView?: (id: string | number) => void;
@@ -58,8 +60,10 @@ export function DataTable<T extends { id: string | number }>({
   onDelete,
   onEdit,
   onView,
+  onDropDown=true,
   isView = true,
   isDelete = true,
+  isEdit = true
 }: DataTableProps<T>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -215,16 +219,19 @@ export function DataTable<T extends { id: string | number }>({
                       : <Typography variant="body2">{String(row[col.id])}</Typography>}
                   </TableCell>
                 ))}
-                <TableCell>
-                  <ActionMenu 
-                    row={row} 
-                    onDelete={onDelete} 
-                    onEdit={onEdit}
-                    onView={onView}
-                    isView={isView}
-                    isDelete={isDelete}
-                  />
-                </TableCell>
+                {onDropDown && 
+                  <TableCell>
+                    <ActionMenu 
+                      row={row} 
+                      onDelete={onDelete} 
+                      onEdit={onEdit}
+                      onView={onView}
+                      isView={isView}
+                      isDelete={isDelete}
+                      isEdit={isEdit}
+                    />
+                  </TableCell>
+                }
               </TableRow>
             ))}
             {paginatedData.length === 0 && (
@@ -271,9 +278,10 @@ type ActionMenuProps<T> = {
   onView?: (id: string | number) => void;
   isView?: boolean;
   isDelete?: boolean;
+  isEdit?: boolean;
 };
 
-export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isDelete= true }: ActionMenuProps<T>) {
+export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isDelete= true, isEdit = true }: ActionMenuProps<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -290,11 +298,11 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isD
   const handleAction = async (action: 'view' | 'edit' | 'delete') => {
     handleClose();
     const id = row._id || row.id;
-    
+    console.log(row);
     if (!id) return;
-
     switch (action) {
       case 'view':
+        console.log('View logic here for ID:', id);
         if (onView) {
           onView(id);
         } else {
@@ -358,13 +366,19 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isD
         }}
       >
          {isView && (
-          <MenuItem onClick={() => handleAction('view')} dense>
+          <MenuItem onClick={() => {
+            handleAction('view')
+            console.log('View logic here for ID:', row._id || row.id);
+          }} dense>
             View
           </MenuItem>
         )}
-        <MenuItem onClick={() => handleAction('edit')} dense>
-          Edit
-        </MenuItem>
+        {
+          isEdit && 
+          <MenuItem onClick={() => handleAction('edit')} dense>
+            Edit
+          </MenuItem>
+        }
         {
           isDelete && 
         <MenuItem 

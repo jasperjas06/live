@@ -24,7 +24,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { createbilling, createEmployee, getAllCustomer, getAllEmi, getAllRoles, getBillingById, getEmployeeById, updateEmployee } from 'src/utils/api.service';
+import { checkEmi, createbilling, createEmployee, getAllCustomer, getAllEmi, getAllRoles, getBillingById, getEmployeeById, updateEmployee } from 'src/utils/api.service';
 import CustomSelect from 'src/custom/select/select';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -91,6 +91,7 @@ const BillingForm = () => {
 
     const [customerOptions, setCustomerOptions] = useState<any>([]);
     const [emiOptions, setEmiOptions] = useState<any>([]);
+    const [emiError,setEmiError] = useState<any>("")
 
     const [cusId, setCusId] = useState<any>("")
 
@@ -242,6 +243,14 @@ const BillingForm = () => {
     const onSubmit = async (data: any) => {
         setIsSubmitting(true);
         try {
+            console.log(data, "data");
+            let checkEmiCorrect = await checkEmi({customerId:data.customerId,emiId:data.emi})
+            if(checkEmiCorrect.status !== 200){
+                //set error in emi field
+                setEmiError(checkEmiCorrect.message || "Something went wrong in emi field try again");
+                return 
+
+            }
             const response = id
                 ? await updateEmployee({ ...data, _id: id })
                 : await createbilling(data);
@@ -260,6 +269,9 @@ const BillingForm = () => {
             setIsSubmitting(false);
         }
     };
+
+    console.log(emiError);
+    
 
     useEffect(() => {
         if (id) {
@@ -315,6 +327,30 @@ const BillingForm = () => {
 
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                         <Controller
+                                            name="emi"
+                                            control={control}
+                                            // defaultValue=0
+                                            rules={{ required: 'Emi is required' }}
+                                            render={({ field, fieldState }) => (
+                                                <TextField
+                                                    {...field}
+                                                    label="Emi"
+                                                    type="text"
+                                                    fullWidth
+                                                    error={!!fieldState.error}
+                                                    helperText={fieldState.error?.message}
+                                                />
+                                            )}
+                                        />
+                                        {emiError &&
+                                            <Typography variant="caption" sx={{ color: 'red' }}>
+                                                {emiError}
+                                            </Typography>
+                                        }
+                                    </Grid>
+
+                                    {/* <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                                        <Controller
                                             control={control}
                                             name="emi"
                                             defaultValue=""
@@ -336,7 +372,7 @@ const BillingForm = () => {
                                                 />
                                             )}
                                         />
-                                    </Grid>
+                                    </Grid> */}
 
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                         <Controller
@@ -357,7 +393,6 @@ const BillingForm = () => {
                                                     options={[
                                                         { value: 'plot', label: 'Plot' },
                                                         { value: 'flat', label: 'Flat' },
-                                                        { value: 'villa', label: 'Villa' },
                                                     ]}
                                                     error={!!fieldState.error}
                                                     helperText={fieldState.error?.message}
