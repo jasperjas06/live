@@ -7,6 +7,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 import { getAllMarketer } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 
@@ -66,6 +67,7 @@ const getAllData = async () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
+          disabled={permissions?.Marketer?.create !== true}
         >
           New Marketer
         </Button>
@@ -75,6 +77,9 @@ const getAllData = async () => {
                         data={data}
                         columns={customerColumns}
                         searchBy="name"
+                        isDelete={permissions?.Marketer?.delete === true ? true : false}
+          isEdit={permissions?.Marketer?.update === true ? true : false}
+          isView={permissions?.Marketer?.read === true ? true : false}
                         // onDelete={handleDelete}
                       />
     </DashboardContent>

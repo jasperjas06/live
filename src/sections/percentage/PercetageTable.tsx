@@ -5,6 +5,7 @@ import { Box, Button, Typography } from '@mui/material'
 
 import { deletePercentage, getAllPercentage } from 'src/utils/api.service'
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard'
 import { DataTable, type Column } from 'src/custom/dataTable/dataTable'
 import ManagePercentage from 'src/pages/Percentage/manage/ManagePercentage'
@@ -50,7 +51,7 @@ const PercetageTable = () => {
       if (!confirmed) return;
     
       try {
-        console.log(id)
+        // console.log(id)
         await deletePercentage(String(id)); // convert to string if needed by API
         getAllData(); // re-fetch data (not getAllCustomer again)
       } catch (error) {
@@ -75,6 +76,7 @@ const PercetageTable = () => {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
+          disabled={permissions?.Percentage?.create !== true}
           onClick={() => setOpen(true)}
         >
           New Project
@@ -87,7 +89,9 @@ const PercetageTable = () => {
             searchBy="name"
             onEdit={handleEdith}
             onDelete={handleDelete}
-            isView = {false}
+            isDelete={permissions?.Percentage?.delete === true ? true : false}
+          isEdit={permissions?.Percentage?.update === true ? true : false}
+          isView={permissions?.Percentage?.read === true ? true : false}
             />
       <ManagePercentage open={open} setOpen={setOpen} id={ID} />
       </DashboardContent>

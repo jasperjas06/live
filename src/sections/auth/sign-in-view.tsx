@@ -1,15 +1,17 @@
-import { useState, useCallback } from 'react';
+/* eslint-disable import/no-unresolved */
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
+
+import { getUserAccess, login } from 'src/utils/api.auth';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -18,119 +20,148 @@ import { Iconify } from 'src/components/iconify';
 export function SignInView() {
   const router = useRouter();
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = useCallback(() => {
-    router.push('/');
-  }, [router]);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const renderForm = (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        flexDirection: 'column',
-      }}
-    >
-      <TextField
-        fullWidth
-        name="email"
-        label="Email address"
-        defaultValue="hello@gmail.com"
-        sx={{ mb: 3 }}
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
-      />
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please fill in both email and password.');
+      return;
+    }
 
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        Forgot password?
-      </Link>
+    setLoading(true);
+    try {
+      const response = await login({ email, password });
 
-      <TextField
-        fullWidth
-        name="password"
-        label="Password"
-        defaultValue="@demo1234"
-        type={showPassword ? 'text' : 'password'}
-        slotProps={{
-          inputLabel: { shrink: true },
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{ mb: 3 }}
-      />
+      if (response?.status === 200) {
+        // Assume backend returns token in response.data.token or response.token
+        const token = response.data?.token || response.token;
+        if (token) {
+          const permissions = await getUserAcc(response.data.roleId)
+          // console.log(permissions,"permissioins");
+          if(permissions){
+            localStorage.setItem('userAccess', JSON.stringify(permissions));
+            localStorage.setItem('liveauthToken', token);
+            toast.success('Sign-in successful!');
+            router.push('/customer');
+          }
+        } else {
+          toast.error('Invalid response from server.');
+        }
+      } else {
+        toast.error(response?.data?.message || 'Invalid credentials.');
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        'Sign-in failed. Please check your credentials.';
+      toast.error(message);
+      console.error('Sign-in error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      <Button
-        fullWidth
-        size="large"
-        type="submit"
-        color="inherit"
-        variant="contained"
-        onClick={handleSignIn}
-      >
-        Sign in
-      </Button>
-    </Box>
-  );
+  const getUserAcc = async(id:string) => {
+    try {
+      const response = await getUserAccess(id)
+      return response.data.data;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
 
   return (
-    <>
+    <Box
+      sx={{
+        maxWidth: 400,
+        mx: 'auto',
+        mt: 8,
+        p: 4,
+        borderRadius: 2,
+        boxShadow: 3,
+        bgcolor: 'background.paper',
+      }}
+    >
       <Box
         sx={{
           gap: 1.5,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          mb: 5,
+          mb: 4,
         }}
       >
-        <Typography variant="h5">Sign in</Typography>
-        <Typography
-          variant="body2"
+        <Typography variant="h4" fontWeight={600}>
+          Welcome back 
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Sign in to access your dashboard
+        </Typography>
+      </Box>
+
+      <form onSubmit={handleSignIn}>
+        <TextField
+          fullWidth
+          name="email"
+          label="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          sx={{ mb: 3 }}
+          autoComplete="email"
+          required
+        />
+
+        <TextField
+          fullWidth
+          name="password"
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type={showPassword ? 'text' : 'password'}
+          sx={{ mb: 3 }}
+          autoComplete="current-password"
+          required
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  edge="end"
+                >
+                  <Iconify
+                    icon={
+                      showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'
+                    }
+                  />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <Button
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={loading}
           sx={{
-            color: 'text.secondary',
+            mt: 1,
+            textTransform: 'none',
+            fontWeight: 600,
           }}
         >
-          Don’t have an account?
-          <Link variant="subtitle2" sx={{ ml: 0.5 }}>
-            Get started
-          </Link>
-        </Typography>
-      </Box>
-      {renderForm}
-      <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}
-        >
-          OR
-        </Typography>
-      </Divider>
-      <Box
-        sx={{
-          gap: 1,
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <IconButton color="inherit">
-          <Iconify width={22} icon="socials:google" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify width={22} icon="socials:github" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify width={22} icon="socials:twitter" />
-        </IconButton>
-      </Box>
-    </>
+          {loading ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </form>
+    </Box>
   );
 }

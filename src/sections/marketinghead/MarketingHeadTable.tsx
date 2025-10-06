@@ -7,6 +7,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 import { deleteMarketingHead, getAllMarkingHead } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 
@@ -69,6 +70,7 @@ const MarketingHeadTable = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
+          disabled={permissions?.MarketingHead?.create !== true}
         >
           New Marketing Head
         </Button>
@@ -79,6 +81,9 @@ const MarketingHeadTable = () => {
                 columns={customerColumns}
                 searchBy="name"
                 onDelete={handleDelete}
+                isDelete={permissions["Marketing Head"]?.delete === true ? true : false}
+          isEdit={permissions["Marketing Head"]?.update === true ? true : false}
+          isView={permissions["Marketing Head"]?.read === true ? true : false}
               />
     </DashboardContent>
   );

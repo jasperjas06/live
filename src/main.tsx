@@ -13,7 +13,6 @@ const router = createBrowserRouter([
     Component: () => (
       <App>
         <Outlet />
-        
       </App>
     ),
     errorElement: <ErrorBoundary />,

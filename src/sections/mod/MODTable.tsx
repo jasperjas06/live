@@ -13,6 +13,7 @@ import {
   TableCell,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from "src/layouts/dashboard";
 import { Iconify } from "src/components/iconify";
 
@@ -75,6 +76,7 @@ const MODTable = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate("create")}
+          disabled={permissions?.MOD?.create !== true}
         >
           New MOD
         </Button>
@@ -87,6 +89,9 @@ const MODTable = () => {
           columns={customerColumns}
           searchBy="siteName"
           // onEdit={handleEdith}
+          isDelete={permissions?.MOD?.delete === true ? true : false}
+          isEdit={permissions?.MOD?.update === true ? true : false}
+          isView={permissions?.MOD?.read === true ? true : false}
           onDelete={handleDelete}
         />
       </Card>

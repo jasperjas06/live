@@ -6,6 +6,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 import {  deleteMenuMapping, getAllRoles } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
 
@@ -65,6 +66,7 @@ const RoleMenuMapping = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
+          disabled={permissions?.RoleMenuMapping?.create !== true}
         >
           New Role Mapping
         </Button>
@@ -76,7 +78,9 @@ const RoleMenuMapping = () => {
         columns={roleColumns}
         searchBy="role"
         onDelete={handleDeleteRole}
-        isDelete={false}
+        isDelete={permissions["Role And Menu Mapping"]?.delete === true ? true : false}
+          isEdit={permissions["Role And Menu Mapping"]?.update === true ? true : false}
+          isView={permissions["Role And Menu Mapping"]?.read === true ? true : false}
       />
     </DashboardContent>
   );

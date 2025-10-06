@@ -7,11 +7,14 @@ import { Box, Button, Typography } from '@mui/material';
 
 import { getAllBilling } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 
 import { Iconify } from 'src/components/iconify';
 import { number } from 'yup';
+
+import { permissions } from 'src/common/Permissions';
 
 type Customer = {
   id: string;
@@ -28,6 +31,7 @@ const BillingTable = () => {
   const [data, setData] = useState<Customer[]>([]);
 
   let { id } = useParams();
+  console.log(permissions,"permissions")
 
 
 
@@ -89,6 +93,7 @@ const BillingTable = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
+          disabled={permissions?.Billing?.create !== true}
         >
           New Billing
         </Button>
@@ -99,6 +104,9 @@ const BillingTable = () => {
                 columns={customerColumns}
                 searchBy="customerName"
                 onDropDown={false}
+                isDelete={permissions?.Billing?.delete === true ? true : false}
+          isEdit={permissions?.Billing?.update === true ? true : false}
+          isView={permissions?.Billing?.read === true ? true : false}
                 // onDelete={handleDelete}
               />
     </DashboardContent>

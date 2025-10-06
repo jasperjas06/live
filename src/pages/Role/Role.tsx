@@ -6,6 +6,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 import { CreateRole, deleteRole, getAllRoles } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
 
@@ -90,6 +91,7 @@ const Role = () => {
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => setOpen(true)}
+            disabled={permissions?.Role?.create !== true}
           >
             New Role
           </Button>
@@ -102,7 +104,9 @@ const Role = () => {
           searchBy="role"
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
-          isView={false}
+          isDelete={permissions?.Roles?.delete === true ? true : false}
+          isEdit={permissions?.Roles?.update === true ? true : false}
+          isView={permissions?.Roles?.read === true ? true : false}
         />
         { open && <RoleDialog open={open} setOpen={setOpen} onSubmitRole={handleSaveRole} id={roleId} />}
       </DashboardContent>

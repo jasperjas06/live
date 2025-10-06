@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
@@ -94,6 +94,7 @@ useEffect(() => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={()=>navigate("create-nvt")}
+          disabled={permissions?.NVT?.create !== true}
         >
           New NVT
         </Button>
@@ -105,6 +106,9 @@ useEffect(() => {
                   searchBy="customerName"
                   // onEdit={handleEdith}
                   onDelete={handleDelete}
+                  isDelete={permissions?.NVT?.delete === true ? true : false}
+          isEdit={permissions?.NVT?.update === true ? true : false}
+          isView={permissions?.NVT?.read === true ? true : false}
                   />
      
     </DashboardContent>

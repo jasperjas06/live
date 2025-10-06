@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import axios from "axios"
 
 const base_url = "https://customer-form-8auo.onrender.com/"

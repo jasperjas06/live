@@ -6,6 +6,7 @@ import { Box, Typography, Button } from '@mui/material';
 
 import { deleteEmployee, getAllEmployees } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
 
@@ -70,6 +71,7 @@ const Employee = () => {
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => navigate('create')}
+            disabled={permissions?.Employee?.create !== true}
           >
             New Employee
           </Button>
@@ -80,7 +82,9 @@ const Employee = () => {
           data={data}
           columns={employeeColumns}
           searchBy="name"
-          isView={false}
+          isDelete={permissions?.Employee?.delete === true ? true : false}
+          isEdit={permissions?.Employee?.update === true ? true : false}
+          isView={permissions?.Employee?.read === true ? true : false}
           onDelete={handleDelete}
         />
       </DashboardContent>

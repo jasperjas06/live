@@ -14,8 +14,10 @@ import {
 
 import { deleteCustomer, getAllCustomer } from 'src/utils/api.service';
 
+import { permissions } from 'src/common/Permissions';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { ActionMenu, DataTable } from 'src/custom/dataTable/dataTable';
+
 
 type Customer = {
   id: string;
@@ -27,6 +29,8 @@ type Customer = {
 const CustomerPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Customer[]>([]);
+
+  // console.log(permissions,"permissions")
 
  const getCustomerData = async () => {
   try {
@@ -87,6 +91,7 @@ const handleDelete = async (id: string | number) => {
           variant="contained"
           color="inherit"
           onClick={() => navigate("create")}
+          disabled={permissions?.Customer?.create !== true}
         >
           New Customer
         </Button>
@@ -98,6 +103,9 @@ const handleDelete = async (id: string | number) => {
           data={data}
           columns={customerColumns}
           searchBy="name"
+          isDelete={permissions?.Customer?.delete === true ? true : false}
+          isEdit={permissions?.Customer?.update === true ? true : false}
+          isView={permissions?.Customer?.read === true ? true : false}
           onDelete={handleDelete}
         />
       </Card>
