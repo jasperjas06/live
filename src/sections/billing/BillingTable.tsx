@@ -14,7 +14,6 @@ import { DataTable } from 'src/custom/dataTable/dataTable';
 import { Iconify } from 'src/components/iconify';
 import { number } from 'yup';
 
-import { permissions } from 'src/common/Permissions';
 
 type Customer = {
   id: string;
