@@ -35,3 +35,39 @@ export const getUserAccess = async (id) => {
         return error.response?.data || { success: false, message: "Failed to fetch user access" }
     }
 }
+
+export const getEditRequest = async()=>{
+    try {
+        const response = await axios.get(`${baseUrl}api/edit/request/get/all`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+    } catch (error) {
+        console.log("Get edit request error:", error)
+        return error.response?.data || { success: false, message: "Failed to fetch edit request" }
+    }
+}
+
+export const updateRequestStatus = async(id, status)=>{
+    try {
+        const response = await axios.post(`${baseUrl}api/edit/request/approve`, {id,status}, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+      data: response.data,
+        message: response?.data?.message,
+        status: 200,
+    };
+    } catch (error) {
+        console.log("Update request status error:", error)
+        return error.response?.data || { success: false, message: "Failed to update request status" }
+    }
+}

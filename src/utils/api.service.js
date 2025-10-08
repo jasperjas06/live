@@ -3,16 +3,28 @@ import axios from "axios"
 
 const base_url = "https://customer-form-8auo.onrender.com/"
 
+// Helper function to get auth token
+const getAuthToken = () => {
+  return localStorage.getItem('liveauthToken') || '';
+};
+
+// Helper function to create headers with auth token
+const getHeaders = () => ({
+  Authorization: `${getAuthToken()}`,
+  'Content-Type': 'application/json'
+});
+
 // Customer APIS
 export const createCustomer = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/customer/create`, data);
+    const response = await axios.post(`${base_url}api/customer/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -22,51 +34,16 @@ export const createCustomer = async (data) => {
   }
 };
 
-export const getAllCustomer = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/customer/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getACustomer = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/customer/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const updateCustomer = async(data)=>{
+export const getAllCustomer = async () => {
   try {
-    const response = await axios.put(`${base_url}api/customer/update`,data);
+    const response = await axios.get(`${base_url}api/customer/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -76,16 +53,16 @@ export const updateCustomer = async(data)=>{
   }
 }
 
-export const deleteCustomer = async(id)=>{
+export const getACustomer = async (id) => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/customer/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/customer/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -95,19 +72,57 @@ export const deleteCustomer = async(id)=>{
   }
 }
 
+export const updateCustomer = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/customer/update`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const deleteCustomer = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/customer/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
-// projects APIS
-
+// Projects APIS
 export const createProjects = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/project/create`, data);
+    const response = await axios.post(`${base_url}api/project/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -117,15 +132,16 @@ export const createProjects = async (data) => {
   }
 };
 
-export const updateProject = async(data)=>{
+export const updateProject = async (data) => {
   try {
-    const response = await axios.put(`${base_url}api/project/update`,data);
+    const response = await axios.put(`${base_url}api/project/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -135,52 +151,56 @@ export const updateProject = async(data)=>{
   }
 }
 
-export const getAProject = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/project/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getAllProjects = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/project/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const deleteProject = async(id)=>{
+export const getAProject = async (id) => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/project/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/project/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const getAllProjects = async () => {
+  try {
+    const response = await axios.get(`${base_url}api/project/get/all`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const deleteProject = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/project/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -191,52 +211,16 @@ export const deleteProject = async(id)=>{
 }
 
 // Marketing Head APIS
-
-export const getAllMarkingHead = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/market/head/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getAMarketingHead = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/market/head/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const updateMarketingHead = async(data)=>{
+export const getAllMarkingHead = async () => {
   try {
-    const response = await axios.put(`${base_url}api/market/head/update`,data);
+    const response = await axios.get(`${base_url}api/market/head/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -246,16 +230,56 @@ export const updateMarketingHead = async(data)=>{
   }
 }
 
-export const deleteMarketingHead = async(id)=>{
+export const getAMarketingHead = async (id) => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/market/head/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/market/head/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const updateMarketingHead = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/market/head/update`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const deleteMarketingHead = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/market/head/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -267,13 +291,14 @@ export const deleteMarketingHead = async(id)=>{
 
 export const createMarkinghead = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/market/head/create`, data);
+    const response = await axios.post(`${base_url}api/market/head/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -286,13 +311,14 @@ export const createMarkinghead = async (data) => {
 // Marketer APIS
 export const createMarketer = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/market/detail/create`, data);
+    const response = await axios.post(`${base_url}api/market/detail/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -302,15 +328,16 @@ export const createMarketer = async (data) => {
   }
 };
 
-export const updateMarketer = async(data)=>{
+export const updateMarketer = async (data) => {
   try {
-    const response = await axios.put(`${base_url}api/market/detail/update`,data);
+    const response = await axios.put(`${base_url}api/market/detail/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -320,15 +347,16 @@ export const updateMarketer = async(data)=>{
   }
 }
 
-export const getAllMarketer = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/market/detail/get/all`);
+export const getAllMarketer = async () => {
+  try {
+    const response = await axios.get(`${base_url}api/market/detail/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -338,15 +366,16 @@ export const getAllMarketer = async () =>{
   }
 }
 
-export const getAMarketer = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/market/detail/get/${id}`);
+export const getAMarketer = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/market/detail/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -357,16 +386,16 @@ export const getAMarketer = async (id) =>{
 }
 
 // Percentage APIS
-
 export const createPercentage = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/percentage/create`, data);
+    const response = await axios.post(`${base_url}api/percentage/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -376,52 +405,16 @@ export const createPercentage = async (data) => {
   }
 };
 
-export const getAllPercentage = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/percentage/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getAPercentage = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/percentage/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const deletePercentage = async(id)=>{
+export const getAllPercentage = async () => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/percentage/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/percentage/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -431,15 +424,56 @@ export const deletePercentage = async(id)=>{
   }
 }
 
-export const updatePercentage = async(data)=>{
+export const getAPercentage = async (id) => {
   try {
-    const response = await axios.put(`${base_url}api/percentage/update`,data);
+    const response = await axios.get(`${base_url}api/percentage/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const deletePercentage = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/percentage/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const updatePercentage = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/percentage/update`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -450,17 +484,16 @@ export const updatePercentage = async(data)=>{
 }
 
 // MOD APIS
-
-
 export const createMOD = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/mod/create`, data);
+    const response = await axios.post(`${base_url}api/mod/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -470,52 +503,16 @@ export const createMOD = async (data) => {
   }
 };
 
-export const getAllMOD = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/mod/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getAMOD = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/mod/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const deleteMOD = async(id)=>{
+export const getAllMOD = async () => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/mod/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/mod/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -525,15 +522,56 @@ export const deleteMOD = async(id)=>{
   }
 }
 
-export const updateMOD = async(data)=>{
+export const getAMOD = async (id) => {
   try {
-    const response = await axios.put(`${base_url}api/mod/update`,data);
+    const response = await axios.get(`${base_url}api/mod/get/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const deleteMOD = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/mod/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const updateMOD = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/mod/update`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -544,16 +582,16 @@ export const updateMOD = async(data)=>{
 }
 
 // NVT APIS
-
 export const createNVT = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/nvt/create`, data);
+    const response = await axios.post(`${base_url}api/nvt/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -563,15 +601,16 @@ export const createNVT = async (data) => {
   }
 };
 
-export const updateNVT = async(data)=>{
+export const updateNVT = async (data) => {
   try {
-    const response = await axios.put(`${base_url}api/nvt/update`,data);
+    const response = await axios.put(`${base_url}api/nvt/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -581,52 +620,56 @@ export const updateNVT = async(data)=>{
   }
 }
 
-export const getAllNVT = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/nvt/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getANVT = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/nvt/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const deleteNVT = async(id)=>{
+export const getAllNVT = async () => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/nvt/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/nvt/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const getANVT = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/nvt/get/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const deleteNVT = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/nvt/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -637,16 +680,16 @@ export const deleteNVT = async(id)=>{
 }
 
 // LFC APIS
-
 export const createLFC = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/lfc/create`, data);
+    const response = await axios.post(`${base_url}api/lfc/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -656,15 +699,16 @@ export const createLFC = async (data) => {
   }
 };
 
-export const updateLFC = async(data)=>{
+export const updateLFC = async (data) => {
   try {
-    const response = await axios.put(`${base_url}api/lfc/update`,data);
+    const response = await axios.put(`${base_url}api/lfc/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -674,52 +718,56 @@ export const updateLFC = async(data)=>{
   }
 }
 
-export const getAllLFC = async () =>{
-    try {
-    const response = await axios.get(`${base_url}api/lfc/get/all`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const getALFC = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/lfc/get/${id}`);
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
-
-export const deleteLFC = async(id)=>{
+export const getAllLFC = async () => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/lfc/delete`,{data:data});
+    const response = await axios.get(`${base_url}api/lfc/get/all`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
+export const getALFC = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/lfc/get/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const deleteLFC = async (id) => {
+  try {
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/lfc/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
   } catch (error) {
     return {
       data: null,
@@ -730,16 +778,16 @@ export const deleteLFC = async(id)=>{
 }
 
 // NVT by Customer
-
-export const getANVTbyCus = async (id) =>{
-    try {
-    const response = await axios.get(`${base_url}api/nvt/get/all/customer/${id}`);
+export const getANVTbyCus = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/nvt/get/all/customer/${id}`, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -749,19 +797,12 @@ export const getANVTbyCus = async (id) =>{
   }
 }
 
-
+// Role APIS
 export const CreateRole = async (data) => {
   try {
-    const response = await axios.post(
-      `${base_url}api/role/create`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFiMThjYzNlMmFmN2QwZWY5YTkwZGMiLCJpYXQiOjE3NTYxMzIxNDJ9.CUXaE15h7AZqh_nBo76wKmYC5STcSLtdkXdcBLj6J7E`, // ✅ Correct placement
-        },
-      }
-    );
-
+    const response = await axios.post(`${base_url}api/role/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -770,10 +811,7 @@ export const CreateRole = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred",
+      message: error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -782,9 +820,8 @@ export const CreateRole = async (data) => {
 export const getAllRoles = async () => {
   try {
     const response = await axios.get(`${base_url}api/role/get/all`, {
-      headers: {
-        Authorization:""
-    }})
+      headers: getHeaders()
+    })
     return {
       data: response.data,
       message: response?.data?.message,
@@ -800,20 +837,18 @@ export const getAllRoles = async () => {
   }
 }
 
-export const getRoleById = async (id) =>{
+export const getRoleById = async (id) => {
   try {
     const response = await axios.get(`${base_url}api/role/get/${id}`, {
-      headers: {
-        Authorization:""
-    }})
+      headers: getHeaders()
+    })
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
-     console.log("Error fetching roles:", error);
+    console.log("Error fetching roles:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -822,15 +857,16 @@ export const getRoleById = async (id) =>{
   }
 }
 
-export const updateRole = async(data)=>{
+export const updateRole = async (data) => {
   try {
-    const response = await axios.put(`${base_url}api/role/update`,data);
+    const response = await axios.put(`${base_url}api/role/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -840,16 +876,18 @@ export const updateRole = async(data)=>{
   }
 }
 
-export const deleteRole = async(id)=>{
+export const deleteRole = async (id) => {
   try {
-    const data = {_id:id}
-    const response = await axios.delete(`${base_url}api/role/delete`,{data:data});
+    const data = { _id: id }
+    const response = await axios.delete(`${base_url}api/role/delete`, {
+      data: data,
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-
   } catch (error) {
     return {
       data: null,
@@ -858,21 +896,13 @@ export const deleteRole = async(id)=>{
     };
   }
 }
-
 
 // Employee APIS
 export const createEmployee = async (data) => {
   try {
-    const response = await axios.post(
-      `${base_url}api/user/create`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer <your_token_here>`, // 🔑 add token if required
-        },
-      }
-    );
-
+    const response = await axios.post(`${base_url}api/user/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -881,22 +911,16 @@ export const createEmployee = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred",
+      message: error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
 };
 
-// ✅ Get All Employees
 export const getAllEmployees = async () => {
   try {
     const response = await axios.get(`${base_url}api/user/get/all?role`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -913,13 +937,10 @@ export const getAllEmployees = async () => {
   }
 };
 
-// ✅ Get Employee By ID
 export const getEmployeeById = async (id) => {
   try {
     const response = await axios.get(`${base_url}api/user/get/${id}`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -936,13 +957,10 @@ export const getEmployeeById = async (id) => {
   }
 };
 
-// ✅ Update Employee
 export const updateEmployee = async (data) => {
   try {
     const response = await axios.put(`${base_url}api/user/update`, data, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -958,15 +976,12 @@ export const updateEmployee = async (data) => {
   }
 };
 
-// ✅ Delete Employee
 export const deleteEmployee = async (id) => {
   try {
     const data = { _id: id };
     const response = await axios.delete(`${base_url}api/user/delete`, {
       data,
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -982,12 +997,11 @@ export const deleteEmployee = async (id) => {
   }
 };
 
+// Menu APIS
 export const getAllMenu = async () => {
   try {
     const response = await axios.get(`${base_url}api/menu/get/all`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -995,7 +1009,7 @@ export const getAllMenu = async () => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employees:", error);
+    console.log("Error fetching menus:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1004,18 +1018,12 @@ export const getAllMenu = async () => {
   }
 };
 
+// Menu Mapping APIS
 export const createMenuMapping = async (data) => {
   try {
-    const response = await axios.post(
-      `${base_url}api/role/menu/multi/create`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer <your_token_here>`, // 🔑 add token if required
-        },
-      }
-    );
-
+    const response = await axios.post(`${base_url}api/role/menu/multi/create`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1024,10 +1032,7 @@ export const createMenuMapping = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred",
+      message: error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1036,9 +1041,7 @@ export const createMenuMapping = async (data) => {
 export const getAllRoleMenu = async () => {
   try {
     const response = await axios.get(`${base_url}api/role/menu/get/all`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1046,7 +1049,7 @@ export const getAllRoleMenu = async () => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employees:", error);
+    console.log("Error fetching role menus:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1058,9 +1061,7 @@ export const getAllRoleMenu = async () => {
 export const getRoleMenuById = async (id) => {
   try {
     const response = await axios.get(`${base_url}api/role/menu/get/role/${id}`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1068,7 +1069,7 @@ export const getRoleMenuById = async (id) => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employee:", error);
+    console.log("Error fetching role menu:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1079,16 +1080,9 @@ export const getRoleMenuById = async (id) => {
 
 export const updateMenuMapping = async (data) => {
   try {
-    const response = await axios.put(
-      `${base_url}api/role/menu/multi/update`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer <your_token_here>`, // 🔑 add token if required
-        },
-      }
-    );
-
+    const response = await axios.put(`${base_url}api/role/menu/multi/update`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1097,10 +1091,7 @@ export const updateMenuMapping = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred",
+      message: error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1111,9 +1102,7 @@ export const deleteMenuMapping = async (id) => {
     const data = { _id: id };
     const response = await axios.delete(`${base_url}api/role/menu/delete`, {
       data,
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1129,19 +1118,16 @@ export const deleteMenuMapping = async (id) => {
   }
 };
 
-export const fileUpload = async (data, token) => {
+// File Upload API
+export const fileUpload = async (data) => {
   try {
-    const response = await axios.post(
-      `${base_url}api/common/upload`,
-      data, // this should be FormData object
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
+    const token = getAuthToken();
+    const response = await axios.post(`${base_url}api/common/upload`, data, {
+      headers: {
+        Authorization: ` ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1150,21 +1136,17 @@ export const fileUpload = async (data, token) => {
   } catch (error) {
     return {
       data: null,
-      message:
-        error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
 };
 
-export const commonCreate = async ( data, token) => {
+// Common APIS
+export const commonCreate = async (data) => {
   try {
-     
-    const response = await axios.delete(`${base_url}api/common/create/all`, {
-      data,
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+    const response = await axios.post(`${base_url}api/common/create/all`, data, {
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1180,12 +1162,11 @@ export const commonCreate = async ( data, token) => {
   }
 }
 
+// Billing APIS
 export const getAllBilling = async () => {
   try {
     const response = await axios.get(`${base_url}api/common/billing/get/all`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1193,7 +1174,7 @@ export const getAllBilling = async () => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employees:", error);
+    console.log("Error fetching billing:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1202,12 +1183,10 @@ export const getAllBilling = async () => {
   }
 }
 
-export const getBillingById = async (id)=>{
- try {
+export const getBillingById = async (id) => {
+  try {
     const response = await axios.get(`${base_url}api/common/billing/get/${id}`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1215,7 +1194,7 @@ export const getBillingById = async (id)=>{
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employee:", error);
+    console.log("Error fetching billing:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1226,7 +1205,9 @@ export const getBillingById = async (id)=>{
 
 export const createbilling = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/common/create/billing`, data);
+    const response = await axios.post(`${base_url}api/common/create/billing`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1241,17 +1222,15 @@ export const createbilling = async (data) => {
   }
 };
 
+// General APIS
 export const getAllGeneral = async (customer) => {
   try {
-    let url=`${base_url}api/common/general/get/all`
-    console.log("Ap",customer)
-    if(customer){
-      url=`${base_url}api/common/general/get/all?customerId=${customer}`
+    let url = `${base_url}api/common/general/get/all`
+    if (customer) {
+      url = `${base_url}api/common/general/get/all?customerId=${customer}`
     }
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1259,7 +1238,7 @@ export const getAllGeneral = async (customer) => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employees:", error);
+    console.log("Error fetching general:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1268,12 +1247,10 @@ export const getAllGeneral = async (customer) => {
   }
 }
 
-export const getGeneralById = async (id)=>{
+export const getGeneralById = async (id) => {
   try {
     const response = await axios.get(`${base_url}api/common/general/get/${id}`, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1281,7 +1258,7 @@ export const getGeneralById = async (id)=>{
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employee:", error);
+    console.log("Error fetching general:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1290,23 +1267,22 @@ export const getGeneralById = async (id)=>{
   }
 }
 
-export const getAllEmi = async ({customerId,paid})=>{
+// EMI APIS
+export const getAllEmi = async ({ customerId, paid }) => {
   try {
-    let url=`${base_url}api/common/emi/get/all`
-    if(customerId){
-      url=`${base_url}api/common/emi/get/all?customerId=${customerId}`
+    let url = `${base_url}api/common/emi/get/all`
+    if (customerId) {
+      url = `${base_url}api/common/emi/get/all?customerId=${customerId}`
     }
-    if(paid){
-      if(url.includes("?")){
-        url=`${url}&paid=${paid}`
-      }else{
-        url=`${url}?paid=${paid}`
+    if (paid) {
+      if (url.includes("?")) {
+        url = `${url}&paid=${paid}`
+      } else {
+        url = `${url}?paid=${paid}`
       }
     }
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1314,7 +1290,7 @@ export const getAllEmi = async ({customerId,paid})=>{
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching employees:", error);
+    console.log("Error fetching EMI:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1323,9 +1299,12 @@ export const getAllEmi = async ({customerId,paid})=>{
   }
 }
 
+// Customer Estimate APIS
 export const createCustomerEstimate = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/common/create/all`, data);
+    const response = await axios.post(`${base_url}api/common/create/all`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1340,23 +1319,21 @@ export const createCustomerEstimate = async (data) => {
   }
 };
 
-export const getAllDetailByCustomerOrGeneral = async ({cusId,genId}) => {
+export const getAllDetailByCustomerOrGeneral = async ({ cusId, genId }) => {
   try {
-    let url=`${base_url}api/common/get/all/detail/`
-    if(cusId){
-      url=`${base_url}api/common/get/all/detail/?customerId=${cusId}`
+    let url = `${base_url}api/common/get/all/detail/`
+    if (cusId) {
+      url = `${base_url}api/common/get/all/detail/?customerId=${cusId}`
     }
-    if(genId){
-      if(url.includes("?")){
-        url=`${url}&generalId=${genId}`
-      }else{
-        url=`${url}?generalId=${genId}`
+    if (genId) {
+      if (url.includes("?")) {
+        url = `${url}&generalId=${genId}`
+      } else {
+        url = `${url}?generalId=${genId}`
       }
     }
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1373,16 +1350,14 @@ export const getAllDetailByCustomerOrGeneral = async ({cusId,genId}) => {
   }
 }
 
-export const getAllEstimateByCustomerId = async ({cusId}) => {
+export const getAllEstimateByCustomerId = async ({ cusId }) => {
   try {
-    let url=`${base_url}api/common/get/all/estimate/`
-    if(cusId){
-      url=`${base_url}api/common/get/all/estimate/?customerId=${cusId}`
+    let url = `${base_url}api/common/get/all/estimate/`
+    if (cusId) {
+      url = `${base_url}api/common/get/all/estimate/?customerId=${cusId}`
     }
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1390,7 +1365,7 @@ export const getAllEstimateByCustomerId = async ({cusId}) => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching details:", error);
+    console.log("Error fetching estimates:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1399,16 +1374,14 @@ export const getAllEstimateByCustomerId = async ({cusId}) => {
   }
 }
 
-export const getOneEstimateByGeneralId = async ({genId}) => {
+export const getOneEstimateByGeneralId = async ({ genId }) => {
   try {
-    if(!genId){
+    if (!genId) {
       return;
     }
-    let url=`${base_url}api/common/get/all/estimate/${genId}`
+    let url = `${base_url}api/common/get/all/estimate/${genId}`
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer <your_token_here>`,
-      },
+      headers: getHeaders()
     });
     return {
       data: response.data,
@@ -1416,7 +1389,7 @@ export const getOneEstimateByGeneralId = async ({genId}) => {
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching details:", error);
+    console.log("Error fetching estimate:", error);
     return {
       data: null,
       message: error.response?.data?.message || error.message || "An error occurred",
@@ -1425,9 +1398,11 @@ export const getOneEstimateByGeneralId = async ({genId}) => {
   }
 }
 
-export const checkEmi = async(data)=>{
+export const checkEmi = async (data) => {
   try {
-    const response = await axios.post(`${base_url}api/common/check/emi`,data);
+    const response = await axios.post(`${base_url}api/common/check/emi`, data, {
+      headers: getHeaders()
+    });
     return {
       data: response.data,
       message: response?.data?.message,
@@ -1441,4 +1416,3 @@ export const checkEmi = async(data)=>{
     };
   }
 }
-

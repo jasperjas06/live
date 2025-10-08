@@ -59,7 +59,8 @@ export function SignInView() {
       "Role And Menu Mapping",
       "Percentage",
       "Billing",
-      "Admin",
+      "Request",
+      // "Admin",
     ];
 
     // Construct permission objects with all actions true
@@ -84,7 +85,7 @@ export function SignInView() {
 
   localStorage.setItem("liveauthToken", token);
   toast.success("Sign-in successful!");
-  router.push("/customer");
+  router.push("/customer");window.location.reload();
 } else {
   toast.error("Invalid response from server.");
 }
