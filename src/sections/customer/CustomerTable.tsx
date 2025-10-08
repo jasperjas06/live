@@ -30,7 +30,7 @@ const CustomerPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Customer[]>([]);
 
-  // console.log(permissions,"permissions")
+  // console.log(permissions.Customer,"permissions")
 
  const getCustomerData = async () => {
   try {

@@ -41,17 +41,54 @@ export function SignInView() {
         // Assume backend returns token in response.data.token or response.token
         const token = response.data?.token || response.token;
         if (token) {
-          const permissions = await getUserAcc(response.data.roleId)
-          // console.log(permissions,"permissioins");
-          if(permissions){
-            localStorage.setItem('userAccess', JSON.stringify(permissions));
-            localStorage.setItem('liveauthToken', token);
-            toast.success('Sign-in successful!');
-            router.push('/customer');
-          }
-        } else {
-          toast.error('Invalid response from server.');
-        }
+  const permissions = await getUserAcc(response.data.roleId);
+
+  if (response.data?.isAdmin === true) {
+    localStorage.setItem("isAdmin", "true");
+
+    // Manually define the full-access menus for admins
+    const adminMenus = [
+      "Customer",
+      "Project",
+      "NVT",
+      "MOD",
+      "Marketer",
+      "Marketing Head",
+      "Roles",
+      "Employee",
+      "Role And Menu Mapping",
+      "Percentage",
+      "Billing",
+      "Admin",
+    ];
+
+    // Construct permission objects with all actions true
+    const fullAccessPermissions = adminMenus.map((menu) => ({
+      menuId: { name: menu },
+      read: true,
+      create: true,
+      update: true,
+      delete: true,
+    }));
+
+    localStorage.setItem(
+      "userAccess",
+      JSON.stringify({ role: response.data.role, menus: fullAccessPermissions })
+    );
+  } else {
+    localStorage.setItem("isAdmin", "false");
+    if (permissions) {
+      localStorage.setItem("userAccess", JSON.stringify(permissions));
+    }
+  }
+
+  localStorage.setItem("liveauthToken", token);
+  toast.success("Sign-in successful!");
+  router.push("/customer");
+} else {
+  toast.error("Invalid response from server.");
+}
+
       } else {
         toast.error(response?.data?.message || 'Invalid credentials.');
       }

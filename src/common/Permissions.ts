@@ -9,6 +9,9 @@ let permissions: PermissionMap = {};
 
 try {
   const stored = localStorage.getItem("userAccess");
+  const isAdmin = localStorage.getItem("isAdmin");
+
+  
 
   if (stored) {
     const parsed = JSON.parse(stored);
