@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 import axios from "axios"
 
-const base_url = "https://customer-form-8auo.onrender.com/"
+const base_url = import.meta.env.VITE_API_URL
 
 // Helper function to get auth token
 const getAuthToken = () => {
