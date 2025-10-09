@@ -16,6 +16,7 @@ import {
 import { getAMOD } from 'src/utils/api.service'
 
 import { DashboardContent } from 'src/layouts/dashboard'
+import { Download } from 'lucide-react'
 
 
 
@@ -46,6 +47,76 @@ const Mod = () => {
       getMOD()
     }
   }, [id])
+
+  const handleDownloadExcel = () => {
+  if (!data) return;
+
+  // Construct rows (headers + values)
+  const rows = [
+    ["Field", "Value"],
+    ["Site Name", data.siteName || "-"],
+    ["Plot Number", data.plotNo || "-"],
+    ["Date", formatDate(data.date)],
+    ["Amount", formatCurrency(data.amount)],
+    ["Status", data.status || "-"],
+    ["Customer Name", data.customer?.name || "-"],
+    ["Customer Phone", data.customer?.phone || "-"],
+    ["Customer Email", data.customer?.email || "-"],
+    ["Customer City", data.customer?.city || "-"],
+    ["Customer State", data.customer?.state || "-"],
+    ["Pincode", data.customer?.pincode || "-"],
+    ["Address", data.customer?.address || "-"],
+    ["Marketer Name", data.customer?.marketerName || "-"],
+    ["Duration (Months)", data.customer?.duration || "-"],
+    ["EMI Amount", formatCurrency(data.customer?.emiAmount)],
+    ["Payment Terms", data.customer?.paymentTerms || "-"],
+    ["Introducer Name", data.introducerName || "-"],
+    ["Introducer Phone", data.introducerPhone || "-"],
+    ["Director Name", data.directorName || "-"],
+    ["Director Phone", data.directorPhone || "-"],
+    ["Executive Director", data.EDName || "-"],
+    ["Executive Director Phone", data.EDPhone || "-"],
+    ["Created At", formatDate(data.createdAt)],
+    ["Updated At", formatDate(data.updatedAt)],
+  ];
+
+  // Build HTML table
+  const tableHTML = `
+    <table border="1" style="border-collapse:collapse;">
+      ${rows
+        .map(
+          (r) =>
+            `<tr><td style="font-weight:bold;padding:4px;">${r[0]}</td><td style="padding:4px;">${r[1]}</td></tr>`
+        )
+        .join("")}
+    </table>
+  `;
+
+  // Wrap in Excel-compatible MIME type
+  const excelContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+          xmlns:x="urn:schemas-microsoft-com:office:excel" 
+          xmlns="http://www.w3.org/TR/REC-html40">
+      <head><!--[if gte mso 9]>
+        <xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+        <x:Name>MOD Details</x:Name>
+        <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+        </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
+      <![endif]--></head>
+      <body>${tableHTML}</body>
+    </html>
+  `;
+
+  // Create blob
+  const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
+
+  // Create download link
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `MOD_${data.customer?.name || "Details"}.xls`;
+  link.click();
+};
+
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-IN', {
@@ -127,11 +198,18 @@ const Mod = () => {
         <Typography variant="h4" fontWeight={600}>
           MOD Details
         </Typography>
-        <Tooltip title="Refresh">
-          <IconButton onClick={getMOD} color="primary">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+        <Box display="flex" gap={1}>
+    <Tooltip title="Download Excel">
+      <IconButton onClick={handleDownloadExcel} >
+        <Download />
+      </IconButton>
+    </Tooltip>
+    <Tooltip title="Refresh">
+      <IconButton onClick={getMOD} color="primary">
+        <RefreshIcon />
+      </IconButton>
+    </Tooltip>
+  </Box>
       </Box>
 
       <Grid container spacing={2}>
