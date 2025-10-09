@@ -27,6 +27,8 @@ import { NotificationsPopover } from '../components/notifications-popover';
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
 import type { LayoutSectionProps } from '../core/layout-section';
+import { getUserProfile } from 'src/utils/api.auth';
+import React, { useEffect } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -48,8 +50,31 @@ export function DashboardLayout({
   layoutQuery = 'lg',
 }: DashboardLayoutProps) {
   const theme = useTheme();
+  const [data, setData] = React.useState<any>(null);
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
+  const getProfile = async() =>{
+    try {
+      const response = await getUserProfile();
+      if (response?.data) {
+        const user = response.data.data;
+        console.log("User data Nav:", user);
+        setData({
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          address: user.address || "",
+          profilePic: user.imageUrl || "https://source.unsplash.com/random/200x200/?portrait",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
+
+  useEffect(()=>{
+    getProfile();
+  },[])
 
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = {
@@ -83,10 +108,10 @@ export function DashboardLayout({
           {/* <LanguagePopover data={_langs} /> */}
 
           {/** @slot Notifications popover */}
-          <NotificationsPopover data={_notifications} />
+          {/* <NotificationsPopover data={_notifications} /> */}
 
           {/** @slot Account drawer */}
-          <AccountPopover data={_account} />
+          <AccountPopover data={_account} _myAccount={data} />
         </Box>
       ),
     };

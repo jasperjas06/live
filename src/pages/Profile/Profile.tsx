@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
 import { CameraAlt } from "@mui/icons-material";
 import {
   Container,
@@ -11,28 +10,92 @@ import {
   Box,
   Grid,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 
+import { getUserProfile, updateUserProfile,  } from "src/utils/api.auth";
+import { fileUpload } from "src/utils/api.service";
+import toast from "react-hot-toast";
 
 const ProfileForm = () => {
   const [userData, setUserData] = useState({
-    name: "User name",
-    email: "mi@xpaytech.co",
-    phone: "+20-01274318900",
-    address: "285 N Broad St, Elizabeth, NJ 07208, USA",
-    profilePic: "https://source.unsplash.com/random/200x200/?portrait",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    imageUrl: "https://source.unsplash.com/random/200x200/?portrait",
   });
 
+  const [uploading, setUploading] = useState(false);
+
+  // Handle input field changes
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserData({ ...userData, [field]: e.target.value });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUserData({
-        ...userData,
-        profilePic: URL.createObjectURL(e.target.files[0]),
-      });
+  // Fetch user profile data
+  const getUserData = async () => {
+    try {
+      const response = await getUserProfile();
+      if (response?.data) {
+        const user = response.data.data;
+        console.log("User data fetched:", user);
+        setUserData({
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          address: user.address || "",
+          imageUrl: user.imageUrl || "https://source.unsplash.com/random/200x200/?portrait",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  // Handle profile image upload
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("files", file);
+
+      const response = await fileUpload(formData);
+      console.log("Upload response:", response.data.data[0]);
+
+      if (response?.data) {
+        setUserData((prev) => ({
+          ...prev,
+          imageUrl: response.data.data[0], // set uploaded image URL
+        }));
+        // console.log("File uploaded successfully:", response.data.url);
+      } else {
+        console.error("Upload failed:", response);
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Handle save button click (you can connect this to an update API)
+  const handleSave = async () => {
+    try {
+      // Example stub: replace this with updateProfile API
+      const user = await updateUserProfile(userData);
+      if(user?.data){
+        toast.success("Profile updated successfully.");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
     }
   };
 
@@ -40,13 +103,12 @@ const ProfileForm = () => {
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         <Grid container spacing={4} alignItems="center">
-          {/* Left Section: Profile & Uploads */}
-          <Grid size={{ xs: 12 , sm:4}}>
+          {/* Left Section: Profile & Upload */}
+          <Grid size={{ xs: 12, sm:4 }}>
             <Box sx={{ textAlign: "center" }}>
-              {/* Profile Picture */}
               <Box sx={{ position: "relative", display: "inline-block", mb: 2 }}>
                 <Avatar
-                  src={userData.profilePic}
+                  src={userData.imageUrl}
                   sx={{ width: 120, height: 120, mb: 1 }}
                 />
                 <input
@@ -67,60 +129,22 @@ const ProfileForm = () => {
                       color: "white",
                       "&:hover": { backgroundColor: "primary.dark" },
                     }}
+                    disabled={uploading}
                   >
-                    <CameraAlt fontSize="small" />
+                    {uploading ? (
+                      <CircularProgress size={20} sx={{ color: "white" }} />
+                    ) : (
+                      <CameraAlt fontSize="small" />
+                    )}
                   </IconButton>
                 </label>
               </Box>
-
-              {/* Upload boxes */}
-              <Grid container spacing={2} justifyContent="center">
-                <Grid >
-                  <Box
-                    sx={{
-                      border: "2px dashed",
-                      borderColor: "grey.400",
-                      borderRadius: 2,
-                      width: 80,
-                      height: 80,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      color: "text.secondary",
-                    }}
-                  >
-                    LOGO
-                  </Box>
-                </Grid>
-                <Grid >
-                  <Box
-                    sx={{
-                      border: "2px dashed",
-                      borderColor: "grey.400",
-                      borderRadius: 2,
-                      width: 140,
-                      height: 80,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      color: "text.secondary",
-                      textAlign: "center",
-                      px: 1,
-                    }}
-                  >
-                    VENDOR DOCUMENTS
-                  </Box>
-                </Grid>
-              </Grid>
+              <Typography variant="h6">{userData.name || "User Name"}</Typography>
             </Box>
           </Grid>
 
           {/* Right Section: Form Fields */}
-          <Grid size={{ xs: 12, sm:8 }} >
+          <Grid size={{ xs:12 , sm: 8 }}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12 }}>
                 <TextField
@@ -146,26 +170,21 @@ const ProfileForm = () => {
                   onChange={handleChange("phone")}
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  fullWidth
-                  label="Address"
-                  value={userData.address}
-                  onChange={handleChange("address")}
-                  multiline
-                  minRows={2}
-                />
-              </Grid>
+              
             </Grid>
           </Grid>
         </Grid>
 
         {/* Action Buttons */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4, gap: 2 }}>
-          <Button variant="contained" sx={{ borderRadius: 2 }}>
+          <Button variant="contained" sx={{ borderRadius: 2 }} onClick={handleSave}>
             Save
           </Button>
-          <Button variant="outlined" sx={{ borderRadius: 2 }}>
+          <Button
+            variant="outlined"
+            sx={{ borderRadius: 2 }}
+            onClick={() => getUserData()}
+          >
             Cancel
           </Button>
         </Box>

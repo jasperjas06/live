@@ -11,13 +11,17 @@ import {
     styled,
     Box,
     CircularProgress,
-    Select,
-    MenuItem,
-    FormHelperText,
-    FormControl,
-    InputLabel,
     TextField,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    List,
+    ListItem,
+    ListItemText,
 } from '@mui/material';
+import { Visibility, ContentCopy } from '@mui/icons-material';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -26,6 +30,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { checkEmi, createbilling, createEmployee, getAllCustomer, getAllEmi, getAllRoles, getBillingById, getEmployeeById, updateEmployee } from 'src/utils/api.service';
 import CustomSelect from 'src/custom/select/select';
+import { DetailRow } from 'src/pages/LFC/view/ViewLFC';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     borderRadius: 12,
@@ -91,7 +96,8 @@ const BillingForm = () => {
 
     const [customerOptions, setCustomerOptions] = useState<any>([]);
     const [emiOptions, setEmiOptions] = useState<any>([]);
-    const [emiError,setEmiError] = useState<any>("")
+    const [emiError, setEmiError] = useState<any>("")
+    const [emiDialogOpen, setEmiDialogOpen] = useState(false);
 
     const [cusId, setCusId] = useState<any>("")
 
@@ -114,6 +120,7 @@ const BillingForm = () => {
         formState: { errors },
         watch,
         reset,
+        setValue,
     } = useForm<BillingFormData>({
         resolver: yupResolver(roleSchema),
         defaultValues: {
@@ -126,7 +133,7 @@ const BillingForm = () => {
             saleType: '',
             status: '',
             remarks: '',
-            amount:0
+            amount: 0
         },
     });
 
@@ -177,7 +184,6 @@ const BillingForm = () => {
                 } else {
                     console.log("Failed to fetch customers:", res);
                 }
-                // await getUpdateData();
             } catch (error) {
                 console.error("Error loading data:", error);
             } finally {
@@ -186,7 +192,6 @@ const BillingForm = () => {
         };
 
         getData();
-        // return setLoading(false)
     }, [id]);
 
     useEffect(() => {
@@ -202,6 +207,13 @@ const BillingForm = () => {
                     const newdata = res.data.data.map((item: any, index: number) => ({
                         value: item._id,
                         label: item.emiNo,
+                        emiAmt: item.emiAmt,
+                        date: item.date,
+                        noOfInstallments: item.general?.noOfInstallments,
+                        status: item.general?.status,
+                        customerName: item.customer?.name,
+                        customerPhone: item.customer?.phone,
+                        marketerName: item.customer?.marketerName,
                     }))
                     newdata.sort((a: any, b: any) => {
                         if (a.label < b.label) {
@@ -215,23 +227,19 @@ const BillingForm = () => {
                     setEmiOptions(newdata);
                 } else {
                     console.log("Failed to fetch customers:", res);
-                    if(res.data === null){
+                    if (res.data === null) {
                         toast.error("Emi not found for selected customer");
                     }
                     setEmiOptions([]);
                 }
-                // await getUpdateData();
             } catch (error: any) {
                 setEmiOptions([]);
-                // console.log("kuma");
-                // toast.error(error.response.data.error === "emi not found in db" ? "Emi not found for this customer" : error.response.data.error || 'Emi not found for this customer');
             } finally {
                 setLoading(false);
             }
         };
 
         getData();
-        // return setLoading(false)
     }, [cusId]);
 
     useEffect(() => {
@@ -244,12 +252,10 @@ const BillingForm = () => {
         setIsSubmitting(true);
         try {
             console.log(data, "data");
-            let checkEmiCorrect = await checkEmi({customerId:data.customerId,emiId:data.emi})
-            if(checkEmiCorrect.status !== 200){
-                //set error in emi field
+            let checkEmiCorrect = await checkEmi({ customerId: data.customerId, emiId: data.emi })
+            if (checkEmiCorrect.status !== 200) {
                 setEmiError(checkEmiCorrect.message || "Something went wrong in emi field try again");
-                return 
-
+                return
             }
             const response = id
                 ? await updateEmployee({ ...data, _id: id })
@@ -270,14 +276,22 @@ const BillingForm = () => {
         }
     };
 
-    console.log(emiError);
-    
+    const handleCopyEmi = (emiId: string, emiLabel: string) => {
+        // Update the form field with the EMI ID
+        setValue('emi', emiId, { shouldValidate: true });
 
-    useEffect(() => {
-        if (id) {
-            getBillById();
-        }
-    }, [id]);
+        // Copy to clipboard
+        navigator.clipboard.writeText(emiId);
+
+        // Clear any previous EMI error
+        setEmiError("");
+
+        // Show success message
+        toast.success(`EMI #${emiLabel} copied and pasted`);
+
+        // Close dialog
+        setEmiDialogOpen(false);
+    };
 
     const handleClose = () => {
         navigate(-1);
@@ -314,8 +328,8 @@ const BillingForm = () => {
                                                     value={field.value}
                                                     onChange={(e) => {
                                                         const selectedId = e.target.value;
-                                                        field.onChange(selectedId); // updates RHF form state
-                                                        setCusId(selectedId);       // updates local state
+                                                        field.onChange(selectedId);
+                                                        setCusId(selectedId);
                                                     }}
                                                     options={customerOptions}
                                                     error={!!fieldState.error}
@@ -329,50 +343,34 @@ const BillingForm = () => {
                                         <Controller
                                             name="emi"
                                             control={control}
-                                            // defaultValue=0
                                             rules={{ required: 'Emi is required' }}
                                             render={({ field, fieldState }) => (
-                                                <TextField
-                                                    {...field}
-                                                    label="Emi"
-                                                    type="text"
-                                                    fullWidth
-                                                    error={!!fieldState.error}
-                                                    helperText={fieldState.error?.message}
-                                                />
+                                                <>
+                                                    <TextField
+                                                        {...field}
+                                                        label="Emi"
+                                                        type="text"
+                                                        fullWidth
+                                                        error={!!fieldState.error || !!emiError}
+                                                        helperText={fieldState.error?.message || emiError}
+                                                        InputProps={{
+                                                            endAdornment: cusId && (
+                                                                <IconButton
+                                                                    onClick={() => setEmiDialogOpen(true)}
+                                                                    edge="end"
+                                                                    color="primary"
+                                                                    title="View all EMIs"
+                                                                    sx={{ mr: -1 }}
+                                                                >
+                                                                    <Visibility />
+                                                                </IconButton>
+                                                            )
+                                                        }}
+                                                    />
+                                                </>
                                             )}
                                         />
-                                        {emiError &&
-                                            <Typography variant="caption" sx={{ color: 'red' }}>
-                                                {emiError}
-                                            </Typography>
-                                        }
                                     </Grid>
-
-                                    {/* <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                                        <Controller
-                                            control={control}
-                                            name="emi"
-                                            defaultValue=""
-                                            rules={{ required: "Emi is required" }}
-                                            render={({ field, fieldState }) => (
-                                                <CustomSelect
-                                                    label="Emi"
-                                                    name="emi"
-                                                    value={field.value}
-                                                    onChange={(e) => {
-                                                        const selectedId = e.target.value;
-                                                        field.onChange(selectedId); // updates RHF form state
-                                                        // setCusId(selectedId);       // updates local state
-                                                    }}
-                                                    disabled={cusId ? false : true}
-                                                    options={emiOptions}
-                                                    error={!!fieldState.error}
-                                                    helperText={fieldState.error?.message}
-                                                />
-                                            )}
-                                        />
-                                    </Grid> */}
 
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                         <Controller
@@ -387,8 +385,7 @@ const BillingForm = () => {
                                                     value={field.value}
                                                     onChange={(e) => {
                                                         const selectedId = e.target.value;
-                                                        field.onChange(selectedId); // updates RHF form state
-                                                        // setCusId(selectedId);       // updates local state
+                                                        field.onChange(selectedId);
                                                     }}
                                                     options={[
                                                         { value: 'plot', label: 'Plot' },
@@ -400,12 +397,11 @@ const BillingForm = () => {
                                             )}
                                         />
                                     </Grid>
-                                    {/* //Amount */}
+
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                         <Controller
                                             name="amount"
                                             control={control}
-                                            // defaultValue=0
                                             rules={{ required: 'Amount is required' }}
                                             render={({ field, fieldState }) => (
                                                 <TextField
@@ -520,6 +516,7 @@ const BillingForm = () => {
                                             </Grid>
                                         </>
                                     )}
+
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                                         <Controller
                                             control={control}
@@ -545,6 +542,7 @@ const BillingForm = () => {
                                             )}
                                         />
                                     </Grid>
+
                                     <Grid size={{ xs: 12 }}>
                                         <Controller
                                             control={control}
@@ -568,7 +566,6 @@ const BillingForm = () => {
                                         />
                                     </Grid>
                                 </Grid>
-
                             </FormSection>
 
                             <Divider sx={{ my: 4 }} />
@@ -603,6 +600,131 @@ const BillingForm = () => {
                                     </Button>
                                 </Grid>
                             </Grid>
+
+                            {/* EMI Selection Dialog */}
+                            <Dialog
+                                open={emiDialogOpen}
+                                onClose={() => setEmiDialogOpen(false)}
+                                maxWidth="sm"
+                                fullWidth
+                            >
+                                <DialogTitle>
+                                    <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                                        Available EMIs
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                        Click copy to paste EMI ID to the field
+                                    </Typography>
+                                </DialogTitle>
+
+                                <DialogContent dividers>
+  {emiOptions.length === 0 ? (
+    <Box sx={{ py: 4, textAlign: "center" }}>
+      <Typography color="text.secondary">
+        No unpaid EMIs found for this customer
+      </Typography>
+    </Box>
+  ) : (
+    <List sx={{ p: 0 }}>
+      {emiOptions.map((emi:any, index:number) => (
+        <React.Fragment key={emi.value}>
+          <ListItem
+            sx={{
+              "&:hover": {
+                backgroundColor: "action.hover",
+              },
+              borderRadius: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              px: 2,
+              py: 1.5,
+              mb: 1.5,
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <ListItemText
+                primary={
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    EMI #{emi.label}
+                  </Typography>
+                }
+                secondary={
+                  <Typography variant="caption" color="text.secondary">
+                    ID: {emi.value}
+                  </Typography>
+                }
+              />
+
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ContentCopy />}
+                onClick={() => handleCopyEmi(emi.value, emi.label)}
+                sx={{ ml: 2 }}
+              >
+                Copy
+              </Button>
+            </Box>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* EMI Details Section */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: 1,
+                width: "100%",
+              }}
+            >
+              <DetailRow label="EMI Amount" value={`₹ ${emi.emiAmt}`} />
+              <DetailRow
+                label="Date"
+                value={new Date(emi.date).toLocaleDateString()}
+              />
+              <DetailRow
+                label="Installments"
+                value={emi.noOfInstallments || "N/A"}
+              />
+              <DetailRow label="Status" value={emi.status || "N/A"} />
+              <DetailRow
+                label="Customer Name"
+                value={emi.customerName || "N/A"}
+              />
+              <DetailRow
+                label="Customer Phone"
+                value={emi.customerPhone || "N/A"}
+              />
+              <DetailRow
+                label="Marketer Name"
+                value={emi.marketerName || "N/A"}
+              />
+            </Box>
+          </ListItem>
+
+          {index < emiOptions.length - 1 && <Divider />}
+        </React.Fragment>
+      ))}
+    </List>
+  )}
+</DialogContent>
+
+
+                                <DialogActions>
+                                    <Button onClick={() => setEmiDialogOpen(false)} color="primary">
+                                        Close
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
                         </form>
                     )}
                 </CardContent>

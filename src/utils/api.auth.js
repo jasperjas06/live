@@ -71,3 +71,40 @@ export const updateRequestStatus = async(id, status)=>{
         return error.response?.data || { success: false, message: "Failed to update request status" }
     }
 }
+
+export const getUserProfile = async()=>{
+    try {
+        const response = await axios.get(`${baseUrl}api/user/get/by/token`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+        data: response.data,
+        message: response?.data?.message,
+        status: 200,
+    };
+    } catch (error) {
+        console.log("Get user profile error:", error)
+        return error.response?.data || { success: false, message: "Failed to fetch user profile" }
+    }
+}
+
+export const updateUserProfile = async(profileData)=>{
+    try {
+        const response = await axios.put(`${baseUrl}api/user/update/their/profile`, profileData, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+        data: response.data,
+        message: response?.data?.message,
+        status: 200,
+    };
+    }
+    catch (error) {
+        console.log("Update user profile error:", error)
+        return error.response?.data || { success: false, message: "Failed to update user profile" }
+    }
+}
