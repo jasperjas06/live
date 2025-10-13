@@ -114,8 +114,8 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
 
   return (
     <>
-      <Logo />
-
+      {/* <Logo /> */}
+      <img src="/assets/logo/log.jpg" alt="" width={30} height={30} />
       {slots?.topArea}
 
       <br />
