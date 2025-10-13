@@ -102,9 +102,11 @@ const BillingTable = () => {
                 data={data}
                 columns={customerColumns}
                 searchBy="customerName"
-                onDropDown={false}
-                isDelete={permissions?.Billing?.delete === true ? true : false}
-          isEdit={permissions?.Billing?.update === true ? true : false}
+                isDelete={false}
+                isEdit={false}
+                // onDropDown={false}
+                // isDelete={permissions?.Billing?.delete === true ? true : false}
+          // isEdit={permissions?.Billing?.update === true ? true : false}
           isView={permissions?.Billing?.read === true ? true : false}
                 // onDelete={handleDelete}
               />

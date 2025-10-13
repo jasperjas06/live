@@ -115,8 +115,16 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
   return (
     <>
       {/* <Logo /> */}
+       <div className='flex flex- gap-2 '>
       <img src="/assets/logo/log.jpg" alt="" width={30} height={30} />
       {slots?.topArea}
+      <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
+  <span className="text-indigo-600">Li</span>fe
+</h1>
+
+
+
+       </div>
 
       <br />
 

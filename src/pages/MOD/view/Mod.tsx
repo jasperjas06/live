@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react'
 
 import { 
   Box, Card, Grid, Chip, Paper, Alert, Divider, Tooltip,
-  useTheme, Typography, IconButton, CardContent, useMediaQuery, CircularProgress
+  useTheme, Typography, IconButton, CardContent, useMediaQuery, CircularProgress,
+  Button
 } from '@mui/material'
 import { 
   Phone as PhoneIcon, Email as EmailIcon, Person as PersonIcon,
@@ -16,7 +17,7 @@ import {
 import { getAMOD } from 'src/utils/api.service'
 
 import { DashboardContent } from 'src/layouts/dashboard'
-import { Download } from 'lucide-react'
+import { Download, DownloadIcon } from 'lucide-react'
 
 
 
@@ -200,9 +201,13 @@ const Mod = () => {
         </Typography>
         <Box display="flex" gap={1}>
     <Tooltip title="Download Excel">
-      <IconButton onClick={handleDownloadExcel} >
-        <Download />
-      </IconButton>
+      <Button
+                          variant="contained"
+                          startIcon={<DownloadIcon />}
+                          onClick={handleDownloadExcel}
+                      >
+                          Download as Excel
+                      </Button>
     </Tooltip>
     <Tooltip title="Refresh">
       <IconButton onClick={getMOD} color="primary">

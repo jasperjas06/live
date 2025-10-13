@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom'
 import React, { useState, useEffect } from 'react'
 
-import { Box, Card, Grid, Chip, Backdrop, Typography, CardContent, CircularProgress } from '@mui/material'
+import { Box, Card, Grid, Chip, Backdrop, Typography, CardContent, CircularProgress, Button } from '@mui/material'
+import DownloadIcon from '@mui/icons-material/Download'
 
 import { getANVT } from 'src/utils/api.service'
 
@@ -41,6 +42,80 @@ const ViewNVT = () => {
             day: 'numeric'
         })
 
+    const downloadAsExcel = () => {
+        // Create workbook structure
+        const worksheetData: any[][] = []
+        
+        // Add title
+        worksheetData.push(['NVT Details Report'])
+        worksheetData.push([])
+        
+        // Customer Information Section
+        worksheetData.push(['CUSTOMER INFORMATION'])
+        worksheetData.push(['Customer Name', data.customer?.name || 'N/A'])
+        worksheetData.push(['Phone Number', data.customer?.phone || 'N/A'])
+        worksheetData.push(['Email', data.customer?.email || 'N/A'])
+        worksheetData.push(['Marketer Name', data.customer?.marketerName || 'N/A'])
+        worksheetData.push(['Address', data.customer?.address || 'N/A'])
+        worksheetData.push(['City', data.customer?.city || 'N/A'])
+        worksheetData.push(['State', data.customer?.state || 'N/A'])
+        worksheetData.push(['Pincode', data.customer?.pincode || 'N/A'])
+        worksheetData.push([])
+        
+        // NVT Information Section
+        worksheetData.push(['NVT INFORMATION'])
+        worksheetData.push(['Introducer Name', data.introducerName || 'N/A'])
+        worksheetData.push(['Total Payment', formatCurrency(data.totalPayment || 0)])
+        worksheetData.push(['Initial Payment', formatCurrency(data.initialPayment || 0)])
+        worksheetData.push(['EMI Amount', formatCurrency(data.emi || 0)])
+        worksheetData.push(['Conversion', data.conversion ? 'Yes' : 'No'])
+        worksheetData.push(['MOD Required', data.needMod ? 'Yes' : 'No'])
+        worksheetData.push(['Created Date', data.createdAt ? formatDate(data.createdAt) : 'N/A'])
+        worksheetData.push(['Last Updated', data.updatedAt ? formatDate(data.updatedAt) : 'N/A'])
+        
+        // MOD Details Section (if applicable)
+        if (data.needMod && data.mod) {
+            worksheetData.push([])
+            worksheetData.push(['MOD DETAILS'])
+            worksheetData.push(['Date', data.mod.date ? formatDate(data.mod.date) : 'N/A'])
+            worksheetData.push(['Site Name', data.mod.siteName || 'N/A'])
+            worksheetData.push(['Plot Number', data.mod.plotNo || 'N/A'])
+            worksheetData.push(['Status', data.mod.status || 'N/A'])
+            worksheetData.push(['Introducer Name', data.mod.introducerName || 'N/A'])
+            worksheetData.push(['Introducer Phone', data.mod.introducerPhone || 'N/A'])
+            worksheetData.push(['Director Name', data.mod.directorName || 'N/A'])
+            worksheetData.push(['Director Phone', data.mod.directorPhone || 'N/A'])
+            worksheetData.push(['ED Name', data.mod.EDName || 'N/A'])
+            worksheetData.push(['ED Phone', data.mod.EDPhone || 'N/A'])
+            worksheetData.push(['Amount', formatCurrency(data.mod.amount || 0)])
+        }
+        
+        // Convert to CSV format
+        const csvContent = worksheetData.map(row => 
+            row.map(cell => {
+                const cellStr = String(cell || '')
+                // Escape quotes and wrap in quotes if contains comma, quote, or newline
+                if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                    return `"${cellStr.replace(/"/g, '""')}"`
+                }
+                return cellStr
+            }).join(',')
+        ).join('\n')
+        
+        // Create blob and download
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        
+        link.setAttribute('href', url)
+        link.setAttribute('download', `NVT_Details_${data.customer?.name || 'Report'}_${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = 'hidden'
+        
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
     if (loading) {
         return (
             <DashboardContent maxWidth="xl">
@@ -56,9 +131,18 @@ const ViewNVT = () => {
 
     return (
         <DashboardContent maxWidth="xl">
-            <Typography variant="h4" fontWeight={600} sx={{ mb: 4 }}>
-                NVT Details
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Typography variant="h4" fontWeight={600}>
+                    NVT Details
+                </Typography>
+                <Button
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    onClick={downloadAsExcel}
+                >
+                    Download as Excel
+                </Button>
+            </Box>
 
             {/* Customer Information */}
             <Card sx={{ mb: 3, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
