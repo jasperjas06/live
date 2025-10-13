@@ -1,7 +1,6 @@
 {
   "hosting": {
     "public": "dist",
-    "site": "lifedeegrand",
     "ignore": [
       "firebase.json",
       "**/.*",
