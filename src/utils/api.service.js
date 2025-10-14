@@ -1416,3 +1416,23 @@ export const checkEmi = async (data) => {
     };
   }
 }
+
+export const getBillingsByCustomerId = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/common/billing/get/${id}`, {
+      headers: getHeaders()
+    });
+    return {  
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching billing:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+}

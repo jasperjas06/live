@@ -59,7 +59,7 @@ export const LifeHousing = lazy(() => import('src/pages/LifeHousing/LifeHousing'
 export const Requests = lazy(() => import('src/pages/Requests/Request'));
 export const ManageBilling = lazy(() => import('src/pages/Billing/Manage/ManageBilling'));
 export const CustomerEstimateView = lazy(() => import('src/pages/CustomerDetails/ManageCustomer/ViewCustomerDetails'));
-
+export const BillingView = lazy(()=> import('src/pages/Billing/BillingView'));
 // ----------------------------------------------------------------------
 // Loading fallback (when lazy pages load)
 const renderFallback = () => (
@@ -148,6 +148,7 @@ export const routesSection: RouteObject[] = [
       { path: 'life-alliance', element: <LifeAlliance /> },
       { path: 'life-housing', element: <LifeHousing /> },
       { path: 'billing', element: <Billing /> },
+      { path: 'billing/view/:id', element: <BillingView /> },
       { path: 'all/request', element: <Requests /> },
       { path: 'billing/create', element: <ManageBilling /> },
     ],
