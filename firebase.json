@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": "dist",
+    "site": "housing-yat",
     "ignore": [
       "firebase.json",
       "**/.*",

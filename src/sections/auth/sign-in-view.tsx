@@ -1,27 +1,27 @@
 /* eslint-disable import/no-unresolved */
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import toast from "react-hot-toast";
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import InputAdornment from '@mui/material/InputAdornment';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
-import { useRouter } from 'src/routes/hooks';
+import { useRouter } from "src/routes/hooks";
 
-import { getUserAccess, login } from 'src/utils/api.auth';
+import { getUserAccess, login } from "src/utils/api.auth";
 
-import { Iconify } from 'src/components/iconify';
+import { Iconify } from "src/components/iconify";
 
 // ----------------------------------------------------------------------
 
 export function SignInView() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,7 @@ export function SignInView() {
     e.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      toast.error('Please fill in both email and password.');
+      toast.error("Please fill in both email and password.");
       return;
     }
 
@@ -41,102 +41,105 @@ export function SignInView() {
         // Assume backend returns token in response.data.token or response.token
         const token = response.data?.token || response.token;
         if (token) {
-  const permissions = await getUserAcc(response.data.roleId);
+          const permissions = await getUserAcc(response.data.roleId);
 
-  if (response.data?.isAdmin === true) {
-    localStorage.setItem("isAdmin", "true");
+          if (response.data?.isAdmin === true) {
+            localStorage.setItem("isAdmin", "true");
 
-    // Manually define the full-access menus for admins
-    const adminMenus = [
-      "Customer",
-      "Project",
-      "NVT",
-      "MOD",
-      "Marketer",
-      "Marketing Head",
-      "Roles",
-      "Employee",
-      "Role And Menu Mapping",
-      "Percentage",
-      "Billing",
-      "Request",
-      // "Admin",
-    ];
+            // Manually define the full-access menus for admins
+            const adminMenus = [
+              "Customer",
+              "Project",
+              "NVT",
+              "MOD",
+              "Marketer",
+              "Marketing Head",
+              "Roles",
+              "Employee",
+              "Role And Menu Mapping",
+              "Percentage",
+              "Billing",
+              "Request",
+              // "Admin",
+            ];
 
-    // Construct permission objects with all actions true
-    const fullAccessPermissions = adminMenus.map((menu) => ({
-      menuId: { name: menu },
-      read: true,
-      create: true,
-      update: true,
-      delete: true,
-    }));
+            // Construct permission objects with all actions true
+            const fullAccessPermissions = adminMenus.map((menu) => ({
+              menuId: { name: menu },
+              read: true,
+              create: true,
+              update: true,
+              delete: true,
+            }));
 
-    localStorage.setItem(
-      "userAccess",
-      JSON.stringify({ role: response.data.role, menus: fullAccessPermissions })
-    );
-  } else {
-    localStorage.setItem("isAdmin", "false");
-    if (permissions) {
-      localStorage.setItem("userAccess", JSON.stringify(permissions));
-    }
-  }
+            localStorage.setItem(
+              "userAccess",
+              JSON.stringify({
+                role: response.data.role,
+                menus: fullAccessPermissions,
+              })
+            );
+          } else {
+            localStorage.setItem("isAdmin", "false");
+            if (permissions) {
+              localStorage.setItem("userAccess", JSON.stringify(permissions));
+            }
+          }
 
-  localStorage.setItem("liveauthToken", token);
-  toast.success("Sign-in successful!");
-  router.push("/customer");window.location.reload();
-} else {
-  toast.error("Invalid response from server.");
-}
-
+          localStorage.setItem("liveauthToken", token);
+          toast.success("Sign-in successful!");
+          router.push("/customer");
+          window.location.reload();
+        } else {
+          toast.error("Invalid response from server.");
+        }
       } else {
-        toast.error(response?.data?.message || 'Invalid credentials.');
+        toast.error(response?.data?.message || "Invalid credentials.");
       }
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        'Sign-in failed. Please check your credentials.';
+        "Sign-in failed. Please check your credentials.";
       toast.error(message);
-      console.error('Sign-in error:', error);
+      console.error("Sign-in error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getUserAcc = async(id:string) => {
+  const getUserAcc = async (id: string) => {
     try {
-      const response = await getUserAccess(id)
+      const response = await getUserAccess(id);
       return response.data.data;
     } catch (error) {
       console.log(error);
       return [];
     }
-  }
+  };
 
   return (
     <Box
       sx={{
         maxWidth: 400,
-        mx: 'auto',
-        mt: 8,
+        mx: "auto",
+        mt: 4,
         p: 4,
         borderRadius: 2,
         boxShadow: 3,
-        bgcolor: 'background.paper',
+        bgcolor: "background.paper",
       }}
     >
       <Box
         sx={{
           gap: 1.5,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           mb: 4,
         }}
       >
         <Typography variant="h4" fontWeight={600}>
-          Welcome back 
+          Welcome back
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Sign in to access your dashboard
@@ -162,7 +165,7 @@ export function SignInView() {
           label="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           sx={{ mb: 3 }}
           autoComplete="current-password"
           required
@@ -175,7 +178,7 @@ export function SignInView() {
                 >
                   <Iconify
                     icon={
-                      showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'
+                      showPassword ? "solar:eye-bold" : "solar:eye-closed-bold"
                     }
                   />
                 </IconButton>
@@ -193,11 +196,11 @@ export function SignInView() {
           disabled={loading}
           sx={{
             mt: 1,
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
           }}
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
     </Box>
