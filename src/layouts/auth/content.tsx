@@ -42,7 +42,7 @@ export function AuthContent({
           width={30}
           height={30}
         />
-        <p className="text-indigo-900 font-bold text-3xl">Life Group</p>
+        <p className="text-indigo-900 font-bold text-3xl">Life Groups</p>
       </div>
 
       {children}
