@@ -49,7 +49,7 @@ export function SignInView() {
             // Manually define the full-access menus for admins
             const adminMenus = [
               "Customer",
-              "Project",
+              "Projects",
               "NVT",
               "MOD",
               "Marketer",
