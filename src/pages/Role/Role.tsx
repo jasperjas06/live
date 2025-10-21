@@ -91,7 +91,7 @@ const Role = () => {
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => setOpen(true)}
-            disabled={permissions?.Role?.create !== true}
+            disabled={permissions?.Roles?.create !== true}
           >
             New Role
           </Button>
