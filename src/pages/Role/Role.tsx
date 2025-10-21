@@ -106,7 +106,8 @@ const Role = () => {
           onDelete={handleDeleteRole}
           isDelete={permissions?.Roles?.delete === true ? true : false}
           isEdit={permissions?.Roles?.update === true ? true : false}
-          isView={permissions?.Roles?.read === true ? true : false}
+          isView={false}
+          // isView={permissions?.Roles?.read === true ? true : false}
         />
         { open && <RoleDialog open={open} setOpen={setOpen} onSubmitRole={handleSaveRole} id={roleId} />}
       </DashboardContent>

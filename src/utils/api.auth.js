@@ -56,7 +56,8 @@ export const getEditRequest = async()=>{
 
 export const updateRequestStatus = async(id, status)=>{
     try {
-        const response = await axios.post(`${baseUrl}api/edit/request/approve`, {id,status}, {
+        let reason = ""
+        const response = await axios.post(`${baseUrl}api/edit/request/approve`, {id,status,reason}, {
             headers: {
                 Authorization: `${token}`
             }
@@ -106,5 +107,23 @@ export const updateUserProfile = async(profileData)=>{
     catch (error) {
         console.log("Update user profile error:", error)
         return error.response?.data || { success: false, message: "Failed to update user profile" }
+    }
+}
+
+export const reSetPassword = async(data)=>{
+    try {
+        const response = await axios.put(`${baseUrl}api/user/update/their/password`, data, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+        data: response.data,
+        message: response?.data?.message,
+        status: 200,
+    };
+    }
+    catch (error) {
+        return error.response?.data || { success: false, message: "Failed to update password" }
     }
 }
