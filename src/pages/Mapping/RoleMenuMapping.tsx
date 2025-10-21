@@ -54,7 +54,7 @@ const RoleMenuMapping = () => {
       { id: "name", label: "Role", sortable: true },
       { id: "userCount", label: "Total Users", sortable: true },
     ];
-
+  
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
@@ -66,7 +66,7 @@ const RoleMenuMapping = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
-          disabled={permissions?.RoleMenuMapping?.create !== true}
+          disabled={permissions["Role And Menu Mapping"]?.create !== true}
         >
           New Role Mapping
         </Button>

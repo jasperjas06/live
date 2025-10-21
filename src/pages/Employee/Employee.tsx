@@ -84,7 +84,8 @@ const Employee = () => {
           searchBy="name"
           isDelete={permissions?.Employee?.delete === true ? true : false}
           isEdit={permissions?.Employee?.update === true ? true : false}
-          isView={permissions?.Employee?.read === true ? true : false}
+          // isView={permissions?.Employee?.read === true ? true : false}
+          isView={false}
           onDelete={handleDelete}
         />
       </DashboardContent>

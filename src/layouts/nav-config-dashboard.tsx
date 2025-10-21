@@ -79,5 +79,5 @@ if (userPermissions && Array.isArray(userPermissions.menus)) {
     readableMenus.includes(nav.title.toLowerCase())
   );
 }
-console.log("Filtered Navigation Data:", filteredNavData);
+// console.log("Filtered Navigation Data:", filteredNavData);
 export const navData = filteredNavData;

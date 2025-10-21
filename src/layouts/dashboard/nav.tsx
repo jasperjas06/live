@@ -22,6 +22,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import type { NavItem } from '../nav-config-dashboard';
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
+import { useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -111,19 +112,17 @@ export function NavMobile({
 export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
   const pathname = usePathname();
   const theme = useTheme();
+    const navigate = useNavigate()
 
   return (
     <>
       {/* <Logo /> */}
-       <div className='flex flex- gap-2 '>
+       <div className='flex items-baseline gap-2 cursor-pointer' onClick={()=>navigate("/")}>
       <img src="/assets/logo/log.jpg" alt="" width={30} height={30} />
       {slots?.topArea}
-      <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
-  <span className="text-indigo-900">Life Groups</span>
-</h1>
-
-
-
+        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
+          <span className="text-indigo-900">Life Groups</span>
+        </h1>
        </div>
 
       <br />
@@ -159,7 +158,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
               );
 
               // parent is active only if exact match
-              const isActive = pathname === item.path;
+              const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
 
               useEffect(() => {
                 if (isActive || hasActiveChild) {

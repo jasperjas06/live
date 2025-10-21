@@ -100,7 +100,7 @@ const Requests = () => {
 
     setActionLoading(true);
     try {
-      const response = await updateRequestStatus(selectedRequest._id, 'denied');
+      const response = await updateRequestStatus(selectedRequest._id, 'rejected');
 
       if (response.status === 200) {
         toast.success(response.message || 'Request denied successfully');
@@ -413,7 +413,7 @@ const Requests = () => {
             onClick={handleDeny}
             variant="contained"
             color="error"
-            disabled={actionLoading || selectedRequest?.status === 'denied'}
+            disabled={actionLoading || selectedRequest?.status === 'rejected' || selectedRequest?.status === 'approved'}
             startIcon={actionLoading ? <CircularProgress size={16} /> : <X size={18} />}
           >
             {actionLoading ? 'Processing...' : 'Deny'}
@@ -422,7 +422,7 @@ const Requests = () => {
             onClick={handleApprove}
             variant="contained"
             color="success"
-            disabled={actionLoading || selectedRequest?.status === 'approved'}
+            disabled={actionLoading || selectedRequest?.status === 'approved'|| selectedRequest?.status === 'rejected' }
             startIcon={actionLoading ? <CircularProgress size={16} /> : <Check size={18} />}
           >
             {actionLoading ? 'Processing...' : 'Approve'}

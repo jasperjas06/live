@@ -91,7 +91,8 @@ const PercetageTable = () => {
             onDelete={handleDelete}
             isDelete={permissions?.Percentage?.delete === true ? true : false}
           isEdit={permissions?.Percentage?.update === true ? true : false}
-          isView={permissions?.Percentage?.read === true ? true : false}
+          // isView={permissions?.Percentage?.read === true ? true : false}
+          isView={false}
             />
       <ManagePercentage open={open} setOpen={setOpen} id={ID} />
       </DashboardContent>
