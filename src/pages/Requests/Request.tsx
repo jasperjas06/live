@@ -1,38 +1,34 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   Box,
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Table,
   TableBody,
   TableRow,
   TableCell,
   Chip,
   IconButton,
-  Divider,
-  CircularProgress
+  CircularProgress,
+  TablePagination,
+  TextField
 } from '@mui/material';
 
-import { Eye, X, Check } from 'lucide-react';
-
+import { Eye } from 'lucide-react';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { getEditRequest, updateRequestStatus } from 'src/utils/api.auth';
+import { getEditRequest } from 'src/utils/api.auth';
 
 const Requests = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Fetch all edit requests
   const getAllRequestsData = async () => {
@@ -41,7 +37,6 @@ const Requests = () => {
       const response = await getEditRequest();
       console.log('Request API response:', response.data);
 
-      // Handle the response data
       if (Array.isArray(response.data)) {
         setData(response.data);
       } else if (response.data?.data && Array.isArray(response.data.data)) {
@@ -63,60 +58,6 @@ const Requests = () => {
     getAllRequestsData();
   }, []);
 
-  const handleViewRequest = (request: any) => {
-    setSelectedRequest(request);
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedRequest(null);
-  };
-
-  const handleApprove = async () => {
-    if (!selectedRequest) return;
-
-    setActionLoading(true);
-    try {
-      const response = await updateRequestStatus(selectedRequest._id, 'approved');
-
-      if (response.status === 200) {
-        toast.success(response.message || 'Request approved successfully');
-        getAllRequestsData(); // Refresh the data
-        handleCloseModal();
-      } else {
-        toast.error(response.message || 'Failed to approve request');
-      }
-    } catch (error) {
-      console.error('Error approving request:', error);
-      toast.error('Failed to approve request');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeny = async () => {
-    if (!selectedRequest) return;
-
-    setActionLoading(true);
-    try {
-      const response = await updateRequestStatus(selectedRequest._id, 'rejected');
-
-      if (response.status === 200) {
-        toast.success(response.message || 'Request denied successfully');
-        getAllRequestsData(); // Refresh the data
-        handleCloseModal();
-      } else {
-        toast.error(response.message || 'Failed to deny request');
-      }
-    } catch (error) {
-      console.error('Error denying request:', error);
-      toast.error('Failed to deny request');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const getStatusColor = (status: string): any => {
     switch (status?.toLowerCase()) {
       case 'approved':
@@ -131,12 +72,51 @@ const Requests = () => {
     }
   };
 
+  // Filtered data by search term
+  const filteredData = useMemo(() => {
+    return data.filter((request) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        request.targetModel?.toLowerCase().includes(term) ||
+        request.editedBy?.email?.toLowerCase().includes(term) ||
+        request.status?.toLowerCase().includes(term)
+      );
+    });
+  }, [data, searchTerm]);
+
+  // Pagination logic
+  const paginatedData = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filteredData.slice(start, start + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
     <DashboardContent>
-      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
+      {/* Header */}
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Edit Requests
         </Typography>
+        <TextField
+          size="small"
+          placeholder="Search by model, email, or status..."
+          variant="outlined"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(0);
+          }}
+          sx={{ width: 300 }}
+        />
         <Button
           variant="outlined"
           startIcon={<Eye size={18} />}
@@ -147,11 +127,12 @@ const Requests = () => {
         </Button>
       </Box>
 
+      {/* Table Section */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
           <CircularProgress />
         </Box>
-      ) : data.length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <Box
           sx={{
             backgroundColor: 'white',
@@ -176,11 +157,11 @@ const Requests = () => {
         >
           <Table>
             <TableBody>
-              {data.map((request) => (
+              {paginatedData.map((request) => (
                 <TableRow
                   key={request._id}
                   sx={{
-                    '&:hover': { backgroundColor: '#f5f5f5' },
+                    '&:hover': { backgroundColor: '#f9f9f9' },
                     borderBottom: '1px solid #e0e0e0'
                   }}
                 >
@@ -194,9 +175,7 @@ const Requests = () => {
                   </TableCell>
 
                   <TableCell sx={{ width: '25%' }}>
-                    <Typography variant="body2">
-                      {request.editedBy?.name || 'Unknown'}
-                    </Typography>
+                    <Typography variant="body2">{request.editedBy?.name || 'Unknown'}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {request.editedBy?.email || 'N/A'}
                     </Typography>
@@ -225,7 +204,7 @@ const Requests = () => {
 
                   <TableCell sx={{ width: '10%', textAlign: 'right' }}>
                     <IconButton
-                      onClick={() => handleViewRequest(request)}
+                      onClick={() => navigate(`view/${request._id}`)}
                       size="small"
                       sx={{
                         backgroundColor: '#f0f0f0',
@@ -239,196 +218,19 @@ const Requests = () => {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          <TablePagination
+            component="div"
+            count={filteredData.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
         </Box>
       )}
-
-      {/* Approval Modal */}
-      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="md" fullWidth>
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: '1px solid #e0e0e0'
-          }}
-        >
-          <Typography variant="h6" fontWeight={600}>
-            Request Details
-          </Typography>
-          <IconButton onClick={handleCloseModal} size="small">
-            <X size={20} />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ pt: 3 }}>
-          {selectedRequest && (
-            <Box>
-              {/* Basic Info */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Target Model
-                </Typography>
-                <Typography variant="body1" fontWeight={500}>
-                  {selectedRequest.targetModel}
-                </Typography>
-              </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Target ID
-                </Typography>
-                <Typography variant="body2" fontFamily="monospace">
-                  {selectedRequest.targetId}
-                </Typography>
-              </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Edited By
-                </Typography>
-                <Typography variant="body1">
-                  {selectedRequest.editedBy?.name || 'Unknown'} (
-                  {selectedRequest.editedBy?.email || 'N/A'})
-                </Typography>
-              </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Created At
-                </Typography>
-                <Typography variant="body1">
-                  {new Date(selectedRequest.createdAt).toLocaleString()}
-                </Typography>
-              </Box>
-
-              {/* Changes Section */}
-              <Divider sx={{ my: 3 }} />
-
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                Changes ({selectedRequest.changes?.length || 0})
-              </Typography>
-
-              {selectedRequest.changes && selectedRequest.changes.length > 0 ? (
-                <Table size="small">
-                  <TableBody>
-                    {selectedRequest.changes.map((change: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell sx={{ fontWeight: 600, width: '30%', border: 'none' }}>
-                          {change.field}
-                        </TableCell>
-                        <TableCell sx={{ width: '35%', border: 'none' }}>
-                          <Box
-                            sx={{
-                              p: 1,
-                              backgroundColor: '#ffebee',
-                              borderRadius: 1,
-                              border: '1px solid #ffcdd2'
-                            }}
-                          >
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Old Value
-                            </Typography>
-                            <Typography variant="body2">
-                              {change.oldValue !== null && change.oldValue !== undefined
-                                ? String(change.oldValue)
-                                : '-'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell sx={{ width: '35%', border: 'none' }}>
-                          <Box
-                            sx={{
-                              p: 1,
-                              backgroundColor: '#e8f5e9',
-                              borderRadius: 1,
-                              border: '1px solid #c8e6c9'
-                            }}
-                          >
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              New Value
-                            </Typography>
-                            <Typography variant="body2">
-                              {change.newValue !== null && change.newValue !== undefined
-                                ? String(change.newValue)
-                                : '-'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No changes recorded
-                </Typography>
-              )}
-
-              {/* Status */}
-              {selectedRequest.status && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Current Status
-                  </Typography>
-                  <Chip
-                    label={selectedRequest.status}
-                    color={getStatusColor(selectedRequest.status)}
-                    sx={{ textTransform: 'capitalize' }}
-                  />
-                </Box>
-              )}
-
-              {/* Approved By */}
-              {selectedRequest.approvedBy && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Approved By
-                  </Typography>
-                  <Typography variant="body2">
-                    {selectedRequest.approvedBy.name} ({selectedRequest.approvedBy.email})
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Deleted Info (if applicable) */}
-              {selectedRequest.deletedId && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Deleted Record
-                  </Typography>
-                  <Typography variant="body2">
-                    Table: {selectedRequest.deletedTableName} - ID: {selectedRequest.deletedId}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0', gap: 1 }}>
-          <Button onClick={handleCloseModal} variant="outlined" disabled={actionLoading}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeny}
-            variant="contained"
-            color="error"
-            disabled={actionLoading || selectedRequest?.status === 'rejected' || selectedRequest?.status === 'approved'}
-            startIcon={actionLoading ? <CircularProgress size={16} /> : <X size={18} />}
-          >
-            {actionLoading ? 'Processing...' : 'Deny'}
-          </Button>
-          <Button
-            onClick={handleApprove}
-            variant="contained"
-            color="success"
-            disabled={actionLoading || selectedRequest?.status === 'approved'|| selectedRequest?.status === 'rejected' }
-            startIcon={actionLoading ? <CircularProgress size={16} /> : <Check size={18} />}
-          >
-            {actionLoading ? 'Processing...' : 'Approve'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </DashboardContent>
   );
 };

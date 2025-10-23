@@ -54,6 +54,24 @@ export const getEditRequest = async()=>{
     }
 }
 
+export const getEditRequestByID = async(id)=>{
+    try {
+        const response = await axios.get(`${baseUrl}api/edit/request/get/${id}`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+    } catch (error) {
+        console.log("Get edit request error:", error)
+        return error.response?.data || { success: false, message: "Failed to fetch edit request" }
+    }
+}
+
 export const updateRequestStatus = async(id, status)=>{
     try {
         let reason = ""
