@@ -66,6 +66,7 @@ export function DataTable<T extends { id: string | number }>({
   isEdit = true
 }: DataTableProps<T>) {
   const theme = useTheme();
+  const navigate = useNavigate()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0].id);
@@ -204,7 +205,20 @@ export function DataTable<T extends { id: string | number }>({
               <TableRow 
                 key={row.id} 
                 hover 
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                sx={{ 
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  cursor: isView ? 'pointer' : 'default'
+                }}
+                onClick={() => {
+                  if (isView) {
+                    const id = (row as any)._id || row.id;
+                    if (onView) {
+                      onView(id);
+                    } else {
+                      navigate(`view/${id}`);
+                    }
+                  }
+                }}
               >
                 {/* <TableCell padding="checkbox">
                   <Checkbox
@@ -334,15 +348,19 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isD
   return (
     <div>
       <IconButton
-        aria-label="more"
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        onClick={handleClick}
-        size="small"
-        sx={{ padding: '6px' }}
-      >
-        <MoreVerticalIcon  />
-      </IconButton>
+  aria-label="more"
+  aria-controls="long-menu"
+  aria-haspopup="true"
+  onClick={(e) => {
+    e.stopPropagation(); // Prevent the row click
+    handleClick(e);
+  }}
+  size="small"
+  sx={{ padding: '6px' }}
+>
+  <MoreVerticalIcon />
+</IconButton>
+
       
       <Menu
         id="action-menu"
@@ -366,7 +384,8 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isD
         }}
       >
          {isView && (
-          <MenuItem onClick={() => {
+          <MenuItem onClick={(e) => {
+            e.stopPropagation();
             handleAction('view')
             console.log('View logic here for ID:', row._id || row.id);
           }} dense>
@@ -375,14 +394,17 @@ export function ActionMenu<T>({ row, onDelete, onEdit, onView,isView = true, isD
         )}
         {
           isEdit && 
-          <MenuItem onClick={() => handleAction('edit')} dense>
+          <MenuItem onClick={(e) =>{ e.stopPropagation();
+          handleAction('edit')}} dense>
             Edit
           </MenuItem>
         }
         {
           isDelete && 
         <MenuItem 
-          onClick={() => handleAction('delete')} 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAction('delete')}} 
           dense
           disabled={isDeleting}
           sx={{ color: 'error.main' }}

@@ -30,7 +30,6 @@ const Requests = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Fetch all edit requests
   const getAllRequestsData = async () => {
     setLoading(true);
     try {
@@ -72,7 +71,6 @@ const Requests = () => {
     }
   };
 
-  // Filtered data by search term
   const filteredData = useMemo(() => {
     return data.filter((request) => {
       const term = searchTerm.toLowerCase();
@@ -84,24 +82,19 @@ const Requests = () => {
     });
   }, [data, searchTerm]);
 
-  // Pagination logic
   const paginatedData = useMemo(() => {
     const start = page * rowsPerPage;
     return filteredData.slice(start, start + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
 
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
+  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
   return (
     <DashboardContent>
-      {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Edit Requests
@@ -115,7 +108,7 @@ const Requests = () => {
             setSearchTerm(e.target.value);
             setPage(0);
           }}
-          sx={{ width: 300 }}
+          sx={{ width: { xs: '100%', sm: 300 } }}
         />
         <Button
           variant="outlined"
@@ -127,7 +120,6 @@ const Requests = () => {
         </Button>
       </Box>
 
-      {/* Table Section */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
           <CircularProgress />
@@ -152,74 +144,85 @@ const Requests = () => {
             backgroundColor: 'white',
             borderRadius: 2,
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
+            overflowX: 'auto', // ✅ key for horizontal scroll
+            width: '100%'
           }}
         >
-          <Table>
+          <Table sx={{ minWidth: 700 }}> {/* ✅ ensures consistent width for scroll */}
             <TableBody>
               {paginatedData.map((request) => (
                 <TableRow
-                  key={request._id}
-                  sx={{
-                    '&:hover': { backgroundColor: '#f9f9f9' },
-                    borderBottom: '1px solid #e0e0e0'
-                  }}
-                >
-                  <TableCell sx={{ width: '25%' }}>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {request.targetModel}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      ID: {request.targetId?.slice(-8) || 'N/A'}
-                    </Typography>
-                  </TableCell>
+  key={request._id}
+  onClick={() => navigate(`view/${request._id}`)} // ✅ navigate on row click
+  sx={{
+    cursor: 'pointer',
+    '&:hover': { backgroundColor: '#f9f9f9' },
+    borderBottom: '1px solid #e0e0e0',
+  }}
+>
+  <TableCell sx={{ minWidth: 150 }}>
+    <Typography variant="subtitle2" fontWeight={600}>
+      {request.targetModel}
+    </Typography>
+    <Typography variant="caption" color="text.secondary">
+      ID: {request.targetId?.slice(-8) || 'N/A'}
+    </Typography>
+  </TableCell>
 
-                  <TableCell sx={{ width: '25%' }}>
-                    <Typography variant="body2">{request.editedBy?.name || 'Unknown'}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {request.editedBy?.email || 'N/A'}
-                    </Typography>
-                  </TableCell>
+  <TableCell sx={{ minWidth: 180 }}>
+    <Typography variant="body2">{request.editedBy?.name || 'Unknown'}</Typography>
+    <Typography variant="caption" color="text.secondary">
+      {request.editedBy?.email || 'N/A'}
+    </Typography>
+  </TableCell>
 
-                  <TableCell sx={{ width: '15%' }}>
-                    <Typography variant="caption" color="text.secondary">
-                      {request.changes?.length || 0} change(s)
-                    </Typography>
-                  </TableCell>
+  <TableCell sx={{ minWidth: 100 }}>
+    <Typography variant="caption" color="text.secondary">
+      {request.changes?.length || 0} change(s)
+    </Typography>
+  </TableCell>
 
-                  <TableCell sx={{ width: '15%' }}>
-                    <Typography variant="caption" color="text.secondary">
-                      {new Date(request.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </TableCell>
+  <TableCell sx={{ minWidth: 120 }}>
+    <Typography variant="caption" color="text.secondary">
+      {new Date(request.createdAt).toLocaleDateString()}
+    </Typography>
+  </TableCell>
 
-                  <TableCell sx={{ width: '10%' }}>
-                    <Chip
-                      label={request.status || 'pending'}
-                      color={getStatusColor(request.status)}
-                      size="small"
-                      sx={{ textTransform: 'capitalize' }}
-                    />
-                  </TableCell>
+  <TableCell sx={{ minWidth: 100 }}>
+    <Chip
+      label={request.status || 'pending'}
+      color={getStatusColor(request.status)}
+      size="small"
+      sx={{ textTransform: 'capitalize' }}
+    />
+  </TableCell>
 
-                  <TableCell sx={{ width: '10%', textAlign: 'right' }}>
-                    <IconButton
-                      onClick={() => navigate(`view/${request._id}`)}
-                      size="small"
-                      sx={{
-                        backgroundColor: '#f0f0f0',
-                        '&:hover': { backgroundColor: '#e0e0e0' }
-                      }}
-                    >
-                      <Eye size={18} />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
+  <TableCell
+    sx={{
+      minWidth: 80,
+      textAlign: 'right',
+      display: { xs: 'none', sm: 'table-cell' } // ✅ hide icon on mobile
+    }}
+    onClick={(e) => e.stopPropagation()} // ✅ prevent double navigation
+  >
+    <IconButton
+      onClick={() => navigate(`view/${request._id}`)}
+      size="small"
+      sx={{
+        backgroundColor: '#f0f0f0',
+        '&:hover': { backgroundColor: '#e0e0e0' },
+        ml: 1
+      }}
+    >
+      <Eye size={18} />
+    </IconButton>
+  </TableCell>
+</TableRow>
+
               ))}
             </TableBody>
           </Table>
 
-          {/* Pagination */}
           <TablePagination
             component="div"
             count={filteredData.length}
