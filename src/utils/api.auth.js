@@ -74,7 +74,7 @@ export const getEditRequestByID = async(id)=>{
 
 export const updateRequestStatus = async(id, status)=>{
     try {
-        let reason = ""
+        let reason = "N/A"
         const response = await axios.post(`${baseUrl}api/edit/request/approve`, {id,status,reason}, {
             headers: {
                 Authorization: `${token}`
