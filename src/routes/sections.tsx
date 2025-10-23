@@ -22,6 +22,7 @@ export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const NVT = lazy(() => import('src/pages/NVT/NVT'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
+export const UnAuthPage = lazy(() => import('src/sections/auth/Unauth'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const NVTForm = lazy(() => import('src/pages/sampleForm'));
@@ -166,6 +167,10 @@ export const routesSection: RouteObject[] = [
   {
     path: '404',
     element: <Page404 />,
+  },
+  {
+path: 'unauthorized',
+element :<UnAuthPage/>
   },
   { path: '*', element: <Page404 /> },
 ];

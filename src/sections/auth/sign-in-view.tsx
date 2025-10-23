@@ -8,6 +8,8 @@ import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 import { useRouter } from "src/routes/hooks";
 
@@ -19,6 +21,8 @@ import { Iconify } from "src/components/iconify";
 
 export function SignInView() {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,12 +42,20 @@ export function SignInView() {
       const response = await login({ email, password });
 
       if (response?.status === 200) {
-        // Assume backend returns token in response.data.token or response.token
         const token = response.data?.token || response.token;
         if (token) {
           const permissions = await getUserAcc(response.data.roleId);
+          const isAdmin = response.data?.isAdmin === true;
 
-          if (response.data?.isAdmin === true) {
+          // Check if mobile and not admin
+          if (isMobile && !isAdmin) {
+            toast.error("Mobile access is restricted to administrators only.");
+            setLoading(false);
+            router.push("/unauthorized");
+            return;
+          }
+
+          if (isAdmin) {
             localStorage.setItem("isAdmin", "true");
 
             // Manually define the full-access menus for admins
@@ -60,7 +72,6 @@ export function SignInView() {
               "Percentage",
               "Billing",
               "Request",
-              // "Admin",
             ];
 
             // Construct permission objects with all actions true
