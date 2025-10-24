@@ -51,10 +51,7 @@ const customerSchema = yup.object().shape({
   state: yup.string().required('State is required'),
   pincode: yup.string().required('Pincode is required').matches(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
   email: yup.string().required('Email is required').email('Invalid email format'),
-  marketerName: yup.string().required('Marketer Name is required'),
-  paymentTerms: yup.string().required('Payment Terms are required'),
-  emiAmount: yup.number().typeError('EMI Amount must be a number').required('EMI Amount is required').positive('EMI Amount must be positive'),
-  duration: yup.string().required('Duration is required'),
+  
 });
 
 export interface CustomerFormData {
@@ -65,10 +62,7 @@ export interface CustomerFormData {
   state: string;
   pincode: string;
   email: string;
-  marketerName: string;
-  paymentTerms: string;
-  emiAmount: number;
-  duration: string;
+  
 }
 
 const CustomerForm = () => {
@@ -93,10 +87,7 @@ const CustomerForm = () => {
       state: '',
       pincode: '',
       email: '',
-      marketerName: '',
-      paymentTerms: '',
-      emiAmount: 0,
-      duration: '',
+      
     },
   });
 
