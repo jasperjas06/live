@@ -61,7 +61,8 @@ const customerColumns: Column<Customer>[] = [
     label: 'Estimate Details',
     sortable: false,
     render: (_value: string, row: Customer) => (
-      <button style={{background:"#2c2c2cff", padding:"5px", borderRadius:"5px", paddingRight:"10px", paddingLeft:"10px", cursor:"pointer", color:"white"}} onClick={() => navigate(`${row.id}/estimate`)}>Estimate</button>
+      <button style={{background:"#2c2c2cff", padding:"5px", borderRadius:"5px", paddingRight:"10px", paddingLeft:"10px", cursor:"pointer", color:"white"}} onClick={(e) => {navigate(`${row.id}/estimate`) 
+      e.stopPropagation(); }}>Estimate</button>
     )
   }
 ];
