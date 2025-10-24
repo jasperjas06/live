@@ -205,7 +205,7 @@ const ProjectCreationForm = () => {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
-                    label="Schema"
+                    label="Schem"
                     {...register('schema')}
                     error={!!errors.schema}
                     helperText={errors.schema?.message}

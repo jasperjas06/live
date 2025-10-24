@@ -88,6 +88,7 @@ const LifeHousing = () => {
           searchBy="nameOfCustomer"
           isView={false}
           onDelete={handleDelete}
+          isEdit={false}
         />
       </DashboardContent>
     </div>

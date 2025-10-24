@@ -72,7 +72,6 @@ export function SignInView() {
               "Percentage",
               "Billing",
               "Request",
-              "Life Alliance",
               "Life Housing"
             ];
 

@@ -22,7 +22,7 @@ import { DashboardContent } from "src/layouts/dashboard";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { getAllCustomer, createLFC, updateLFC, getALFC, getANVTbyCus } from "src/utils/api.service";
+import { getAllCustomer, createLFC, updateLFC, getALFC, getANVTbyCus, getAllProjects } from "src/utils/api.service";
 import CustomSelect from "src/custom/select/select";
 import MODFormdata from "src/custom/MOD_Reuse/MODReUse";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -50,11 +50,14 @@ export const lfcSchema = yup.object({
     .oneOf(["open", "closed"])
     .required("Registration status is required"),
   conversion: yup.boolean().required("Conversion selection is required"),
+  project: yup.string().required("Project is required"),
+
 
 }).required();
 
 export interface LFCFormData {
   customer: string;
+  project: string;
   introductionName: string;
   emi: number;
   inital: number;
@@ -79,6 +82,9 @@ const LFCForm = () => {
   const [nvtData,setNvtData] = useState([])
   const [nvtTableData, setNvtTableData] = useState([])
   const [isNvt, setIsNvt] = useState<boolean>(false)
+  const [project,setProject] = useState<any>([])
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+
 
   const columns = [
   { header: 'Customer Name', accessor: 'customer.name' },
@@ -102,6 +108,7 @@ const LFCForm = () => {
     resolver: yupResolver(lfcSchema),
     defaultValues: {
       customer: "",
+      project: "",
       introductionName: "",
       emi: 0,
       inital: 0,
@@ -132,6 +139,19 @@ const LFCForm = () => {
     console.log(error);
   }
 };
+
+const getProjectdetails = async () =>{
+  try {
+    const resposne = await getAllProjects()
+    if(resposne?.status === 200){
+      setProject(resposne?.data?.data)
+    // console.log(resposne.data.data,"resposne project")
+
+  }
+  } catch (error) {
+    console.log(error)
+  }
+}
 
   useEffect(()=>{
     if(cusId) getCustomerNVT()
@@ -245,7 +265,9 @@ const LFCForm = () => {
     const getData = async () => {
       try {
         setLoading(true);
+        await getProjectdetails()
         const res = await getAllCustomer();
+
         if (res.status) {
           const newdata = res.data.data.map((item: any, index: number) => ({
             value: item._id,
@@ -264,6 +286,7 @@ const LFCForm = () => {
     };
     
     getData();
+    
     // return setLoading(false)
   }, [id]);
 
@@ -315,6 +338,45 @@ const LFCForm = () => {
                 />
               </Grid>
 
+              {/* Project Dropdown */}
+<Grid size={{ xs: 12, sm: 12, md: 6 }}>
+  <Controller
+    control={control}
+    name="project"
+    render={({ field, fieldState }) => (
+      <CustomSelect
+        label="Project"
+        name="project"
+        value={field.value}
+        onChange={(e) => {
+          const projectId = e.target.value;
+          field.onChange(projectId);
+          const selected = project.find((p: any) => p._id === projectId);
+          setSelectedProject(selected);
+
+          if (selected) {
+            reset((prev) => ({
+              ...prev,
+              emi: selected.emiAmount || prev.emi,
+              introductionName: selected.marketer || prev.introductionName,
+              totalSqFt: selected.duration || prev.totalSqFt,
+              sqFtAmount: selected.totalReturnAmount?.toString() || prev.sqFtAmount,
+              plotNo: selected.shortName || prev.plotNo,
+            }));
+          }
+        }}
+        options={project.map((p: any) => ({
+          value: p._id,
+          label: p.projectName,
+        }))}
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
+      />
+    )}
+  />
+</Grid>
+
+
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
                   label="Introduction Name"
@@ -322,6 +384,7 @@ const LFCForm = () => {
                   error={!!errors.introductionName}
                   helperText={errors.introductionName?.message}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
@@ -340,6 +403,7 @@ const LFCForm = () => {
                   helperText={errors.emi?.message}
                   fullWidth
                   type="number"
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
@@ -351,6 +415,7 @@ const LFCForm = () => {
                   helperText={errors.inital?.message}
                   fullWidth
                   type="number"
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
@@ -368,6 +433,7 @@ const LFCForm = () => {
                   error={!!errors.totalSqFt}
                   helperText={errors.totalSqFt?.message}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
@@ -378,6 +444,7 @@ const LFCForm = () => {
                   error={!!errors.sqFtAmount}
                   helperText={errors.sqFtAmount?.message}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
@@ -388,6 +455,7 @@ const LFCForm = () => {
                   error={!!errors.plotNo}
                   helperText={errors.plotNo?.message}
                   fullWidth
+                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
 
