@@ -8,12 +8,11 @@ import { Box, Typography, Button } from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
 
-import { Iconify } from 'src/components/iconify';
 
 const LifeAlliance = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
-
+  const url = import.meta.env.VITE_API_URL
   // ✅ Columns mapped from API response
   const allianceColumns: Column<any>[] = [
     { id: 'idNo', label: 'Policy ID', sortable: true },
@@ -29,7 +28,7 @@ const LifeAlliance = () => {
   const getAllAllianceData = async () => {
     try {
       const response = await axios.get(
-        'https://customer-form-8auo.onrender.com/api/life/saving/get/all'
+        `${url}api/life/saving/get/all`
       );
       if (response && response.data) {
         setData(response.data.data); // your API already returns array
@@ -70,14 +69,7 @@ const LifeAlliance = () => {
           <Typography variant="h4" sx={{ flexGrow: 1 }}>
             Life Alliance Management
           </Typography>
-          <Button
-            variant="contained"
-            color="inherit"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => navigate('create')}
-          >
-            New Policy
-          </Button>
+          
         </Box>
 
         <DataTable

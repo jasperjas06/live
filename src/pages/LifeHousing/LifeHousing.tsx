@@ -13,6 +13,8 @@ import { Iconify } from 'src/components/iconify';
 const LifeHousing = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
+    const url = import.meta.env.VITE_API_URL
+
 
   // ✅ Columns based on your plot booking API (you can add/remove fields as needed)
   const housingColumns: Column<any>[] = [
@@ -29,7 +31,7 @@ const LifeHousing = () => {
   const getAllHousingData = async () => {
     try {
       const response = await axios.get(
-        'https://customer-form-8auo.onrender.com/api/plot/booking/get/all'
+        `${url}api/plot/booking/get/all`
       );
 
       console.log("Housing API response:", response.data);
@@ -76,14 +78,7 @@ const LifeHousing = () => {
           <Typography variant="h4" sx={{ flexGrow: 1 }}>
             Life Housing Management
           </Typography>
-          <Button
-            variant="contained"
-            color="inherit"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => navigate('create')}
-          >
-            New Booking
-          </Button>
+          
         </Box>
 
         <DataTable
