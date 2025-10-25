@@ -70,7 +70,7 @@ const MarketingHeadTable = () => {
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={() => navigate('create')}
-          disabled={permissions?.MarketingHead?.create !== true}
+          disabled={permissions["Marketing Head"]?.create !== true}
         >
           New Marketing Head
         </Button>
