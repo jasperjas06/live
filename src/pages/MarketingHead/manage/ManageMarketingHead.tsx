@@ -19,13 +19,16 @@ import {
   Box,
   Alert,
   Snackbar,
+  MenuItem,
+  Select,
+  InputLabel,
 } from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useParams, useNavigate } from 'react-router-dom';
-import { createMarkinghead, getAMarketingHead, updateMarketingHead } from 'src/utils/api.service';
+import { createMarkinghead, getAllPercentage, getAMarketingHead, updateMarketingHead } from 'src/utils/api.service';
 import toast from 'react-hot-toast';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -62,7 +65,9 @@ const modSchema = yup.object().shape({
     .required('Email is required')
     .max(100, 'Email must not exceed 100 characters'),
   status: yup.boolean()
-    .required('Status is required')
+    .required('Status is required'),
+  percentageId: yup.string()
+    .required('Percentage is required')
 });
 
 export interface MarketerFormData {
@@ -73,6 +78,13 @@ export interface MarketerFormData {
   gender: 'male' | 'female';
   email: string;
   status: boolean;
+  percentageId: string;
+}
+
+interface PercentageData {
+  _id: string;
+  name: string;
+  rate: string;
 }
 
 const MarketingHeadForm = () => {
@@ -80,6 +92,7 @@ const MarketingHeadForm = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [percentages, setPercentages] = useState<PercentageData[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -103,12 +116,24 @@ const MarketingHeadForm = () => {
       age: 0,
       gender: 'male',
       email: '',
-      status: true
+      status: true,
+      percentageId: ''
     },
   });
 
   // Watch for phone input to format it
   const phoneValue = watch('phone');
+
+  const getPercen = async() =>{
+    try {
+      const response = await getAllPercentage()
+      console.log(response.data.data)
+      setPercentages(response.data.data || []);
+    } catch (error) {
+      console.log(error)
+      showSnackbar('Failed to load percentages', 'error');
+    }
+  }
 
   // Format phone number as user types
   useEffect(() => {
@@ -143,7 +168,8 @@ const MarketingHeadForm = () => {
           age: Number(customerData.age) || 18,
           gender: customerData.gender || 'male',
           email: customerData.email || '',
-          status: Boolean(customerData.status)
+          status: Boolean(customerData.status),
+          percentageId: customerData.percentageId || ''
         };
         reset(formData);
         showSnackbar('Data loaded successfully', 'success');
@@ -162,6 +188,7 @@ const MarketingHeadForm = () => {
     if (id) {
       getMarketingHead();
     }
+    getPercen()
   }, [id]);
 
   const onSubmit = async (data: MarketerFormData) => {
@@ -330,6 +357,34 @@ const MarketingHeadForm = () => {
                       placeholder: 'Enter your complete address including city, state, and postal code'
                     }}
                   />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                  <FormControl fullWidth error={!!errors.percentageId} disabled={isSubmitting}>
+                    <InputLabel id="percentage-label">Percentage</InputLabel>
+                    <Controller
+                      name="percentageId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          labelId="percentage-label"
+                          label="Percentage"
+                        >
+                          {percentages.map((percentage) => (
+                            <MenuItem key={percentage._id} value={percentage._id}>
+                              {percentage.name} - {percentage.rate}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                    {errors.percentageId && (
+                      <Typography color="error" variant="caption" sx={{ mt: 0.5, ml: 1.75 }}>
+                        {errors.percentageId.message}
+                      </Typography>
+                    )}
+                  </FormControl>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
