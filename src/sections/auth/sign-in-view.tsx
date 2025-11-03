@@ -73,7 +73,7 @@ export function SignInView() {
               "Billing",
               "Request",
               "Life Housing",
-              "Logs"
+              "Logs",
             ];
 
             // Construct permission objects with all actions true
@@ -94,7 +94,35 @@ export function SignInView() {
             );
           } else {
             localStorage.setItem("isAdmin", "false");
-            if (permissions) {
+            if (permissions.role.name.toLowerCase().trim() === "admin") {
+              // Check if Request menu already exists in permissions
+              const hasRequestMenu = permissions.menus.some(
+                (menu: any) => menu.menuId?.name === "Request"
+              );
+
+              // If Request menu doesn't exist, add it with full access
+              if (!hasRequestMenu) {
+                const requestMenuAccess = {
+                  menuId: { name: "Request" },
+                  read: true,
+                  create: true,
+                  update: true,
+                  delete: true,
+                };
+              
+
+                // Add Request menu to existing menus using spread operator
+                const updatedPermissions = {
+                  ...permissions,
+                  menus: [...permissions.menus, requestMenuAccess],
+                };
+
+                localStorage.setItem(
+                  "userAccess",
+                  JSON.stringify(updatedPermissions)
+                );
+              }
+            } else {
               localStorage.setItem("userAccess", JSON.stringify(permissions));
             }
           }
