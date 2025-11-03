@@ -11,6 +11,7 @@ import {
   Route,
   House,
   GitPullRequest,
+  File,
 } from "lucide-react";
 
 import { AllInclusive } from "@mui/icons-material";
@@ -44,11 +45,16 @@ const allNavData: NavItem[] = [
   { title: "Marketing Head", path: "/marketing-head", icon: <User /> },
   { title: "Roles", path: "/role", icon: <IdCard /> },
   { title: "Employee", path: "/employee", icon: <Users /> },
-  { title: "Role And Menu Mapping", path: "/role&menu-mapping", icon: <Route /> },
+  {
+    title: "Role And Menu Mapping",
+    path: "/role&menu-mapping",
+    icon: <Route />,
+  },
   { title: "Billing", path: "/billing", icon: <ReceiptText /> },
   { title: "Request", path: "/all/request", icon: <GitPullRequest /> },
   { title: "Life Alliance", path: "/life-alliance", icon: <AllInclusive /> },
   { title: "Life Housing", path: "/life-housing", icon: <House /> },
+  { title: "Logs", path: "/logs", icon: <File /> },
 ];
 
 // ----------------------------------------------

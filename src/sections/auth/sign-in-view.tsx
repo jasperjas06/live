@@ -72,7 +72,8 @@ export function SignInView() {
               "Percentage",
               "Billing",
               "Request",
-              "Life Housing"
+              "Life Housing",
+              "Logs"
             ];
 
             // Construct permission objects with all actions true

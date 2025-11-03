@@ -1435,4 +1435,35 @@ export const getBillingsByCustomerId = async (id) => {
       status: error.response?.status || 500,
     };
   }
-}
+};
+
+// Logs APIS
+export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
+  try {
+    let url = `${base_url}api/logs/get/all?`;
+    const params = [];
+    
+    if (date) params.push(`date=${date}`);
+    if (page) params.push(`page=${page}`);
+    if (limit) params.push(`limit=${limit}`);
+    if (isExport) params.push(`export=${isExport}`);
+    
+    url += params.join('&');
+    
+    const response = await axios.get(url, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching logs:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};

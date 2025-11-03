@@ -15,6 +15,7 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 
 
 
+
 // ----------------------------------------------------------------------
 // Lazy imports
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
@@ -61,7 +62,8 @@ export const Requests = lazy(() => import('src/pages/Requests/Request'));
 export const ViewRequest = lazy(() => import('src/pages/Requests/view/ViewRequest'));
 export const ManageBilling = lazy(() => import('src/pages/Billing/Manage/ManageBilling'));
 export const CustomerEstimateView = lazy(() => import('src/pages/CustomerDetails/ManageCustomer/ViewCustomerDetails'));
-export const BillingView = lazy(()=> import('src/pages/Billing/BillingView'));
+export const BillingView = lazy(() => import('src/pages/Billing/BillingView'));
+export const Logs = lazy(() => import("src/pages/log/Logs"));
 // ----------------------------------------------------------------------
 // Loading fallback (when lazy pages load)
 const renderFallback = () => (
@@ -154,6 +156,7 @@ export const routesSection: RouteObject[] = [
       { path: 'all/request', element: <Requests /> },
       { path: 'all/request/view/:id', element: <ViewRequest /> },
       { path: 'billing/create', element: <ManageBilling /> },
+       { path: "logs", element: <Logs /> },
     ],
   },
   {
