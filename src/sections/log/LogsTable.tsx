@@ -57,10 +57,10 @@ const MODULE_ROUTES: Record<string, string | null> = {
   NVT: "nvt",
   MOD: "mod",
   Request: "request",
-  "Life Alliance": "life-alliance",
+  "Life Alliance": null,
   "Edit Request": "edit-request",
   "Life Housing": null, // No view page,
-  "Life Saving": "life-saving",
+  "Life Saving": null,
 };
 
 const LogsTable = () => {
@@ -161,8 +161,12 @@ const LogsTable = () => {
       return; // MUST have this return to stop execution
     }
 
-    // Route exists, navigate to it
-    navigate(`/${route}/view/${log._id}`);
+    if (route === "request") {
+      navigate(`/all/${route}/view/${log._id}`);
+    } else {
+      // Route exists, navigate to it
+      navigate(`/${route}/view/${log._id}`);
+    }
   };
 
   const handleExportExcel = async () => {
