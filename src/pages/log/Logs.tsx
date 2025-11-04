@@ -1,4 +1,4 @@
-import LogsTable from "src/sections/logs/LogsTable";
+import LogsTable from "src/sections/log/LogsTable";
 
 const Logs = () => (
   <div>
