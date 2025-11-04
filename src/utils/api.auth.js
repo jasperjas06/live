@@ -36,23 +36,29 @@ export const getUserAccess = async (id) => {
     }
 }
 
-export const getEditRequest = async()=>{
-    try {
-        const response = await axios.get(`${baseUrl}api/edit/request/get/all`, {
-            headers: {
-                Authorization: `${token}`
-            }
-        })
-        return {
+export const getEditRequest = async (params) => {
+  try {
+    const response = await axios.get(`${baseUrl}api/edit/request/get/all`, {
+      headers: {
+        Authorization: `${token}`,
+      },
+      params, // Pass query params (date, export)
+    });
+    return {
       data: response.data,
       message: response?.data?.message,
       status: 200,
     };
-    } catch (error) {
-        console.log("Get edit request error:", error)
-        return error.response?.data || { success: false, message: "Failed to fetch edit request" }
-    }
-}
+  } catch (error) {
+    console.log("Get edit request error:", error);
+    return (
+      error.response?.data || {
+        success: false,
+        message: "Failed to fetch edit request",
+      }
+    );
+  }
+};
 
 export const getEditRequestByID = async(id)=>{
     try {
