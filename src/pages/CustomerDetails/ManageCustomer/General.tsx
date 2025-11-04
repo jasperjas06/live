@@ -1,48 +1,82 @@
-import React, { useState } from "react";
-import { Controller, useFormContext, get } from "react-hook-form";
 import {
-  TextField,
-  Grid,
+  Box,
   Button,
+  FormControl,
+  Grid,
+  InputLabel,
+  LinearProgress,
   MenuItem,
   Select,
-  InputLabel,
-  FormControl,
+  TextField,
   Typography,
-  LinearProgress,
-  Box
 } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Controller, get, useFormContext } from "react-hook-form";
 
 import { fileUpload } from "src/utils/api.service";
 
 interface GeneralProps {
-  marketer?: { label: string; value: string }[];
+  marketer?: { label: string; value: string; percentage: string | number }[];
   saleType: string;
   setSaleType: React.Dispatch<React.SetStateAction<string>>;
   handleNext: () => void | Promise<void>;
   setTabIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, handleNext, setTabIndex }) => {
-  const { control, formState: { errors } } = useFormContext(); // ✅ get control & errors here
+const General: React.FC<GeneralProps> = ({
+  marketer,
+  saleType,
+  setSaleType,
+  handleNext,
+  setTabIndex,
+}) => {
+  const {
+    control,
+    formState: { errors },
+    setValue,
+  } = useFormContext(); // ✅ get control & errors here
   const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
   const [fileNames, setFileNames] = useState<{ [key: string]: string }>({});
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
 
+  // Add this inside your component, after the useState declarations:
+  useEffect(() => {
+    const currentMarketerValue = control._formValues?.general?.marketer;
+
+    if (currentMarketerValue && marketer) {
+      const selectedMarketer = marketer.find(
+        (m) => m.value === currentMarketerValue
+      );
+
+      if (selectedMarketer?.percentage) {
+        const percentageValue = Number(
+          (selectedMarketer.percentage as string).replace("%", "")
+        );
+        setValue("general.percentage", percentageValue, {
+          shouldValidate: false,
+          shouldDirty: false,
+        });
+      }
+    }
+  }, [marketer]); // Run when marketer data is available
+
   const handleFileUpload = async (field: any, file: File, name: string) => {
     if (!file) return;
-    setUploading(prev => ({ ...prev, [name]: true }));
-    setUploadError(prev => ({ ...prev, [name]: "" }));
+    setUploading((prev) => ({ ...prev, [name]: true }));
+    setUploadError((prev) => ({ ...prev, [name]: "" }));
     try {
       const formData = new FormData();
       formData.append("files", file);
       const res = await fileUpload(formData);
       field.onChange(res.data.data[0]);
-      setFileNames(prev => ({ ...prev, [name]: file.name }));
+      setFileNames((prev) => ({ ...prev, [name]: file.name }));
     } catch (err: any) {
-      setUploadError(prev => ({ ...prev, [name]: "Upload failed. Try again." }));
+      setUploadError((prev) => ({
+        ...prev,
+        [name]: "Upload failed. Try again.",
+      }));
     } finally {
-      setUploading(prev => ({ ...prev, [name]: false }));
+      setUploading((prev) => ({ ...prev, [name]: false }));
     }
   };
 
@@ -50,7 +84,7 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
     <Box>
       <Grid container spacing={2}>
         {/* Marketer */}
-        <Grid size={{ xs: 12, sm: 6 }} >
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="general.marketer"
             control={control}
@@ -58,8 +92,30 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             render={({ field }) => (
               <FormControl fullWidth error={!!get(errors, "general.marketer")}>
                 <InputLabel>Marketer</InputLabel>
-                <Select {...field} label="Marketer">
-                  {marketer?.map(m => (
+                <Select
+                  {...field}
+                  label="Marketer"
+                  onChange={(e) => {
+                    field.onChange(e); // Update marketer field
+
+                    // ✅ ADD THIS - Auto-fill percentage when marketer changes
+                    const selectedMarketer = (marketer ?? []).find(
+                      (m) => m.value === e.target.value
+                    );
+
+                    if (selectedMarketer?.percentage) {
+                      const percentageValue = Number(
+                        (selectedMarketer.percentage as string).replace("%", "")
+                      );
+                      console.log("Setting percentage to:", percentageValue); // Should now show: 12
+                      setValue("general.percentage", percentageValue, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }
+                  }}
+                >
+                  {marketer?.map((m) => (
                     <MenuItem key={m.value} value={m.value}>
                       {m.label}
                     </MenuItem>
@@ -74,7 +130,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Sale Deed Doc */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -111,8 +166,38 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
-
+        {/* Percentage */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          {" "}
+          {/* ✅ Add this Grid wrapper */}
+          <Controller
+            name="general.percentage"
+            control={control}
+            defaultValue="" // ✅ Add this to prevent undefined
+            rules={{
+              required: "Percentage is required",
+              min: { value: 0, message: "Percentage must be at least 0" },
+              max: { value: 100, message: "Percentage cannot exceed 100" },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                label="Percentage"
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
+                error={!!get(errors, "general.percentage")}
+                helperText={
+                  get(errors, "general.percentage")?.message as string
+                }
+                inputProps={{ min: 0, max: 100, step: 0.01 }}
+              />
+            )}
+          />
+        </Grid>{" "}
+        {/* ✅ Close Grid here */}
         {/* Payment Terms */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -128,7 +213,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* EMI Amount */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -145,7 +229,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* No. of Installments */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -197,7 +280,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Status */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -230,7 +312,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Offered */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -247,7 +328,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Sale Type */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -278,7 +358,6 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Edit / Delete Reason */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -294,9 +373,8 @@ const General: React.FC<GeneralProps> = ({ marketer, saleType, setSaleType, hand
             )}
           />
         </Grid>
-
         {/* Next Button */}
-        <Grid size={{ xs: 12 }} >
+        <Grid size={{ xs: 12 }}>
           <Box mt={2}>
             <Button variant="contained" onClick={handleNext}>
               Next

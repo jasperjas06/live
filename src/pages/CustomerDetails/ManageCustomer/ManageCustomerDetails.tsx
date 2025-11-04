@@ -6,7 +6,11 @@ import { useForm, FormProvider } from "react-hook-form";
 
 import { Tabs, Tab, Box, Button, Typography } from "@mui/material";
 
-import { createCustomerEstimate, getAllMarkingHead, updateEmployee } from "src/utils/api.service";
+import {
+  createCustomerEstimate,
+  getAllMarkingHead,
+  updateEmployee,
+} from "src/utils/api.service";
 
 import { DashboardContent } from "src/layouts/dashboard";
 
@@ -47,7 +51,9 @@ const ManageCustomerDetails = () => {
   const { id } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
   const [saleType, setSaleType] = useState("");
-  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string }[]>([]);
+  const [marketerOptions, setMarketerOptions] = useState<
+    { label: string; value: string; percentage: string | number }[]
+  >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -75,6 +81,7 @@ const ManageCustomerDetails = () => {
         const marketers = response.data.data.map((m: any) => ({
           label: m.name,
           value: m._id,
+          percentage: m.percentageId.rate,
         }));
         setMarketerOptions(marketers);
       }
@@ -89,23 +96,23 @@ const ManageCustomerDetails = () => {
 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
-    let correct: any = {}
-    correct.general = data.general
-    correct.customerId = id
-    if (saleType.toLowerCase() === "plot") correct.plot = data.plot
-    if (saleType.toLowerCase() === "flat") correct.flat = data.flat
+    let correct: any = {};
+    correct.general = data.general;
+    correct.customerId = id;
+    if (saleType.toLowerCase() === "plot") correct.plot = data.plot;
+    if (saleType.toLowerCase() === "flat") correct.flat = data.flat;
     try {
       const response = await createCustomerEstimate(correct);
       if (response.status === 200) {
         toast.success(response.message);
         navigate(-1);
       } else {
-        console.error('Submission error 1:', response);
+        console.error("Submission error 1:", response);
         toast.error(response.message);
       }
     } catch (error: any) {
-      console.error('Submission error:', error);
-      toast.error(error.message || 'Failed to save billing');
+      console.error("Submission error:", error);
+      toast.error(error.message || "Failed to save billing");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,8 +145,12 @@ const ManageCustomerDetails = () => {
               indicatorColor="primary"
             >
               <Tab label="General" id="tab-0" aria-controls="tabpanel-0" />
-              {saleType.toLowerCase() === "plot" && <Tab label="Plot" id="tab-1" aria-controls="tabpanel-1" />}
-              {saleType.toLowerCase() === "flat" && <Tab label="Flat" id="tab-1" aria-controls="tabpanel-1" />}
+              {saleType.toLowerCase() === "plot" && (
+                <Tab label="Plot" id="tab-1" aria-controls="tabpanel-1" />
+              )}
+              {saleType.toLowerCase() === "flat" && (
+                <Tab label="Flat" id="tab-1" aria-controls="tabpanel-1" />
+              )}
             </Tabs>
 
             {/* Tab Panels */}
@@ -155,22 +166,30 @@ const ManageCustomerDetails = () => {
 
             {saleType.toLowerCase() === "plot" && (
               <TabPanel value={tabIndex} index={1}>
-                <Plot control={methods.control} errors={methods.formState.errors} />
+                <Plot
+                  control={methods.control}
+                  errors={methods.formState.errors}
+                />
               </TabPanel>
             )}
 
             {saleType.toLowerCase() === "flat" && (
               <TabPanel value={tabIndex} index={1}>
-                <Flat control={methods.control} errors={methods.formState.errors} />
+                <Flat
+                  control={methods.control}
+                  errors={methods.formState.errors}
+                />
               </TabPanel>
             )}
 
             {/* Save Button */}
-            {tabIndex === 1 && <Box mt={2}>
-              <Button type="submit" variant="contained">
-                Save
-              </Button>
-            </Box>}
+            {tabIndex === 1 && (
+              <Box mt={2}>
+                <Button type="submit" variant="contained">
+                  Save
+                </Button>
+              </Box>
+            )}
           </form>
         </FormProvider>
       </Box>

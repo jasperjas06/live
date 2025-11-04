@@ -79,7 +79,11 @@ let filteredNavData = allNavData;
 if (userPermissions && Array.isArray(userPermissions.menus)) {
   const readableMenus = userPermissions.menus
     .filter((m: any) => m.read)
-    .map((m: any) => m.menuId?.name?.toLowerCase());
+    .map((m: any) => {
+     const name = m.menuId?.name?.toLowerCase();
+      // ✅ If name is "project", return "projects", else return original name
+      return name === "project" ? "projects" : name;
+    });
 
   filteredNavData = allNavData.filter((nav) =>
     readableMenus.includes(nav.title.toLowerCase())
