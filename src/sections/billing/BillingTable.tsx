@@ -158,7 +158,7 @@ const BillingTable = () => {
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => navigate('create')}
-            disabled={permissions?.Billing?.create !== true}
+            disabled={permissions?.billing?.create !== true}
             sx={{ minWidth: '150px' }}
           >
             New Billing
