@@ -31,6 +31,7 @@ interface LogItem {
   moduleName: string;
   createdAt: string;
   createdBy?: string;
+  roleId: string | null;
 }
 
 interface LogsResponse {
@@ -163,6 +164,9 @@ const LogsTable = () => {
 
     if (route === "request") {
       navigate(`/all/${route}/view/${log._id}`);
+    } else if (route === "role&menu-mapping") {
+      // Route exists, navigate to it
+      navigate(`/${route}/view/${log.roleId}`);
     } else {
       // Route exists, navigate to it
       navigate(`/${route}/view/${log._id}`);
