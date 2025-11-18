@@ -173,7 +173,7 @@ const BillingTable = () => {
         searchBy="customerName"
         isDelete={false}
         isEdit={false}
-        isView={permissions?.Billing?.read === true ? true : false}
+        isView={permissions?.billing?.read === true ? true : false}
       />
     </DashboardContent>
   );
