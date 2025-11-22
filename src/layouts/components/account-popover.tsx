@@ -52,7 +52,9 @@ export function AccountPopover({ data = [], sx, _myAccount, ...other }: AccountP
 
   const handleLogout = () => {
     localStorage.removeItem('liveauthToken');
-    router.push('/sign-in');
+    localStorage.removeItem('userAccess');
+    localStorage.removeItem('isAdmin');
+    router.push('/sign-in');  
   };
 
   // fallback values if _myAccount is null
