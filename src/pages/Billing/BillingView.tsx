@@ -234,7 +234,7 @@ const BillingView = () => {
         // Company Logo placeholder and header
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(14)
-        doc.text('LIFE ALLIANCE ENTERPRISES', 50, yPosition + 8)
+        doc.text('LIFE HOUSING ENTERPRISES', 50, yPosition + 8)
 
 
         doc.setFont('helvetica', 'normal')
