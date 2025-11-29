@@ -158,7 +158,7 @@ const BillingTable = () => {
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => navigate('create')}
-            disabled={permissions?.billing?.create !== true}
+            disabled={permissions?.Billing?.create !== true}
             sx={{ minWidth: '150px' }}
           >
             New Billing
@@ -173,7 +173,7 @@ const BillingTable = () => {
         searchBy="customerName"
         isDelete={false}
         isEdit={false}
-        isView={permissions?.billing?.read === true ? true : false}
+        isView={permissions?.Billing?.read === true ? true : false}
       />
     </DashboardContent>
   );
