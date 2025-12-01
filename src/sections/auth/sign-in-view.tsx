@@ -94,7 +94,20 @@ export function SignInView() {
           } else {
             localStorage.setItem("isAdmin", "false");
             if (permissions) {
-              localStorage.setItem("userAccess", JSON.stringify(permissions));
+              const lifeHousingPermission = {
+      menuId: { name: "Life Housing" },
+      read: true,
+      create: true,
+      update: true,
+      delete: true,
+    };
+
+    const newPermission = {
+      ...permissions,
+      menus: [...permissions.menus, lifeHousingPermission],
+    };
+
+              localStorage.setItem("userAccess", JSON.stringify(newPermission));
             }
           }
 
