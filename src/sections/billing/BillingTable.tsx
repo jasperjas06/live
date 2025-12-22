@@ -1,12 +1,13 @@
-import type { Column} from 'src/custom/dataTable/dataTable';
+import { Box, Button, CircularProgress, InputAdornment, TextField, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { getAllBilling } from 'src/utils/api.service';
 import { permissions } from 'src/common/Permissions';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { DataTable } from 'src/custom/dataTable/dataTable';
 import { Iconify } from 'src/components/iconify';
+import type { Column } from 'src/custom/dataTable/dataTable';
+import { DataTable } from 'src/custom/dataTable/dataTable';
+import { DashboardContent } from 'src/layouts/dashboard';
+import type { BillingPagination } from 'src/types/billing';
+import { getAllBilling } from 'src/utils/api.service';
 
 type Customer = {
   id: string;
@@ -22,32 +23,61 @@ const BillingTable = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Customer[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [pagination, setPagination] = useState<BillingPagination | null>(null);
+  const pageSize = 10;
   let { id } = useParams();
   
   console.log(permissions, "permissions");
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      // Reset to page 1 when search term changes
+      if (searchTerm !== debouncedSearch) {
+        setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const getAllData = async () => {
     try {
-      const response = await getAllBilling();
+      setIsLoading(true);
+      const params = {
+        page: currentPage,
+        limit: pageSize,
+        ...(debouncedSearch && { search: debouncedSearch }),
+      };
+      
+      const response = await getAllBilling(params);
       if (response.status) {
-        let data = response.data.data;
-        data = data.map((item: any) => ({
+        let billingData = response.data.data;
+        billingData = billingData.map((item: any) => ({
           ...item,
           marketerName: item.introducer?.name || 'N/A',
           paidDate: item.emi?.paidDate?.split('T')[0] || 'N/A',
           emiId: item.emi?._id || 'N/A',
           paidAmount: item.emi?.paidAmt || 'N/A',
         }));
-        setData(data);
+        setData(billingData);
+        setPagination(response.data.pagination || null);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     getAllData();
-  }, []);
+  }, [currentPage, debouncedSearch]);
 
   const customerColumns: Column<Customer>[] = [
     { id: 'customerName', label: 'Name', sortable: true },
@@ -129,6 +159,22 @@ const BillingTable = () => {
     }
   };
 
+  const handlePreviousPage = () => {
+    if (pagination?.hasPreviousPage) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasNextPage) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handleSearchClear = () => {
+    setSearchTerm('');
+  };
+
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -166,15 +212,90 @@ const BillingTable = () => {
         </Box>
       </Box>
 
-      <DataTable
-        title="Customer Table"
-        data={data}
-        columns={customerColumns}
-        searchBy="customerName"
-        isDelete={false}
-        isEdit={false}
-        isView={permissions?.Billing?.read === true ? true : false}
-      />
+      {/* Search Input */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Search by name, mobile, billing ID, transaction type, payment mode..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify icon="eva:search-fill" />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <Button
+                  size="small"
+                  onClick={handleSearchClear}
+                  sx={{ minWidth: 'auto', p: 0.5 }}
+                >
+                  <Iconify icon="mingcute:close-line" />
+                </Button>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'background.paper',
+            },
+          }}
+        />
+      </Box>
+
+      {/* Loading Indicator */}
+      {isLoading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {/* Data Table */}
+      {!isLoading && (
+        <DataTable
+          title="Customer Table"
+          data={data}
+          columns={customerColumns}
+          isDelete={false}
+          isEdit={false}
+          isView={permissions?.Billing?.read === true ? true : false}
+          disableSearch={true}
+          disablePagination={true}
+        />
+      )}
+
+      {/* Pagination Controls */}
+      {pagination && !isLoading && (
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing {pagination.totalRecords} record{pagination.totalRecords !== 1 ? 's' : ''}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={handlePreviousPage}
+              disabled={!pagination.hasPreviousPage}
+            >
+              Previous
+            </Button>
+            
+            <Typography variant="body2">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </Typography>
+            
+            <Button
+              variant="outlined"
+              onClick={handleNextPage}
+              disabled={!pagination.hasNextPage}
+            >
+              Next
+            </Button>
+          </Box>
+        </Box>
+      )}
     </DashboardContent>
   );
 };

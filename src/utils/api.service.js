@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import axios from "axios"
+import axios from "axios";
 
 const base_url = import.meta.env.VITE_API_URL
 
@@ -1184,9 +1184,34 @@ export const commonCreate = async (data) => {
 }
 
 // Billing APIS
-export const getAllBilling = async () => {
+export const getAllBilling = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/common/billing/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    // Add filter parameters
+    if (params.customerId) {
+      queryParams.append('customerId', params.customerId);
+    }
+    
+    if (params.generalId) {
+      queryParams.append('generalId', params.generalId);
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/common/billing/get/all${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {

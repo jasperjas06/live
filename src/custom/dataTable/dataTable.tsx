@@ -1,32 +1,31 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable default-case */
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useRef, useEffect } from 'react';
 
 import {
   Box,
-  Table,
-  Paper,
-  TableRow,
-  Checkbox,
-  TableHead,
-  TableCell,
-  TableBody,
-  TextField,
   IconButton,
-  TableContainer,
-  TableSortLabel,
   InputAdornment,
-  TablePagination,
   Menu,
   MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TableSortLabel,
+  TextField,
   Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material';
 
-import {MoreVerticalIcon} from "lucide-react"
+import { MoreVerticalIcon } from "lucide-react";
 
 type Order = 'asc' | 'desc';
 
@@ -50,6 +49,10 @@ type DataTableProps<T> = {
   onDelete?: (id: string | number) => Promise<void> | void;
   onEdit?: (id: string | number) => void;
   onView?: (id: string | number) => void;
+  // New props to disable built-in features
+  disableSearch?: boolean;
+  disablePagination?: boolean;
+  defaultRowsPerPage?: number;
 };
 
 export function DataTable<T extends { id: string | number }>({
@@ -63,7 +66,10 @@ export function DataTable<T extends { id: string | number }>({
   onDropDown=true,
   isView = true,
   isDelete = true,
-  isEdit = true
+  isEdit = true,
+  disableSearch = false,
+  disablePagination = false,
+  defaultRowsPerPage = 5
 }: DataTableProps<T>) {
   const theme = useTheme();
   const navigate = useNavigate()
@@ -72,7 +78,7 @@ export function DataTable<T extends { id: string | number }>({
   const [orderBy, setOrderBy] = useState<keyof T>(columns[0].id);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage);
   const [selected, setSelected] = useState<(string | number)[]>([]);
 
   const handleSort = (property: keyof T) => {
@@ -108,7 +114,7 @@ export function DataTable<T extends { id: string | number }>({
     setSelected(newSelected);
   };
 
-  const filteredData = searchBy
+  const filteredData = (searchBy && !disableSearch)
     ? data.filter((row) =>
         String(row[searchBy]).toLowerCase().includes(search.toLowerCase())
       )
@@ -122,10 +128,13 @@ export function DataTable<T extends { id: string | number }>({
       : aVal < bVal ? 1 : -1;
   });
 
-  const paginatedData = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // Only paginate if pagination is not disabled
+  const paginatedData = disablePagination 
+    ? sortedData 
+    : sortedData.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
 
   return (
     <Paper sx={{ 
@@ -135,30 +144,32 @@ export function DataTable<T extends { id: string | number }>({
       width: '100%',
       overflowX: 'auto'
     }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
-        <TextField
-          size="small"
-          variant="outlined"
-          placeholder="Search..."
-          value={search}
-          onChange={handleSearchChange}
-          sx={{ 
-            width: isMobile ? '100%' : '300px', 
-            backgroundColor: '#F9FAFB', 
-            borderRadius: 2 
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="#667085" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M14 14L11.1 11.1" stroke="#667085" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
+      {!disableSearch && (
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
+          <TextField
+            size="small"
+            variant="outlined"
+            placeholder="Search..."
+            value={search}
+            onChange={handleSearchChange}
+            sx={{ 
+              width: isMobile ? '100%' : '300px', 
+              backgroundColor: '#F9FAFB', 
+              borderRadius: 2 
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="#667085" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M14 14L11.1 11.1" stroke="#667085" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      )}
 
       <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
         <Table sx={{ minWidth: isMobile ? 600 : 800 }}>
@@ -261,25 +272,27 @@ export function DataTable<T extends { id: string | number }>({
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={filteredData.length}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[5, 10, 25]}
-        sx={{ 
-          '& .MuiTablePagination-toolbar': {
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 1
-          }
-        }}
-      />
+      {!disablePagination && (
+        <TablePagination
+          component="div"
+          count={filteredData.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25]}
+          sx={{ 
+            '& .MuiTablePagination-toolbar': {
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 1
+            }
+          }}
+        />
+      )}
     </Paper>
   );
 }
