@@ -10,15 +10,14 @@ import {
   CardContent,
   Divider,
   styled,
-  Tabs,
-  Tab,
   Box,
   CircularProgress,
+  MenuItem,
 } from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -43,43 +42,71 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   color: '#3f51b5',
 }));
 
-const customerSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  address: yup.string().required('Address is required'),
-  phone: yup.string().required('Phone is required').matches(/^[0-9]{10}$/, 'Phone must be 10 digits'),
-  city: yup.string().required('City is required'),
-  state: yup.string().required('State is required'),
-  pincode: yup.string().required('Pincode is required').matches(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
-  email: yup.string().required('Email is required').email('Invalid email format'),
-  
+// Zod schema
+const customerSchema = z.object({
+  // Required fields
+  name: z.string().min(1, 'Name is required'),
+  address: z.string().min(1, 'Address is required'),
+  phone: z
+    .string()
+    .min(1, 'Phone is required')
+    .regex(/^[0-9]{10}$/, 'Phone must be 10 digits'),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().min(1, 'State is required'),
+  pincode: z
+    .string()
+    .min(1, 'Pincode is required')
+    .regex(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
+  email: z.string().min(1, 'Email is required').email('Invalid email format'),
+
+  // Optional / domain fields
+  plotNo: z.string().optional(),
+  date: z.string().optional(),
+  nameOfCustomer: z.string().optional(),
+  gender: z.string().optional(),
+  projectArea: z.string().optional(),
+  nationality: z.string().optional(),
+  dob: z.string().optional(),
+  occupation: z.string().optional(),
+  qualification: z.string().optional(),
+  planNo: z.string().optional(),
+  communicationAddress: z.string().optional(),
+  mobileNo: z.string().optional(),
+  landLineNo: z.string().optional(),
+  fatherOrHusbandName: z.string().optional(),
+  motherName: z.string().optional(),
+  nomineeName: z.string().optional(),
+  nomineeAge: z.string().optional(),
+  nomineeRelationship: z.string().optional(),
+  nameOfGuardian: z.string().optional(),
+  so_wf_do: z.string().optional(),
+  relationshipWithCustomer: z.string().optional(),
+  introducerName: z.string().optional(),
+  introducerMobileNo: z.string().optional(),
+  immSupervisorName: z.string().optional(),
+  cedName: z.string().optional(),
+  diamountDirectorName: z.string().optional(),
+  diamountDirectorPhone: z.string().optional(),
+
+  photo: z.any().optional(),
 });
 
-export interface CustomerFormData {
-  name: string;
-  address: string;
-  phone: string;
-  city: string;
-  state: string;
-  pincode: string;
-  email: string;
-  
-}
+type CustomerFormData = z.infer<typeof customerSchema>;
 
 const CustomerForm = () => {
-  const [activeTab, setActiveTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
     reset,
   } = useForm<CustomerFormData>({
-    resolver: yupResolver(customerSchema),
+    resolver: zodResolver(customerSchema),
     defaultValues: {
+      // required
       name: '',
       address: '',
       phone: '',
@@ -87,44 +114,72 @@ const CustomerForm = () => {
       state: '',
       pincode: '',
       email: '',
-      
+
+      // optional
+      plotNo: '',
+      date: '',
+      nameOfCustomer: '',
+      gender: '',
+      projectArea: '',
+      nationality: '',
+      dob: '',
+      occupation: '',
+      qualification: '',
+      planNo: '',
+      communicationAddress: '',
+      mobileNo: '',
+      landLineNo: '',
+      fatherOrHusbandName: '',
+      motherName: '',
+      nomineeName: '',
+      nomineeAge: '',
+      nomineeRelationship: '',
+      nameOfGuardian: '',
+      so_wf_do: '',
+      relationshipWithCustomer: '',
+      introducerName: '',
+      introducerMobileNo: '',
+      immSupervisorName: '',
+      cedName: '',
+      diamountDirectorName: '',
+      diamountDirectorPhone: '',
+      photo: undefined,
     },
   });
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
-
-  const onSubmit = async (data: CustomerFormData) => {
+  const onSubmit: SubmitHandler<CustomerFormData> = async (data) => {
     try {
       const response = id
         ? await updateCustomer({ ...data, _id: id })
         : await createCustomer(data);
 
       if (response.status === 200) {
-        toast.success(response.message)
-        navigate(-1)
-        // alert(`Customer ${id ? 'updated' : 'created'} successfully!`);
+        toast.success(response.message);
+        navigate(-1);
       } else {
         alert(`Error: ${response.message}`);
       }
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Submission error:', error);
-       toast.error(error)
+      toast.error(error?.message || 'Something went wrong');
     }
   };
 
-   const getDataByID = async () => {
+  const getDataByID = async () => {
     if (!id) return;
     try {
       setIsLoading(true);
       const response = await getACustomer(id);
       const customerData = response?.data?.data;
+
       if (customerData) {
-        reset(customerData);
+        reset({
+          photo: undefined,
+          ...(customerData as Partial<CustomerFormData>),
+        });
       }
-    } catch (error:any) {
-      toast.error(error)
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to fetch customer');
       console.log('Error fetching customer data:', error);
     } finally {
       setIsLoading(false);
@@ -133,6 +188,7 @@ const CustomerForm = () => {
 
   useEffect(() => {
     getDataByID();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return (
@@ -142,179 +198,402 @@ const CustomerForm = () => {
       </Typography>
 
       <StyledCard>
-        
         <CardContent>
-          {
-            isLoading ? (
-               <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
               <CircularProgress size={40} />
             </Box>
-            ) :(
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              {/* SECTION 1: BASIC DETAILS */}
+              <FormSection>
+                <SectionTitle variant="h6">Basic Details</SectionTitle>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 3 }}>
+                    <TextField
+                      label="Plot No"
+                      {...register('plotNo')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <FormSection>
-              <SectionTitle variant="h6">Customer Information</SectionTitle>
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Name"
-                    {...register('name')}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
+                  <Grid size={{ xs: 12, md: 3 }}>
+                    <TextField
+                      label="Date"
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      {...register('date')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Project Area"
+                      {...register('projectArea')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Plan No"
+                      {...register('planNo')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Name of Customer"
+                      {...register('nameOfCustomer')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="System Name"
+                      {...register('name')}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Gender"
+                      select
+                      {...register('gender')}
+                      fullWidth
+                      variant="outlined"
+                    >
+                      <MenuItem value="">Select</MenuItem>
+                      <MenuItem value="Male">Male</MenuItem>
+                      <MenuItem value="Female">Female</MenuItem>
+                      <MenuItem value="Other">Other</MenuItem>
+                    </TextField>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Date of Birth"
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      {...register('dob')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Nationality"
+                      {...register('nationality')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Occupation"
+                      {...register('occupation')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Qualification"
+                      {...register('qualification')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      label="Communication Address"
+                      {...register('communicationAddress')}
+                      fullWidth
+                      variant="outlined"
+                      multiline
+                      rows={2}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="City"
+                      {...register('city')}
+                      error={!!errors.city}
+                      helperText={errors.city?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="State"
+                      {...register('state')}
+                      error={!!errors.state}
+                      helperText={errors.state?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Pincode"
+                      {...register('pincode')}
+                      error={!!errors.pincode}
+                      helperText={errors.pincode?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Mobile No"
+                      {...register('mobileNo')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Landline No"
+                      {...register('landLineNo')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Email"
+                      {...register('email')}
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Father / Husband Name"
+                      {...register('fatherOrHusbandName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Mother Name"
+                      {...register('motherName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label="System Address"
+                      {...register('address')}
+                      error={!!errors.address}
+                      helperText={errors.address?.message}
+                      fullWidth
+                      variant="outlined"
+                      multiline
+                      rows={2}
+                    />
+                  </Grid>
                 </Grid>
+              </FormSection>
 
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Address"
-                    {...register('address')}
-                    error={!!errors.address}
-                    helperText={errors.address?.message}
-                    fullWidth
-                    variant="outlined"
-                    multiline
-                    rows={2}
-                  />
+              {/* SECTION 2: NOMINEE & GUARDIAN */}
+              <FormSection>
+                <SectionTitle variant="h6">Nominee & Guardian</SectionTitle>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Nominee Name"
+                      {...register('nomineeName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Nominee Age"
+                      type="number"
+                      {...register('nomineeAge')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Nominee Relationship"
+                      {...register('nomineeRelationship')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Guardian Name"
+                      {...register('nameOfGuardian')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="S/O, W/O, D/O"
+                      {...register('so_wf_do')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Relationship with Customer"
+                      {...register('relationshipWithCustomer')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label="Guardian / Nominee Address"
+                      {...register('address')}
+                      fullWidth
+                      variant="outlined"
+                      multiline
+                      rows={2}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Customer Photo
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      sx={{ textTransform: 'none' }}
+                    >
+                      Upload Photo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        {...register('photo')}
+                      />
+                    </Button>
+                  </Grid>
                 </Grid>
+              </FormSection>
 
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Phone"
-                    {...register('phone')}
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
+              {/* SECTION 3: INTRODUCER & STAFF */}
+              <FormSection>
+                <SectionTitle variant="h6">Introducer & Staff Details</SectionTitle>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Introducer Name"
+                      {...register('introducerName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Introducer Mobile No"
+                      {...register('introducerMobileNo')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Immediate Supervisor Name"
+                      {...register('immSupervisorName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="CED Name"
+                      {...register('cedName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Diamond Director Name"
+                      {...register('diamountDirectorName')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Diamond Director Phone"
+                      {...register('diamountDirectorPhone')}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
                 </Grid>
+              </FormSection>
 
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Email"
-                    {...register('email')}
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
+              <Divider sx={{ my: 2 }} />
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    label="City"
-                    {...register('city')}
-                    error={!!errors.city}
-                    helperText={errors.city?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    label="State"
-                    {...register('state')}
-                    error={!!errors.state}
-                    helperText={errors.state?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    label="Pincode"
-                    {...register('pincode')}
-                    error={!!errors.pincode}
-                    helperText={errors.pincode?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
+              <Grid container justifyContent="flex-end">
+                <Grid>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    color="primary"
+                    type="submit"
+                    sx={{ minWidth: 150 }}
+                  >
+                    Submit
+                  </Button>
                 </Grid>
               </Grid>
-            </FormSection>
-
-            {/* <FormSection>
-              <SectionTitle variant="h6">Estimate Details</SectionTitle>
-
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                sx={{ mb: 3 }}
-              >
-                <Tab label="General" />
-                <Tab label="EMI" />
-                <Tab label="Marketer" />
-              </Tabs>
-
-              <Grid container spacing={3}>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Marketer Name"
-                    {...register('marketerName')}
-                    error={!!errors.marketerName}
-                    helperText={errors.marketerName?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Payment Terms"
-                    {...register('paymentTerms')}
-                    error={!!errors.paymentTerms}
-                    helperText={errors.paymentTerms?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="EMI Amount"
-                    {...register('emiAmount')}
-                    error={!!errors.emiAmount}
-                    helperText={errors.emiAmount?.message}
-                    fullWidth
-                    variant="outlined"
-                    type="number"
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                  <TextField
-                    label="Duration"
-                    {...register('duration')}
-                    error={!!errors.duration}
-                    helperText={errors.duration?.message}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-              </Grid>
-            </FormSection> */}
-
-            {/* <Divider sx={{ my: 4 }} /> */}
-
-            <Grid container justifyContent="flex-end">
-              <Grid>
-                <Button
-                  variant="contained"
-                  size="large"
-                  color="primary"
-                  type="submit"
-                  sx={{ minWidth: 150 }}
-                >
-                  Submit
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-            )
-          }
+            </form>
+          )}
         </CardContent>
       </StyledCard>
     </DashboardContent>
