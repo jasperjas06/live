@@ -1,26 +1,26 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Grid,
-  Typography,
+  Box,
   Button,
-  TextField,
   Card,
   CardContent,
-  Divider,
-  styled,
-  Box,
   CircularProgress,
+  Divider,
+  Grid,
   MenuItem,
+  styled,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
+import { z } from 'zod';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -50,7 +50,7 @@ const customerSchema = z.object({
   phone: z
     .string()
     .min(1, 'Phone is required')
-    .regex(/^[0-9]{10}$/, 'Phone must be 10 digits'),
+    .regex(/^[0-9]{10,11}$/, 'Phone must be 10-11 digits'),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   pincode: z
@@ -61,8 +61,8 @@ const customerSchema = z.object({
 
   // Optional / domain fields
   plotNo: z.string().optional(),
-  date: z.string().optional(),
-  nameOfCustomer: z.string().optional(),
+  // date: z.string().optional(),
+  // nameOfCustomer: z.string().optional(),
   gender: z.string().optional(),
   projectArea: z.string().optional(),
   nationality: z.string().optional(),
@@ -117,8 +117,8 @@ const CustomerForm = () => {
 
       // optional
       plotNo: '',
-      date: '',
-      nameOfCustomer: '',
+      // date: '',    
+      // nameOfCustomer: '',
       gender: '',
       projectArea: '',
       nationality: '',
@@ -149,8 +149,28 @@ const CustomerForm = () => {
 
   const onSubmit: SubmitHandler<CustomerFormData> = async (data) => {
     try {
+            // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
+      let cleanedPhone = data.phone;
+      if (cleanedPhone.startsWith('0')) {
+        cleanedPhone = cleanedPhone.substring(1);
+      }
+      
+      // Validate cleaned phone is exactly 10 digits
+      if (!/^[0-9]{10}$/.test(cleanedPhone)) {
+        toast.error('Phone must be exactly 10 digits');
+        return;
+      }
+      const cleanedMobileNo = data.mobileNo?.startsWith('0') 
+        ? data.mobileNo.substring(1) 
+        : data.mobileNo;
+
+      const payload = {
+        ...data,
+        phone: cleanedPhone,
+        mobileNo: cleanedMobileNo,
+      };
       const response = id
-        ? await updateCustomer({ ...data, _id: id })
+        ? await updateCustomer({ ...payload, _id: id })
         : await createCustomer(data);
 
       if (response.status === 200) {
@@ -218,7 +238,7 @@ const CustomerForm = () => {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 3 }}>
+                  {/* <Grid size={{ xs: 12, md: 3 }}>
                     <TextField
                       label="Date"
                       type="date"
@@ -227,7 +247,7 @@ const CustomerForm = () => {
                       fullWidth
                       variant="outlined"
                     />
-                  </Grid>
+                  </Grid> */}
 
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
@@ -247,14 +267,14 @@ const CustomerForm = () => {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  {/* <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Name of Customer"
                       {...register('nameOfCustomer')}
                       fullWidth
                       variant="outlined"
                     />
-                  </Grid>
+                  </Grid> */}
 
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField

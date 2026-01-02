@@ -25,6 +25,8 @@ import {
 import { getACustomer } from 'src/utils/api.service'; 
 
 interface Customer {
+    id: string;
+  customerCode: string;
   _id: string;
   name: string;
   email: string;
@@ -108,7 +110,7 @@ const CustomerProfile = () => {
               {customer.name || 'N/A'}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Customer ID: {customer._id || 'N/A'}
+              Customer ID: {customer?.id || customer?.customerCode || customer._id || 'N/A'}
             </Typography>
           </Box>
         </Box>
