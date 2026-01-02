@@ -87,7 +87,7 @@ const customerSchema = z.object({
   cedName: z.string().optional(),
   diamountDirectorName: z.string().optional(),
   diamountDirectorPhone: z.string().optional(),
-
+  guardianAddress: z.string().optional(),
   photo: z.any().optional(),
 });
 
@@ -144,6 +144,7 @@ const CustomerForm = () => {
       diamountDirectorName: '',
       diamountDirectorPhone: '',
       photo: undefined,
+      guardianAddress: '',  
     },
   });
 
@@ -228,7 +229,18 @@ const CustomerForm = () => {
               {/* SECTION 1: BASIC DETAILS */}
               <FormSection>
                 <SectionTitle variant="h6">Basic Details</SectionTitle>
-                <Grid container spacing={3}>
+                  <Grid container spacing={3}>
+                    
+                    <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Name"
+                      {...register('name')}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      fullWidth
+                      variant="outlined"
+                    />
+                  </Grid>
                   <Grid size={{ xs: 12, md: 3 }}>
                     <TextField
                       label="Plot No"
@@ -275,17 +287,6 @@ const CustomerForm = () => {
                       variant="outlined"
                     />
                   </Grid> */}
-
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="System Name"
-                      {...register('name')}
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
 
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
@@ -387,7 +388,7 @@ const CustomerForm = () => {
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Mobile No"
-                      {...register('mobileNo')}
+                      {...register('phone')}
                       fullWidth
                       variant="outlined"
                     />
@@ -433,7 +434,7 @@ const CustomerForm = () => {
 
                   <Grid size={{ xs: 12 }}>
                     <TextField
-                      label="System Address"
+                      label="Address"
                       {...register('address')}
                       error={!!errors.address}
                       helperText={errors.address?.message}
@@ -508,7 +509,7 @@ const CustomerForm = () => {
                   <Grid size={{ xs: 12 }}>
                     <TextField
                       label="Guardian / Nominee Address"
-                      {...register('address')}
+                      {...register('guardianAddress')}
                       fullWidth
                       variant="outlined"
                       multiline
