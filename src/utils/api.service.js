@@ -1513,3 +1513,34 @@ export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
     };
   }
 };
+
+
+// Custom Billing Export API
+export const getCustomBillingReport = async ({ dateFrom, dateTo, date }) => {
+  try {
+    let url = `${base_url}api/common/billing/get/all/report?`;
+    const params = [];
+    
+    if (date) params.push(`date=${date}`);
+    if (dateFrom) params.push(`dateFrom=${dateFrom}`);
+    if (dateTo) params.push(`dateTo=${dateTo}`);
+    
+    url += params.join('&');
+    
+    const response = await axios.get(url, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching custom billing report:", error);
+    return {
+      data: null,
+      message: error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};

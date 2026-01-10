@@ -177,35 +177,58 @@ const BillingTable = () => {
 
   return (
     <DashboardContent>
-      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h4" sx={{ flexGrow: 1, minWidth: '200px' }}>
+      <Box
+        sx={{
+          mb: 5,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
+        <Typography variant="h4" sx={{ flexGrow: 1, minWidth: "200px" }}>
           Billing
         </Typography>
-        
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Button
             variant="outlined"
             color="success"
             onClick={handleDownloadExcel}
             disabled={isDownloading || data.length === 0}
             sx={{
-              minWidth: '150px',
-              '&:hover': {
-                backgroundColor: 'success.light',
-                color: 'white',
+              minWidth: "150px",
+              "&:hover": {
+                backgroundColor: "success.light",
+                color: "white",
               },
             }}
           >
-            {isDownloading ? 'Downloading...' : 'Download Excel'}
+            {isDownloading ? "Downloading..." : "Download Excel"}
           </Button>
-          
+
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Iconify icon="mingcute:download-line" />}
+            onClick={() => navigate("custom-export")}
+            sx={{
+              minWidth: "150px",
+              "&:hover": {
+                backgroundColor: "primary.light",
+                color: "white",
+              },
+            }}
+          >
+            Custom Download
+          </Button>
           <Button
             variant="contained"
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => navigate('create')}
+            onClick={() => navigate("create")}
             disabled={permissions?.Billing?.create !== true}
-            sx={{ minWidth: '150px' }}
+            sx={{ minWidth: "150px" }}
           >
             New Billing
           </Button>
@@ -230,7 +253,7 @@ const BillingTable = () => {
                 <Button
                   size="small"
                   onClick={handleSearchClear}
-                  sx={{ minWidth: 'auto', p: 0.5 }}
+                  sx={{ minWidth: "auto", p: 0.5 }}
                 >
                   <Iconify icon="mingcute:close-line" />
                 </Button>
@@ -238,8 +261,8 @@ const BillingTable = () => {
             ),
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'background.paper',
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "background.paper",
             },
           }}
         />
@@ -247,7 +270,7 @@ const BillingTable = () => {
 
       {/* Loading Indicator */}
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       )}
@@ -268,12 +291,22 @@ const BillingTable = () => {
 
       {/* Pagination Controls */}
       {pagination && !isLoading && (
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box
+          sx={{
+            mt: 3,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
-            Showing {pagination.totalRecords} record{pagination.totalRecords !== 1 ? 's' : ''}
+            Showing {pagination.totalRecords} record
+            {pagination.totalRecords !== 1 ? "s" : ""}
           </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Button
               variant="outlined"
               onClick={handlePreviousPage}
@@ -281,11 +314,11 @@ const BillingTable = () => {
             >
               Previous
             </Button>
-            
+
             <Typography variant="body2">
               Page {pagination.currentPage} of {pagination.totalPages}
             </Typography>
-            
+
             <Button
               variant="outlined"
               onClick={handleNextPage}

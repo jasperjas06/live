@@ -63,6 +63,9 @@ export const ViewRequest = lazy(() => import('src/pages/Requests/view/ViewReques
 export const ManageBilling = lazy(() => import('src/pages/Billing/Manage/ManageBilling'));
 export const CustomerEstimateView = lazy(() => import('src/pages/CustomerDetails/ManageCustomer/ViewCustomerDetails'));
 export const BillingView = lazy(() => import('src/pages/Billing/BillingView'));
+export const CustomExport = lazy(
+  () => import("src/pages/Billing/CustomExport")
+);
 export const Logs = lazy(() => import("src/pages/log/Logs"));
 // ----------------------------------------------------------------------
 // Loading fallback (when lazy pages load)
@@ -154,6 +157,7 @@ export const routesSection: RouteObject[] = [
       { path: 'billing', element: <Billing /> },
       { path: 'billing/view/:id', element: <BillingView /> },
       { path: 'all/request', element: <Requests /> },
+       { path: 'billing/custom-export', element: <CustomExport /> },
       { path: 'all/request/view/:id', element: <ViewRequest /> },
       { path: 'billing/create', element: <ManageBilling /> },
        { path: "logs", element: <Logs /> },
