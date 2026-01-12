@@ -60,6 +60,7 @@ export const LifeAlliance = lazy(() => import('src/pages/LifeAlliance/LifeAllian
 export const LifeHousing = lazy(() => import('src/pages/LifeHousing/LifeHousing'));
 export const Requests = lazy(() => import('src/pages/Requests/Request'));
 export const ViewRequest = lazy(() => import('src/pages/Requests/view/ViewRequest'));
+export const ViewBillingRequest = lazy(() => import('src/pages/Requests/view/ViewBillingRequest'));
 export const ManageBilling = lazy(() => import('src/pages/Billing/Manage/ManageBilling'));
 export const CustomerEstimateView = lazy(() => import('src/pages/CustomerDetails/ManageCustomer/ViewCustomerDetails'));
 export const BillingView = lazy(() => import('src/pages/Billing/BillingView'));
@@ -159,6 +160,7 @@ export const routesSection: RouteObject[] = [
       { path: 'all/request', element: <Requests /> },
        { path: 'billing/custom-export', element: <CustomExport /> },
       { path: 'all/request/view/:id', element: <ViewRequest /> },
+      { path: 'all/request/view/billing/:id', element: <ViewBillingRequest /> },
       { path: 'billing/create', element: <ManageBilling /> },
        { path: "logs", element: <Logs /> },
     ],

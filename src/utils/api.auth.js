@@ -60,6 +60,70 @@ export const getEditRequest = async (params) => {
   }
 };
 
+export const getBillingRequest = async (params) => {
+  try {
+    const response = await axios.get(`${baseUrl}api/billing/request/get/all`, {
+      headers: {
+        Authorization: `${token}`,
+      },
+      params,
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Get billing request error:", error);
+    return (
+      error.response?.data || {
+        success: false,
+        message: "Failed to fetch billing request",
+      }
+    );
+  }
+};
+
+export const getBillingRequestById = async(id)=>{
+    try {
+        const response = await axios.get(`${baseUrl}api/billing/request/get/id/${id}`, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+    } catch (error) {
+        console.log("Get billing request error:", error)
+        return error.response?.data || { success: false, message: "Failed to fetch billing request" }
+    }
+}
+
+export const updateBillingRequestStatus = async(id, status, validity)=>{
+    try {
+        const payload = { id, status };
+        if (validity !== undefined && validity !== null) {
+            payload.validity = validity;
+        }
+        const response = await axios.put(`${baseUrl}api/billing/request/approve`, payload, {
+            headers: {
+                Authorization: `${token}`
+            }
+        })
+        return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+    } catch (error) {
+        console.log("Update billing request status error:", error)
+        return error.response?.data || { success: false, message: "Failed to update request status" }
+    }
+}
+
 export const getEditRequestByID = async(id)=>{
     try {
         const response = await axios.get(`${baseUrl}api/edit/request/get/${id}`, {
