@@ -180,7 +180,7 @@ const CustomerForm = () => {
       };
       const response = id
         ? await updateCustomer({ ...payload, _id: id })
-        : await createCustomer(data);
+        : await createCustomer(data, true);
 
       if (response.status === 200) {
         // Show success dialog with customer ID instead of immediate navigation

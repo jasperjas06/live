@@ -15,9 +15,12 @@ const getHeaders = () => ({
 });
 
 // Customer APIS
-export const createCustomer = async (data) => {
+export const createCustomer = async (data, includeCustomer = false) => {
   try {
-    const response = await axios.post(`${base_url}api/customer/create`, data, {
+    const url = includeCustomer 
+      ? `${base_url}api/customer/create?includeCustomer=true`
+      : `${base_url}api/customer/create`;
+    const response = await axios.post(url, data, {  
       headers: getHeaders()
     });
     return {
