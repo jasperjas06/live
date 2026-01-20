@@ -13,6 +13,11 @@ import {
   styled,
   TextField,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -21,6 +26,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
 import { z } from 'zod';
+import { Icon } from '@iconify/react';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -95,6 +101,8 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 
 const CustomerForm = () => {
   const [isLoading, setIsLoading] = useState(false);
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [createdCustomerId, setCreatedCustomerId] = useState<string>("");
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -175,8 +183,10 @@ const CustomerForm = () => {
         : await createCustomer(data);
 
       if (response.status === 200) {
-        toast.success(response.message);
-        navigate(-1);
+        // Show success dialog with customer ID instead of immediate navigation
+        const customerId = response.data?.data?.id || '';
+        setCreatedCustomerId(customerId);
+        setSuccessDialogOpen(true);
       } else {
         alert(`Error: ${response.message}`);
       }
@@ -184,6 +194,17 @@ const CustomerForm = () => {
       console.error('Submission error:', error);
       toast.error(error?.message || 'Something went wrong');
     }
+  };
+
+  
+  const handleCopyCustomerId = () => {
+    navigator.clipboard.writeText(createdCustomerId);
+    toast.success('Customer ID copied to clipboard!');
+  };
+
+  const handleSuccessDialogClose = () => {
+    setSuccessDialogOpen(false);
+    navigate('/customer');
   };
 
   const getDataByID = async () => {
@@ -617,6 +638,81 @@ const CustomerForm = () => {
           )}
         </CardContent>
       </StyledCard>
+      
+      {/* Success Dialog */}
+      <Dialog 
+        open={successDialogOpen} 
+        onClose={(event, reason) => {
+          // Prevent closing by clicking outside or pressing escape
+          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+            return;
+          }
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          pb: 1,
+          fontSize: '1.5rem',
+          fontWeight: 600,
+          color: '#4caf50'
+        }}>
+          ✓ Customer Created Successfully!
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', pt: 3, pb: 3 }}>
+          <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+            Your customer has been created with the following ID:
+          </Typography>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              gap: 1,
+              p: 2,
+              backgroundColor: '#f5f5f5',
+              borderRadius: 2,
+              border: '2px solid #e0e0e0'
+            }}
+          >
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 700,
+                color: '#1976d2',
+                fontFamily: 'monospace'
+              }}
+            >
+              {createdCustomerId}
+            </Typography>
+            <IconButton 
+              onClick={handleCopyCustomerId}
+              size="small"
+              sx={{ 
+                color: '#1976d2',
+                '&:hover': { backgroundColor: '#e3f2fd' }
+              }}
+              title="Copy Customer ID"
+            >
+              <Icon icon="solar:copy-outline" width={24} />
+            </IconButton>
+          </Box>
+          <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
+            Click the copy icon to copy the ID to your clipboard
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button 
+            onClick={handleSuccessDialogClose}
+            variant="contained"
+            size="large"
+            sx={{ minWidth: 150 }}
+          >
+            Done
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 };

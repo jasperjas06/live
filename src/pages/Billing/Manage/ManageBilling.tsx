@@ -106,6 +106,15 @@ const BillingForm = () => {
 
     const [cusId, setCusId] = useState<any>("")
 
+        
+    // Pagination and search state for customer autocomplete
+    const [customerPage, setCustomerPage] = useState(1);
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
+    const [hasMoreCustomers, setHasMoreCustomers] = useState(true);
+    const [customerLoading, setCustomerLoading] = useState(false);
+
+
     /**
      * Get the id from the URL parameters
      */
@@ -188,43 +197,81 @@ const BillingForm = () => {
     };
 
 
+    // Debounce customer search
     useEffect(() => {
-        const getData = async () => {
-            try {
-                setLoading(true);
-                const res = await getAllCustomer();
-                if (res.status) {
-                    const newdata = res.data.data.map((item: any, index: number) => ({
-                        value: item._id,
-                        label: item.name,
-                        id: item.id,
-                        _id: item._id,
-                        originalData: item,
-                    }));
-                    setCustomerOptions(newdata);
-                    
-                    // If we're editing and have customerId in form, find the customer
-                    if (id) {
-                        const formValues = watch();
-                        if (formValues.customerId && newdata.length > 0) {
-                            const foundCustomer = newdata.find((option: any) => option.value === formValues.customerId);
-                            if (foundCustomer) {
-                                setSelectedCustomer(foundCustomer);
-                            }
+        const timer = setTimeout(() => {
+            setDebouncedCustomerSearch(customerSearch);
+            // Reset to page 1 when search changes
+            if (customerSearch !== debouncedCustomerSearch) {
+                setCustomerPage(1);
+                setCustomerOptions([]);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [customerSearch]);
+
+    // Fetch customers with pagination and search
+    const fetchCustomers = async (page: number, search: string, append = false) => {
+        try {
+            setCustomerLoading(true);
+            const params: any = {
+                page,
+                limit: 10,
+            };
+            
+            if (search) {
+                params.search = search;
+            }
+            
+            const res = await getAllCustomer(params);
+            
+            if (res.status) {
+                const newdata = res.data.data.map((item: any) => ({
+                    value: item._id,
+                    label: item.name,
+                    id: item.id,
+                    _id: item._id,
+                    originalData: item,
+                }));
+                
+                // Append or replace options based on pagination
+                setCustomerOptions((prev: any) => append ? [...prev, ...newdata] : newdata);
+                
+                // Update pagination state
+                setHasMoreCustomers(res.data.pagination?.hasNextPage || false);
+                
+                // If we're editing and have customerId in form, find the customer
+                if (id && !append) {
+                    const formValues = watch();
+                    if (formValues.customerId && newdata.length > 0) {
+                        const foundCustomer = newdata.find((option: any) => option.value === formValues.customerId);
+                        if (foundCustomer) {
+                            setSelectedCustomer(foundCustomer);
                         }
                     }
-                } else {
-                    console.log("Failed to fetch customers:", res);
                 }
-            } catch (error) {
-                console.error("Error loading data:", error);
-            } finally {
-                setLoading(false);
+            } else {
+                console.log("Failed to fetch customers:", res);
             }
-        };
+        } catch (error) {
+            console.error("Error loading customers:", error);
+        } finally {
+            setCustomerLoading(false);
+        }
+    };
 
-        getData();
-    }, [id]);
+    // Initial load and when search changes
+    useEffect(() => {
+        fetchCustomers(1, debouncedCustomerSearch, false);
+    }, [debouncedCustomerSearch]);
+
+    // Load more when page changes (infinite scroll)
+    useEffect(() => {
+        if (customerPage > 1 && hasMoreCustomers) {
+            fetchCustomers(customerPage, debouncedCustomerSearch, true);
+        }
+    }, [customerPage]);
 
     useEffect(() => {
         const getData = async () => {
@@ -437,8 +484,22 @@ const BillingForm = () => {
                                                 const identifier = option.id || option._id;
                                                 return `${option.label} (${identifier})`;
                                             }}
-                                            loading={loading}
+                                            loading={customerLoading}
                                             value={selectedCustomer}
+                                            onInputChange={(event, value, reason) => {
+                                                if (reason === 'input') {
+                                                    setCustomerSearch(value);
+                                                } else if (reason === 'clear') {
+                                                    // Reset search when cleared
+                                                    setCustomerSearch('');
+                                                    setCustomerPage(1);
+                                                }
+                                            }}
+                                            onClose={() => {
+                                                // Reset search when dropdown closes to show first 10 on reopen
+                                                setCustomerSearch('');
+                                                setCustomerPage(1);
+                                            }}
                                             onChange={(event, newValue) => {
                                                 setSelectedCustomer(newValue);
                                                 const selectedId = newValue?.value || '';
@@ -455,24 +516,28 @@ const BillingForm = () => {
                                                 setValue('paymentDate', '', { shouldValidate: false });
                                                 setEmiError("");
                                             }}
-                                            filterOptions={(options, { inputValue }) => {
-                                                const searchTerm = inputValue.toLowerCase().trim();
-                                                
-                                                if (!searchTerm) return options;
-                                                
-                                                return options.filter(option => {
-                                                    // Search in name, id, and _id
-                                                    const nameMatch = option.label?.toLowerCase().includes(searchTerm);
-                                                    const idMatch = option.id?.toLowerCase().includes(searchTerm);
-                                                    const _idMatch = option._id?.toLowerCase().includes(searchTerm);
+                                         ListboxProps={{
+                                                onScroll: (event: React.SyntheticEvent) => {
+                                                    const listboxNode = event.currentTarget;
+                                                    const scrollTop = listboxNode.scrollTop;
+                                                    const scrollHeight = listboxNode.scrollHeight;
+                                                    const clientHeight = listboxNode.clientHeight;
                                                     
-                                                    return nameMatch || idMatch || _idMatch;
-                                                });
+                                                    // Load more when scrolled to 80% of the list
+                                                    if (
+                                                        scrollTop + clientHeight >= scrollHeight * 0.8 &&
+                                                        hasMoreCustomers &&
+                                                        !customerLoading
+                                                    ) {
+                                                        setCustomerPage(prev => prev + 1);
+                                                    }
+                                                },
+                                                style: { maxHeight: '300px' }
                                             }}
                                             renderOption={(props, option, { inputValue }) => {
                                                 // Determine which identifier to display
                                                 const displayIdentifier = option.id ? option.id : option._id;
-                                                const searchTerm = inputValue.toLowerCase().trim();
+                                                const searchTerm = debouncedCustomerSearch.toLowerCase().trim();
                                                 
                                                 return (
                                                     <li {...props} key={option.value}>
@@ -509,14 +574,14 @@ const BillingForm = () => {
                                                         ...params.InputProps,
                                                         endAdornment: (
                                                             <>
-                                                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                                {customerLoading ? <CircularProgress color="inherit" size={20} /> : null}
                                                                 {params.InputProps.endAdornment}
                                                             </>
                                                         ),
                                                     }}
                                                 />
                                             )}
-                                            noOptionsText="No customers found"
+                                              noOptionsText={customerLoading ? "Loading..." : "No customers found"}
                                         />
                                         {/* Hidden input to register customerId with react-hook-form */}
                                         <input type="hidden" {...register('customerId')} />
@@ -606,7 +671,7 @@ const BillingForm = () => {
                                                         label="Amount"
                                                         type="number"
                                                         fullWidth
-                                                        disabled={isDisabled}
+                                                        // disabled={isDisabled}
                                                         error={!!fieldState.error}
                                                         helperText={fieldState.error?.message}
                                                     />

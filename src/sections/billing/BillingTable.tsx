@@ -62,7 +62,7 @@ const BillingTable = () => {
           ...item,
           marketerName: item.introducer?.name || 'N/A',
           paidDate: item.emi?.paidDate?.split('T')[0] || 'N/A',
-          emiId: item.emi?._id || 'N/A',
+          // emiId: item.emi?._id || 'N/A',
           paidAmount: item.emi?.paidAmt || 'N/A',
         }));
         setData(billingData);
@@ -83,7 +83,7 @@ const BillingTable = () => {
     { id: 'customerName', label: 'Name', sortable: true },
     { id: 'marketerName', label: 'Marketer Name', sortable: true },
     { id: 'emiNo', label: 'Emi No', sortable: true },
-    { id: 'emiId', label: 'Emi Id', sortable: true },
+    // { id: 'emiId', label: 'Emi Id', sortable: true },
     { id: 'paidAmount', label: 'Paid Amount', sortable: true },
     { id: 'paidDate', label: 'Paid Date', sortable: true },
   ];

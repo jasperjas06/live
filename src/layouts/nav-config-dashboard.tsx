@@ -35,7 +35,7 @@ const allNavData: NavItem[] = [
     icon: <Folder />,
     children: [
       { title: "All Projects", path: "/projects/all" },
-      { title: "Project Details", path: "/projects/details" },
+      // { title: "Project Details", path: "/projects/details" },
     ],
   },
   { title: "Percentage", path: "/percentage", icon: <Percent /> },

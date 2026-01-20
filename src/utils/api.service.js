@@ -34,9 +34,25 @@ export const createCustomer = async (data) => {
   }
 };
 
-export const getAllCustomer = async () => {
+export const getAllCustomer = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/customer/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/customer/get/all${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {

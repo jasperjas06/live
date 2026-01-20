@@ -53,6 +53,7 @@ type DataTableProps<T> = {
   disableSearch?: boolean;
   disablePagination?: boolean;
   defaultRowsPerPage?: number;
+  preserveOrder?: boolean;
 };
 
 export function DataTable<T extends { id: string | number }>({
@@ -69,7 +70,8 @@ export function DataTable<T extends { id: string | number }>({
   isEdit = true,
   disableSearch = false,
   disablePagination = false,
-  defaultRowsPerPage = 5
+  defaultRowsPerPage = 5,
+  preserveOrder = false
 }: DataTableProps<T>) {
   const theme = useTheme();
   const navigate = useNavigate()
@@ -120,13 +122,16 @@ export function DataTable<T extends { id: string | number }>({
       )
     : data;
 
-  const sortedData = [...filteredData].sort((a, b) => {
-    const aVal = a[orderBy];
-    const bVal = b[orderBy];
-    return order === 'asc'
-      ? aVal > bVal ? 1 : -1
-      : aVal < bVal ? 1 : -1;
-  });
+  // Conditionally apply sorting based on preserveOrder flag
+  const sortedData = preserveOrder 
+    ? filteredData 
+    : [...filteredData].sort((a, b) => {
+        const aVal = a[orderBy];
+        const bVal = b[orderBy];
+        return order === 'asc'
+          ? aVal > bVal ? 1 : -1
+          : aVal < bVal ? 1 : -1;
+      });
 
   // Only paginate if pagination is not disabled
   const paginatedData = disablePagination 

@@ -48,9 +48,9 @@ const CustomerDetails = () => {
             marketer: item?.general?.marketer?.name || 'N/A',
             status: item?.general?.status || 'N/A',
             saleType: item.plot.length > 0 ? 'Plot' : item.flat.length > 0 ? 'Flat' : 'N/A',
-            noEmiPaid: item.emi.filter((emi: any) => emi.paidDate).length || "N/A",
+            noEmiPaid: item.emi.filter((emi: any) => emi.paidDate).length || "0",
             noOfInstallments: item.general?.noOfInstallments || "N/A",
-            noEmiPending: item.emi.filter((emi: any) => !emi.paidDate).length || "N/A",
+            noEmiPending: item.emi.filter((emi: any) => !emi.paidDate).length || item.emi.length,
           }
         })
         setData(newData)
