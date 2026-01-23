@@ -146,7 +146,7 @@ console.log(billRef)
                     overflowWrap: "anywhere",
                   }}
                 >
-                   {data?.id || data?._id}
+                    {(data?.id || data?._id) ? String(data?.id || data?._id).slice(0, 5) : ""}
                 </p>
               </div>
               <div style={{ width: "100%", display: "flex", fontSize: "12px", margin:"5px 0"  }}>
