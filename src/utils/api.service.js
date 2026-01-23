@@ -91,9 +91,12 @@ export const getACustomer = async (id) => {
   }
 }
 
-export const updateCustomer = async (data) => {
+export const updateCustomer = async (data, includeCustomer = false) => {
   try {
-    const response = await axios.put(`${base_url}api/customer/update`, data, {
+      const url = includeCustomer 
+      ? `${base_url}api/customer/update?includeCustomer=true`
+      : `${base_url}api/customer/update`;
+    const response = await axios.put(url, data, {
       headers: getHeaders()
     });
     return {
@@ -387,9 +390,14 @@ export const updateMarketer = async (data) => {
   }
 }
 
-export const getAllMarketer = async () => {
+export const getAllMarketer = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/market/detail/get/all`, {
+       const queryString = new URLSearchParams(params).toString();
+    const url = queryString 
+      ? `${base_url}api/market/detail/get/all?${queryString}`
+      : `${base_url}api/market/detail/get/all`;
+
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -1384,6 +1392,26 @@ export const createCustomerEstimate = async (data) => {
   }
 };
 
+
+export const updateCustomerEstimate = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/common/update/all`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 export const getAllDetailByCustomerOrGeneral = async ({ cusId, genId }) => {
   try {
     let url = `${base_url}api/common/get/all/detail/`
@@ -1535,7 +1563,7 @@ export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
 
 
 // Custom Billing Export API
-export const getCustomBillingReport = async ({ dateFrom, dateTo, date }) => {
+export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status }) => {
   try {
     let url = `${base_url}api/common/billing/get/all/report?`;
     const params = [];
@@ -1543,6 +1571,8 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date }) => {
     if (date) params.push(`date=${date}`);
     if (dateFrom) params.push(`dateFrom=${dateFrom}`);
     if (dateTo) params.push(`dateTo=${dateTo}`);
+      if (dateTo) params.push(`dateTo=${dateTo}`);
+    if (status) params.push(`status=${status}`);
     
     url += params.join('&');
     

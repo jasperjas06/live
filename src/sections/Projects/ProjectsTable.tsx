@@ -60,7 +60,8 @@ const tableData: ProjectWithId[] = data.map((item) => ({
   {
     id: 'projectName',
     label: 'Project Name',
-    sortable: true,
+     sortable: true,
+    render: (_, row) => row.projectName || 'N/A',
   },
   // {
   //   id: 'description',
@@ -69,18 +70,32 @@ const tableData: ProjectWithId[] = data.map((item) => ({
   {
     id: 'duration',
     label: 'Duration',
+    render: (_, row) => row.duration || 'N/A',
   },
   {
-    id: 'emiAmount',
+    id: 'emiAmount',  
     label: 'EMI Amount',
-  },
+    render: (_, row) => row.emiAmount ? `₹${row.emiAmount.toLocaleString('en-IN')}` : 'N/A',
+  },  
   {
     id: 'returns',
     label: 'Returns',
+     render: (_, row) => {
+      // Check if returns exists and is not 0
+      if (row.returns && row.returns !== 0) {
+        return `₹${row.returns.toLocaleString('en-IN')}`;
+      }
+      return 'N/A';
+    },
   },
   {
     id: 'intrest',
     label: 'Interest',
+     render: (_, row) => {
+      // Priority: intrest (current) -> interest (old) -> N/A
+      const interest = row.intrest || (row as any).interest;
+      return interest && interest !== '0' ? interest : 'N/A';
+    },
   },
   // {
   //     id: 'id', // key used for rendering

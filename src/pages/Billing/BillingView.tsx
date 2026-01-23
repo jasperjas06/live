@@ -189,24 +189,51 @@ const BillingView = () => {
 
         const element = billRef.current;
 
+        // 1️⃣ Capture the receipt exactly as it appears
         const canvas = await html2canvas(element, {
-            scale: 2,
+            scale: 2,                 // good print quality
             useCORS: true,
-            backgroundColor: "#fff",
+            backgroundColor: "#ffffff",
         });
 
         const imgData = canvas.toDataURL("image/png");
-        const targetWidth = canvas.width * 0.2;
-        const targetHeight = canvas.height * 0.2;
 
-        const pdf = new jsPDF({
-            unit: "px",
-            format: [targetWidth, targetHeight]
-        });
+        // 2️⃣ Create A5 LANDSCAPE PDF (THIS is the key change)
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a5",             // ✅ A5 paper
+  });
 
-        pdf.addImage(imgData, "PNG", 0, 0, targetWidth, targetHeight);
-        pdf.save("receipt.pdf");
-    };
+  // A5 landscape size in mm
+  const pdfWidth = 210;
+  const pdfHeight = 148;
+
+  // 3️⃣ Calculate image dimensions to fit width (NO stretching)
+  const imgProps = pdf.getImageProperties(imgData);
+  const imgWidth = pdfWidth;
+  const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+  // 4️⃣ Align image at TOP (like real receipts)
+  // If you want center, change y to: (pdfHeight - imgHeight) / 2
+  const x = 0;
+  const y = 0;
+
+  pdf.addImage(
+    imgData,
+    "PNG",
+    x,
+    y,
+    imgWidth,
+    imgHeight
+  );
+
+  // 5️⃣ Save
+  pdf.save("receipt.pdf");
+};
+
+
+
 
 
     const downloadAsPDF = () => {

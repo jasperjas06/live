@@ -1,4 +1,5 @@
-import { Box, Button, CircularProgress, InputAdornment, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, InputAdornment, IconButton, TextField, Typography } from '@mui/material';
+import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { permissions } from 'src/common/Permissions';
@@ -8,9 +9,11 @@ import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
 import type { BillingPagination } from 'src/types/billing';
 import { getAllBilling } from 'src/utils/api.service';
+import toast from 'react-hot-toast';
 
 type Customer = {
   id: string;
+  customerId?: string;
   customerName: string;
   marketerName: string;
   emiNo: number;
@@ -60,10 +63,11 @@ const BillingTable = () => {
         let billingData = response.data.data;
         billingData = billingData.map((item: any) => ({
           ...item,
-          marketerName: item.introducer?.name || 'N/A',
-          paidDate: item.emi?.paidDate?.split('T')[0] || 'N/A',
-          // emiId: item.emi?._id || 'N/A',
-          paidAmount: item.emi?.paidAmt || 'N/A',
+           customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
+          marketerName: item.introducer?.name || item?.customer?.marketerName || 'N/A',
+          paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || 'N/A',
+          // emiId: item.emi?._id || 'N/A',,
+           paidAmount: item.emi?.paidAmt || item?.amountPaid || 'N/A',
         }));
         setData(billingData);
         setPagination(response.data.pagination || null);
@@ -80,6 +84,40 @@ const BillingTable = () => {
   }, [currentPage, debouncedSearch]);
 
   const customerColumns: Column<Customer>[] = [
+   { 
+      id: 'customerId', 
+      label: 'Customer ID', 
+      sortable: true,
+      render: (value: any, row: Customer) => {
+        const displayId = value || row.id || 'N/A';
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2">{displayId}</Typography>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(displayId);
+                toast.success('Customer ID copied!');
+              }}
+              sx={{ 
+                width: 24, 
+                height: 24, 
+                color: 'text.secondary',
+                opacity: 0.7,
+                '&:hover': { 
+                  opacity: 1,
+                  color: 'primary.main',
+                  bgcolor: 'action.hover' 
+                }
+              }}
+            >
+              <Icon icon="solar:copy-outline" width={16} />
+            </IconButton>
+          </Box>
+        );
+      }
+    },
     { id: 'customerName', label: 'Name', sortable: true },
     { id: 'marketerName', label: 'Marketer Name', sortable: true },
     { id: 'emiNo', label: 'Emi No', sortable: true },

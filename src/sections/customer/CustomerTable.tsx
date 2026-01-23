@@ -35,6 +35,14 @@ type Customer = {
     projectName?: string;
     [key: string]: any;
   };
+      ddId?: {
+    name?: string;
+    [key: string]: any;
+  };
+  cedId?: {
+    name?: string;
+    [key: string]: any;
+  };
 };
 
 const CustomerPage = () => {
@@ -78,6 +86,9 @@ const CustomerPage = () => {
       }));
       setData(mapped);
       setPagination(res.data.pagination || null);
+      } else if (res?.status === 404) {
+      setData([]);
+      setPagination(null);
     }
   } catch (error) {
     console.log(error);
@@ -134,7 +145,7 @@ const CustomerPage = () => {
     sortable: false,
     render: (_value: any, row: Customer) => (
       <Typography variant="body2">
-        {row.projectId?.marketer || 'N/A'}
+       {row.projectId?.marketer || row?.ddId?.name || 'N/A'}
       </Typography>
     )
   },

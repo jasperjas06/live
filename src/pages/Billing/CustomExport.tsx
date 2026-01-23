@@ -19,6 +19,7 @@ const CustomExport = () => {
   const [fromDate, setFromDate] = useState(getTodayDate());
   const [toDate, setToDate] = useState(getTodayDate());
   const [dateFilter, setDateFilter] = useState('Custom');
+  const [status, setStatus] = useState('');
 
   const handleDateFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filter = event.target.value;
@@ -98,7 +99,7 @@ const CustomExport = () => {
       }
 
       // Prepare API parameters based on date selection
-      const params: { date?: string; dateFrom?: string; dateTo?: string } = {};
+      const params: { date?: string; dateFrom?: string; dateTo?: string; status?: string } = {};
       
       // If both dates are the same (e.g. both are today), send only 'date' param
       if (fromDate === toDate) {
@@ -108,7 +109,13 @@ const CustomExport = () => {
         if (fromDate) params.dateFrom = fromDate;
         if (toDate) params.dateTo = toDate;
       }
+        
+      // Add status filter if selected
+      if (status) {
+        params.status = status;
+      }
 
+      console.log('API Params being sent:', params);
       // Call the API
       const response = await getCustomBillingReport(params as any);
 
@@ -237,6 +244,20 @@ const CustomExport = () => {
                 InputLabelProps={{ shrink: true }}
                 sx={{ flex: 1, minWidth: '200px' }}
               />
+                
+              <TextField
+                select
+                label="Status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                sx={{ minWidth: '200px' }}
+                helperText="Optional: Filter by payment status"
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="blocked">Blocked</MenuItem>
+                <MenuItem value="paid">Paid</MenuItem>
+              </TextField>
             </Box>
 
             {/* <Box sx={{ mt: 2, p: 2, bgcolor: 'background.neutral', borderRadius: 1 }}>

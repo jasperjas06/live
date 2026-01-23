@@ -146,7 +146,7 @@ console.log(billRef)
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {data?._id}
+                   {data?.id || data?._id}
                 </p>
               </div>
               <div style={{ width: "100%", display: "flex", fontSize: "12px", margin:"5px 0"  }}>
@@ -331,7 +331,7 @@ console.log(billRef)
                   overflowWrap: "anywhere",
                 }}
               >
-                {data?.customer?._id || "N/A"}
+                    {data?.customer?.id || data?.customerCode || data?.customer?._id || "N/A"}
               </p>
             </div>
             <div
@@ -389,85 +389,47 @@ console.log(billRef)
               width: "60%",
             }}
           >
-            <div style={{ width: "100%", display: "flex", fontSize: "12px" }}>
-              <p
-                style={{
-                  width: "40%",
-                  padding: "5px",
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  margin: "2px 0",
-                  fontSize: "12px",
-                  textAlign: "center",
-                }}
-              >
-                Sponcer ID
-              </p>
-              <p
-                style={{
-                  width: "5%",
-                  margin: "2px 0",
-                  fontSize: "12px",
-                  padding: "5px 0px",
-                  textAlign: "center",
-                }}
-              >
-                :
-              </p>
-              <p
-                style={{
-                  textAlign: "start",
-                  width: "55%",
-                  padding: "5px 0",
-                  margin: "2px 0",
-                  fontSize: "12px",
-                  wordBreak: "break-word",
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {data?.introducer?._id || "N/A"}
-              </p>
-            </div>
-            <div style={{ width: "100%", display: "flex", fontSize: "12px" }}>
-              <p
-                style={{
-                  width: "40%",
-                  padding: "5px",
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  margin: "2px 0",
-                  fontSize: "12px",
-                  textAlign: "center",
-                }}
-              >
-                EXECUTIVE
-              </p>
-              <p
-                style={{
-                  width: "5%",
-                  margin: "2px 0",
-                  padding: "5px 0px",
-                  fontSize: "12px",
-                  textAlign: "center",
-                }}
-              >
-                :
-              </p>
-              <p
-                style={{
-                  textAlign: "start",
-                  width: "55%",
-                  margin: "2px 0",
-                  padding: "5px 0",
-                  fontSize: "12px",
-                  wordBreak: "break-word",
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {`${data.introducer?.name}  / ${data.introducer?.phone}` ||
-                  "N/A"}
-              </p>
-            </div>
+          {data.cedId && (
+                <div style={{ width: "100%", display: "flex", fontSize: "12px" }}>
+                  <p
+                    style={{
+                      width: "40%",
+                      padding: "5px",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      margin: "2px 0",
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    EXECUTIVE
+                  </p>
+                  <p
+                    style={{
+                      width: "5%",
+                      margin: "2px 0",
+                      padding: "5px 0px",
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    :
+                  </p>
+                  <p
+                    style={{
+                      textAlign: "start",
+                      width: "55%",
+                      margin: "2px 0",
+                      padding: "5px 0",
+                      fontSize: "12px",
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {`${data.cedId?.name}  / ${data.cedId?.phone}`}
+                  </p>
+                </div>
+              )}
             <div
               style={{
                 width: "100%",
@@ -511,8 +473,11 @@ console.log(billRef)
                   overflowWrap: "anywhere",
                 }}
               >
-                {`${data.introducer?.name}  / ${data.introducer?.phone}` ||
-                  "N/A"}
+               {(data.introducer?.name && data.introducer?.phone) 
+                    ? `${data.introducer.name}  / ${data.introducer.phone}` 
+                    : (data.ddId?.name && data.ddId?.phone)
+                    ? `${data.ddId.name}  / ${data.ddId.phone}`
+                    : "N/A"}
               </p>
             </div>
           </div>
@@ -978,7 +943,9 @@ console.log(billRef)
               </p>
             </div>
           </div>
-          <h1 style= {{fontWeight:"700",margin:"16px"}}>Come with us Grow with us</h1>
+          <h1 style={{ fontWeight: "700", margin: "16px", fontSize: "20px" }}>
+            Come with us Grow with us
+          </h1>
         </div>
       </div>
     </div>
