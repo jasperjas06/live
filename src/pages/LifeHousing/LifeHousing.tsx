@@ -1,14 +1,13 @@
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
 
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
-import { DashboardContent } from 'src/layouts/dashboard';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
+import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Iconify } from 'src/components/iconify';
 
 const LifeHousing = () => {
   const navigate = useNavigate();
@@ -85,7 +84,6 @@ const LifeHousing = () => {
           columns={housingColumns}
           searchBy="nameOfCustomer"
           isView={false}
-          onDelete={handleDelete}
           isEdit={false}
         />
       </DashboardContent>
