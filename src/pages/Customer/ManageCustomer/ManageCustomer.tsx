@@ -1,32 +1,33 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Icon } from '@iconify/react';
 import {
+  Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
   CircularProgress,
-  Divider,
-  Grid,
-  MenuItem,
-  styled,
-  TextField,
-  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
+  Grid,
   IconButton,
+  MenuItem,
+  styled,
+  TextField,
+  Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { createCustomer, getACustomer, updateCustomer } from 'src/utils/api.service';
+import { createCustomer, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, updateCustomer } from 'src/utils/api.service';
 import { z } from 'zod';
-import { Icon } from '@iconify/react';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -70,12 +71,19 @@ const customerSchema = z.object({
   // date: z.string().optional(),
   // nameOfCustomer: z.string().optional(),
   gender: z.string().optional(),
+  projectId: z.string().optional(),
+  emiAmount: z.number().optional(),
+  ddId: z.string().optional(),
+  ddMobile: z.string().optional(),
+  cedId: z.string().optional(),
+  cedMobile: z.string().optional(),
+  percentage: z.number().optional(),
   projectArea: z.string().optional(),
   nationality: z.string().optional(),
   dob: z.string().optional(),
   occupation: z.string().optional(),
   qualification: z.string().optional(),
-  planNo: z.string().optional(),
+  panNo: z.string().optional(),
   communicationAddress: z.string().optional(),
   mobileNo: z.string().optional(),
   landLineNo: z.string().optional(),
@@ -90,7 +98,6 @@ const customerSchema = z.object({
   introducerName: z.string().optional(),
   introducerMobileNo: z.string().optional(),
   immSupervisorName: z.string().optional(),
-  cedName: z.string().optional(),
   diamountDirectorName: z.string().optional(),
   diamountDirectorPhone: z.string().optional(),
   guardianAddress: z.string().optional(),
@@ -101,8 +108,17 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 
 const CustomerForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [createdCustomerId, setCreatedCustomerId] = useState<string>("");
+  const [projects, setProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [selectedScheme, setSelectedScheme] = useState<any>(null);
+  const [ddOptions, setDdOptions] = useState<any[]>([]);
+  const [ddLoading, setDdLoading] = useState(false);
+  const [selectedDD, setSelectedDD] = useState<any>(null);
+  const [cedOptions, setCedOptions] = useState<any[]>([]);
+  const [cedLoading, setCedLoading] = useState(false);
+  const [selectedCED, setSelectedCED] = useState<any>(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -111,6 +127,7 @@ const CustomerForm = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
@@ -128,12 +145,19 @@ const CustomerForm = () => {
       // date: '',    
       // nameOfCustomer: '',
       gender: '',
+      projectId: '',
+      emiAmount: 0,
+      ddId: '',
+      ddMobile: '',
+      cedId: '',
+      cedMobile: '',
+      percentage: 0,
       projectArea: '',
       nationality: '',
       dob: '',
       occupation: '',
       qualification: '',
-      planNo: '',
+      panNo: '',
       communicationAddress: '',
       mobileNo: '',
       landLineNo: '',
@@ -148,7 +172,6 @@ const CustomerForm = () => {
       introducerName: '',
       introducerMobileNo: '',
       immSupervisorName: '',
-      cedName: '',
       diamountDirectorName: '',
       diamountDirectorPhone: '',
       photo: undefined,
@@ -228,7 +251,58 @@ const CustomerForm = () => {
     }
   };
 
+  // Fetch projects on mount
+  const fetchProjects = async () => {
+    try {
+      setProjectsLoading(true);
+      const response = await getAllProjects();
+      if (response.status === 200 && response.data?.data) {
+        setProjects(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to fetch projects');
+      console.log('Error fetching projects:', error);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
+
+  // Fetch DDs on mount
+  const fetchDDs = async () => {
+    try {
+      setDdLoading(true);
+      const response = await getAllMarkingHead();
+      if (response.status === 200 && response.data?.data) {
+        setDdOptions(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to fetch DDs');
+      console.log('Error fetching DDs:', error);
+    } finally {
+      setDdLoading(false);
+    }
+  };
+
+  // Fetch CEDs filtered by selected DD
+  const fetchCEDs = async (ddId?: string) => {
+    try {
+      setCedLoading(true);
+      const params = ddId ? { head: ddId } : {};
+      const response = await getAllMarketer(params);
+      if (response.status === 200 && response.data?.data) {
+        setCedOptions(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to fetch CEDs');
+      console.log('Error fetching CEDs:', error);
+    } finally {
+      setCedLoading(false);
+    }
+  };
+
   useEffect(() => {
+    fetchProjects();
+    fetchDDs();
     getDataByID();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -252,6 +326,60 @@ const CustomerForm = () => {
                 <SectionTitle variant="h6">Basic Details</SectionTitle>
                   <Grid container spacing={3}>
                     
+                    <Grid size={{ xs: 12, sm: 12, md: 12 }}>
+                    <Autocomplete
+                      options={projects}
+                      getOptionLabel={(option) => option.projectName || ''}
+                      loading={projectsLoading}
+                      value={selectedScheme}
+                      onChange={(event, newValue) => {
+                        setSelectedScheme(newValue);
+                        setValue('projectId', newValue?._id || '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+
+                        // Auto-fill EMI Amount from selected scheme/project
+                        if (newValue && newValue.emiAmount !== null && newValue.emiAmount !== undefined) {
+                          setValue('emiAmount', newValue.emiAmount, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        } else {
+                          setValue('emiAmount', 0, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={
+                            <>
+                              Project <span style={{ color: 'red' }}>*</span>
+                            </>
+                          }
+                          error={!!errors.projectId}
+                          helperText={errors.projectId?.message}
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {projectsLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                    {/* Hidden input to register projectId with react-hook-form */}
+                    <input type="hidden" {...register('projectId')} />
+                  </Grid>
+
+
+
                     <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Name"
@@ -282,19 +410,10 @@ const CustomerForm = () => {
                     />
                   </Grid> */}
 
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label="Project Area"
-                      {...register('projectArea')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
-
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
-                      label="Plan No"
-                      {...register('planNo')}
+                      label="PAN No"
+                      {...register('panNo')}
                       fullWidth
                       variant="outlined"
                     />
@@ -563,7 +682,7 @@ const CustomerForm = () => {
               <FormSection>
                 <SectionTitle variant="h6">Introducer & Staff Details</SectionTitle>
                 <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  {/* <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Introducer Name"
                       {...register('introducerName')}
@@ -579,9 +698,217 @@ const CustomerForm = () => {
                       fullWidth
                       variant="outlined"
                     />
+                  </Grid> */}
+
+                  {/* DD Name and DD Mobile - Side by Side */}
+                  {/* DD Name - Required (Autocomplete) */}
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <Autocomplete
+                      options={ddOptions}
+                      getOptionLabel={(option) => option.name || ''}
+                      loading={ddLoading}
+                      value={selectedDD}
+                      onChange={(event, newValue) => {
+                        setSelectedDD(newValue);
+                        setValue('ddId', newValue?._id || '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        
+                        // Auto-fill DD Mobile
+                        if (newValue && newValue.phone !== null && newValue.phone !== undefined) {
+                          setValue('ddMobile', newValue.phone, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        } else {
+                          setValue('ddMobile', '', {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        }
+
+                        // Silently store DD's percentage for backend submission
+                        if (newValue?.percentageId?.rate) {
+                          const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
+                          setValue('percentage', percentageValue, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        } else {
+                          setValue('percentage', 0, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        }
+
+                        // Fetch CEDs for this DD
+                        if (newValue?._id) {
+                          fetchCEDs(newValue._id);
+                        } else {
+                          setCedOptions([]);
+                          setSelectedCED(null);
+                          setValue('cedId', '', { shouldValidate: false });
+                          setValue('cedMobile', '', { shouldValidate: false });
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={
+                            <>
+                              DD Name <span style={{ color: 'red' }}>*</span>
+                            </>
+                          }
+                          error={!!errors.ddId}
+                          helperText={errors.ddId?.message}
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {ddLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                    {/* Hidden input to register ddId with react-hook-form */}
+                    <input type="hidden" {...register('ddId')} />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  {/* DD Mobile - Required (Auto-filled and Disabled) */}
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <TextField
+                      label={
+                        <>
+                          DD Mobile <span style={{ color: 'red' }}>*</span>
+                        </>
+                      }
+                      {...register('ddMobile')}
+                      error={!!errors.ddMobile}
+                      helperText={errors.ddMobile?.message}
+                      fullWidth
+                      variant="outlined"
+                      disabled
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                        readOnly: true,
+                        style: { cursor: 'not-allowed' }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          cursor: 'not-allowed',
+                          WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
+                        },
+                        '& .MuiInputBase-root': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        }
+                      }}
+                    />
+                  </Grid>
+
+                  {/* CED Name - Required (Autocomplete) */}
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <Autocomplete
+                      options={cedOptions}
+                      getOptionLabel={(option) => option.name || ''}
+                      loading={cedLoading}
+                      value={selectedCED}
+                      onChange={(event, newValue) => {
+                        setSelectedCED(newValue);
+                        setValue('cedId', newValue?._id || '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        
+                        // Auto-fill CED Mobile
+                        if (newValue && newValue.phone !== null && newValue.phone !== undefined) {
+                          setValue('cedMobile', newValue.phone, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        } else {
+                          setValue('cedMobile', '', {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        }
+
+                        // Silently store CED's percentage for backend submission (overrides DD percentage)
+                        if (newValue?.percentageId?.rate) {
+                          const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
+                          setValue('percentage', percentageValue, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                        } else if (!newValue) {
+                          // If CED is cleared, revert to DD's percentage if DD is selected
+                          if (selectedDD?.percentageId?.rate) {
+                            const ddPercentageValue = Number((selectedDD.percentageId.rate as string).replace('%', ''));
+                            setValue('percentage', ddPercentageValue, {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                          } else {
+                            setValue('percentage', 0, {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                          }
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="CED Name"
+                          error={!!errors.cedId}
+                          helperText={errors.cedId?.message}
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {cedLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                    {/* Hidden input to register cedId with react-hook-form */}
+                    <input type="hidden" {...register('cedId')} />
+                  </Grid>
+
+                  {/* CED Mobile - Optional (Auto-filled and Disabled) */}
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <TextField
+                      label="CED Mobile"
+                      {...register('cedMobile')}
+                      error={!!errors.cedMobile}
+                      helperText={errors.cedMobile?.message}
+                      fullWidth
+                      variant="outlined"
+                      disabled
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                        readOnly: true,
+                        style: { cursor: 'not-allowed' }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          cursor: 'not-allowed',
+                          WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
+                        },
+                        '& .MuiInputBase-root': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        }
+                      }}
+                    />
+                  </Grid>
+
+                  {/* <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Immediate Supervisor Name"
                       {...register('immSupervisorName')}
@@ -590,14 +917,7 @@ const CustomerForm = () => {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="CED Name"
-                      {...register('cedName')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                  CED Name field removed - CED selection is handled via Autocomplete in Basic Details section
 
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
@@ -615,7 +935,7 @@ const CustomerForm = () => {
                       fullWidth
                       variant="outlined"
                     />
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </FormSection>
 

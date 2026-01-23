@@ -8,9 +8,9 @@ import {
   Button,
   Card,
   CircularProgress,
+  IconButton,
   InputAdornment,
   TextField,
-  IconButton,
   Typography
 } from '@mui/material';
 
@@ -19,9 +19,9 @@ import { deleteCustomer, getAllCustomer } from 'src/utils/api.service';
 import { Icon } from '@iconify/react';
 import toast from "react-hot-toast";
 import { permissions } from 'src/common/Permissions';
+import { Iconify } from 'src/components/iconify';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Iconify } from 'src/components/iconify';
 import type { CustomerPagination } from 'src/types/customer';
 
 type Customer = {
@@ -77,7 +77,7 @@ const CustomerPage = () => {
       limit: pageSize,
       ...(debouncedSearch && { search: debouncedSearch }),
     };
-    const res = await getAllCustomer();
+    const res = await getAllCustomer(params);
     if (res?.status === 200) {
       const mapped = res.data.data.map((c: any) => ({
         ...c,
