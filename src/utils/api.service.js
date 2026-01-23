@@ -1571,7 +1571,6 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status })
     if (date) params.push(`date=${date}`);
     if (dateFrom) params.push(`dateFrom=${dateFrom}`);
     if (dateTo) params.push(`dateTo=${dateTo}`);
-      if (dateTo) params.push(`dateTo=${dateTo}`);
     if (status) params.push(`status=${status}`);
     
     url += params.join('&');

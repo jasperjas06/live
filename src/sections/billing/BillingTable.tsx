@@ -229,7 +229,7 @@ const BillingTable = () => {
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <Button
+          {/* <Button
             variant="outlined"
             color="success"
             onClick={handleDownloadExcel}
@@ -243,7 +243,7 @@ const BillingTable = () => {
             }}
           >
             {isDownloading ? "Downloading..." : "Download Excel"}
-          </Button>
+          </Button> */}
 
           <Button
             variant="outlined"

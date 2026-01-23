@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { getCustomBillingReport } from 'src/utils/api.service';
+import * as XLSX from 'xlsx';
+
 
 const CustomExport = () => {
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ const CustomExport = () => {
   const [fromDate, setFromDate] = useState(getTodayDate());
   const [toDate, setToDate] = useState(getTodayDate());
   const [dateFilter, setDateFilter] = useState('Custom');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('paid');
 
   const handleDateFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filter = event.target.value;
@@ -113,6 +115,7 @@ const CustomExport = () => {
       // Add status filter if selected
       if (status) {
         params.status = status;
+        console.log('Using status filter:', status);
       }
 
       console.log('API Params being sent:', params);
@@ -120,58 +123,96 @@ const CustomExport = () => {
       const response = await getCustomBillingReport(params as any);
 
       if (response.status === 200 && response.data) {
-        // Convert data to CSV
-        const billingData = response.data.data || [];
+        console.log('API Response Data:', response.data);
+        const billingData = response.data.billing || response.data.data || [];
+        const emiData = response.data.emi || [];
         
-        if (billingData.length === 0) {
+        if (billingData.length === 0 && emiData.length === 0) {
           toast.error('No data found for the selected date range');
           setIsDownloading(false);
           return;
         }
 
-        // Define CSV headers
-        const headers = ['Customer Name', 'Marketer Name', 'EMI No', 'Paid Amount', 'Paid Date', 'Status'];
-        
-        // Convert data to CSV format
-        const csvRows = [];
-        csvRows.push(headers.map(escapeCSVValue).join(','));
-        
-        billingData.forEach((item: any) => {
-          const row = [
-            item.customerName || 'N/A',
-            item.introducer?.name || 'N/A',
-            item.emiNo || 'N/A',
-            item.emi?.paidAmt || item.amountPaid || 'N/A',
-            item.emi?.paidDate ? new Date(item.emi.paidDate).toLocaleDateString() : (item.paidDate ? new Date(item.paidDate).toLocaleDateString() : 'N/A'),
-            item.status || 'N/A'
-          ];
-          const values = row.map(escapeCSVValue);
-          csvRows.push(values.join(','));
+        // --- SHEET 1: BILLING (PAID) ---
+        const billingRows = billingData.map((item: any) => {
+          // Helper to safely get properties
+          const getVal = (val: any) => val || '';
+          const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : ''; // DD/MM/YYYY
+
+          const project = item.general?.project?.projectName || item.customer?.projectId || '';
+          const marketerName = item.introducer?.name || '';
+          const marketerId = item.introducer?.id || item.introducer?._id || item.general?.marketer || item.introducer || '';
+
+          // Calculations
+          const emiAmount = Number(item.general?.emiAmount) || 0;
+          const noOfInstallments = Number(item.general?.noOfInstallments) || 0;
+          const calculatedTotalAmount = emiAmount * noOfInstallments;
+          const totalAmount = item.general?.totalAmount || item.general?.plotCost || (calculatedTotalAmount > 0 ? calculatedTotalAmount : '');
+          const balanceAmount = Number(item.balanceAmount) || 0;
+          const totalPaid = totalAmount ? (Number(totalAmount) - balanceAmount) : '';
+
+          return {
+            'Project': project,
+            'Customer Name': getVal(item.customerName),
+            'Customer ID': getVal(item.customerCode),
+            'Phone': getVal(item.mobileNo),
+            'Marketer Name': marketerName,
+            'Marketer ID': marketerId,
+            'Leader': '',
+            'Leader ID': '',
+            'Payment Date': formatDate(item.paymentDate),
+            'Amount Paid': getVal(item.amountPaid),
+            'Booking ID': getVal(item.general?._id),
+            'Plot No': getVal(item.customer?.plotNo),
+            'EMI No': getVal(item.emiNo),
+            'Pay Mode': getVal(item.modeOfPayment),
+            'Remarks': getVal(item.remarks),
+            'Created By': getVal(item.createdBy?.name),
+            'Total Amount': totalAmount,
+            'Total Paid': totalPaid,
+            'Total Balance': getVal(item.balanceAmount),
+          };
         });
-        
-        const csvContent = csvRows.join('\n');
-        
-        // Add BOM for proper Excel UTF-8 encoding
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-        
-        // Create download link
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        // Generate filename with date range
-        const filename = `Billing_Report_${fromDate}_to_${toDate}.csv`;
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        URL.revokeObjectURL(url);
+
+        // --- SHEET 2: UNPAID EMI ---
+        const emiRows = emiData.map((item: any) => {
+          const getVal = (val: any) => val || '';
+          const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : '';
+
+          const customer = item.customer || {};
+          const general = item.general || {};
+
+          return {
+             'Project': customer.projectId || '', // Fallback as mostly ID is coming
+             'Customer Name': getVal(customer.name),
+             'Customer ID': getVal(customer.id),
+             'Phone': getVal(customer.phone),
+             'EMI Amount': getVal(item.emiAmt),
+             'EMI No': getVal(item.emiNo),
+             'Date': formatDate(item.date),
+             'Status': 'Unpaid', // Context implies these are unpaid
+             'Marketer': general.marketer || '',
+          };
+        });
+
+        // Create Workbook
+        const wb = XLSX.utils.book_new();
+
+        // Add Billing Sheet
+        const wsBilling = XLSX.utils.json_to_sheet(billingRows);
+        XLSX.utils.book_append_sheet(wb, wsBilling, 'Billing');
+
+        // Add Unpaid EMI Sheet
+        if (emiRows.length > 0) {
+            const wsEmi = XLSX.utils.json_to_sheet(emiRows);
+            XLSX.utils.book_append_sheet(wb, wsEmi, 'Pending Collections');
+        }
+
+        // Generate filename
+        const filename = `Billing_Report_${fromDate}_to_${toDate}.xlsx`;
+
+        // Write and Download
+        XLSX.writeFile(wb, filename);
         
         toast.success('Report downloaded successfully');
       } else {
@@ -253,10 +294,9 @@ const CustomExport = () => {
                 sx={{ minWidth: '200px' }}
                 helperText="Optional: Filter by payment status"
               >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="blocked">Blocked</MenuItem>
                 <MenuItem value="paid">Paid</MenuItem>
+                <MenuItem value="unpaid">Unpaid</MenuItem>
+                <MenuItem value="blocked">Blocked</MenuItem>
               </TextField>
             </Box>
 

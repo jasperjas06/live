@@ -64,6 +64,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.1",
+    "@types/xlsx": "^0.0.35",
     "@typescript-eslint/parser": "^8.29.0",
     "@vitejs/plugin-react-swc": "^3.8.1",
     "autoprefixer": "^10.4.21",
