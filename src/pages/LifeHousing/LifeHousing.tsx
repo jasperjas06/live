@@ -30,7 +30,7 @@ const LifeHousing = () => {
   // ✅ Fetch housing data
   const getAllHousingData = async () => {
     try {
-      const response = await axios.get(`${url}api/housing/customer/formget/all`);
+      const response = await axios.get(`${url}api/housing/customer/form/get/all`);
 
       console.log("Housing API response:", response.data);
 
