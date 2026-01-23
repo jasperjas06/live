@@ -30,7 +30,7 @@ const LifeHousing = () => {
   // ✅ Fetch housing data
   const getAllHousingData = async () => {
     try {
-      const response = await axios.get(`${url}/api/housing/customer/formget/all`);
+      const response = await axios.get(`${url}api/housing/customer/formget/all`);
 
       console.log("Housing API response:", response.data);
 
@@ -51,7 +51,7 @@ const LifeHousing = () => {
   const handleDelete = async (id: string | number) => {
     try {
       const res = await axios.delete(
-        `${url}/api/housing/customer/form/delete/${id}`
+        `${url}api/housing/customer/form/delete/${id}`
       );
       if (res) {
         toast.success('Booking deleted successfully');
