@@ -1,15 +1,17 @@
-import { Box, Button, CircularProgress, InputAdornment, IconButton, TextField, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { Box, Button, CircularProgress, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { permissions } from 'src/common/Permissions';
 import { Iconify } from 'src/components/iconify';
 import type { Column } from 'src/custom/dataTable/dataTable';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
-import type { BillingPagination } from 'src/types/billing';
+import { BillingPagination } from "src/types/billing";
 import { getAllBilling } from 'src/utils/api.service';
-import toast from 'react-hot-toast';
+
+
 
 type Customer = {
   id: string;
@@ -36,6 +38,7 @@ const BillingTable = () => {
   
   console.log(permissions, "permissions");
 
+  
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,7 +49,7 @@ const BillingTable = () => {
       }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); 
   }, [searchTerm]);
 
   const getAllData = async () => {
@@ -59,15 +62,16 @@ const BillingTable = () => {
       };
       
       const response = await getAllBilling(params);
+      
       if (response.status) {
         let billingData = response.data.data;
         billingData = billingData.map((item: any) => ({
           ...item,
-           customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
+          customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
           marketerName: item.introducer?.name || item?.customer?.marketerName || 'N/A',
           paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || 'N/A',
-          // emiId: item.emi?._id || 'N/A',,
-           paidAmount: item.emi?.paidAmt || item?.amountPaid || 'N/A',
+          // emiId: item.emi?._id || 'N/A',
+          paidAmount: item.emi?.paidAmt || item?.amountPaid || 'N/A',
         }));
         setData(billingData);
         setPagination(response.data.pagination || null);
@@ -84,7 +88,7 @@ const BillingTable = () => {
   }, [currentPage, debouncedSearch]);
 
   const customerColumns: Column<Customer>[] = [
-   { 
+    { 
       id: 'customerId', 
       label: 'Customer ID', 
       sortable: true,
@@ -197,13 +201,13 @@ const BillingTable = () => {
     }
   };
 
-  const handlePreviousPage = () => {
+   const handlePreviousPage = () => {
     if (pagination?.hasPreviousPage) {
       setCurrentPage(prev => prev - 1);
     }
   };
 
-  const handleNextPage = () => {
+   const handleNextPage = () => {
     if (pagination?.hasNextPage) {
       setCurrentPage(prev => prev + 1);
     }
@@ -215,58 +219,51 @@ const BillingTable = () => {
 
   return (
     <DashboardContent>
-      <Box
-        sx={{
-          mb: 5,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
-        <Typography variant="h4" sx={{ flexGrow: 1, minWidth: "200px" }}>
+      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h4" sx={{ flexGrow: 1, minWidth: '200px' }}>
           Billing
         </Typography>
-
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+        
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           {/* <Button
             variant="outlined"
             color="success"
             onClick={handleDownloadExcel}
             disabled={isDownloading || data.length === 0}
             sx={{
-              minWidth: "150px",
-              "&:hover": {
-                backgroundColor: "success.light",
-                color: "white",
+              minWidth: '150px',
+              '&:hover': {
+                backgroundColor: 'success.light',
+                color: 'white',
               },
             }}
           >
-            {isDownloading ? "Downloading..." : "Download Excel"}
+            {isDownloading ? 'Downloading...' : 'Download Excel'}
           </Button> */}
-
+          
           <Button
             variant="outlined"
             color="primary"
             startIcon={<Iconify icon="mingcute:download-line" />}
-            onClick={() => navigate("custom-export")}
+            onClick={() => navigate('custom-export')}
             sx={{
-              minWidth: "150px",
-              "&:hover": {
-                backgroundColor: "primary.light",
-                color: "white",
+              minWidth: '150px',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                color: 'white',
               },
             }}
           >
             Custom Download
           </Button>
+          
           <Button
             variant="contained"
             color="inherit"
             startIcon={<Iconify icon="mingcute:add-line" />}
-            onClick={() => navigate("create")}
+            onClick={() => navigate('create')}
             disabled={permissions?.Billing?.create !== true}
-            sx={{ minWidth: "150px" }}
+            sx={{ minWidth: '150px' }}
           >
             New Billing
           </Button>
@@ -291,7 +288,7 @@ const BillingTable = () => {
                 <Button
                   size="small"
                   onClick={handleSearchClear}
-                  sx={{ minWidth: "auto", p: 0.5 }}
+                  sx={{ minWidth: 'auto', p: 0.5 }}
                 >
                   <Iconify icon="mingcute:close-line" />
                 </Button>
@@ -299,8 +296,8 @@ const BillingTable = () => {
             ),
           }}
           sx={{
-            "& .MuiOutlinedInput-root": {
-              backgroundColor: "background.paper",
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'background.paper',
             },
           }}
         />
@@ -308,7 +305,7 @@ const BillingTable = () => {
 
       {/* Loading Indicator */}
       {isLoading && (
-        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress />
         </Box>
       )}
@@ -324,27 +321,18 @@ const BillingTable = () => {
           isView={permissions?.Billing?.read === true ? true : false}
           disableSearch={true}
           disablePagination={true}
+          preserveOrder={true}
         />
       )}
 
       {/* Pagination Controls */}
       {pagination && !isLoading && (
-        <Box
-          sx={{
-            mt: 3,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Showing {pagination.totalRecords} record
-            {pagination.totalRecords !== 1 ? "s" : ""}
+            Showing {pagination.totalRecords} record{pagination.totalRecords !== 1 ? 's' : ''}
           </Typography>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="outlined"
               onClick={handlePreviousPage}
@@ -352,11 +340,11 @@ const BillingTable = () => {
             >
               Previous
             </Button>
-
+            
             <Typography variant="body2">
               Page {pagination.currentPage} of {pagination.totalPages}
             </Typography>
-
+            
             <Button
               variant="outlined"
               onClick={handleNextPage}

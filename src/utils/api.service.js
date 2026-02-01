@@ -31,7 +31,7 @@ export const createCustomer = async (data, includeCustomer = false) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -66,7 +66,7 @@ export const getAllCustomer = async (params = {}) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -85,7 +85,7 @@ export const getACustomer = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -107,7 +107,7 @@ export const updateCustomer = async (data, includeCustomer = false) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -128,7 +128,7 @@ export const deleteCustomer = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -148,7 +148,7 @@ export const createProjects = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -167,7 +167,7 @@ export const updateProject = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -186,7 +186,7 @@ export const getAProject = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -205,7 +205,7 @@ export const getAllProjects = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -226,7 +226,7 @@ export const deleteProject = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -246,7 +246,7 @@ export const getAllMarkingHead = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -265,7 +265,7 @@ export const getAMarketingHead = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -286,7 +286,7 @@ export const getMarketingHeadEstimates = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -305,7 +305,7 @@ export const updateMarketingHead = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -326,7 +326,7 @@ export const deleteMarketingHead = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -345,7 +345,7 @@ export const createMarkinghead = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -365,7 +365,7 @@ export const createMarketer = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -384,7 +384,7 @@ export const updateMarketer = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -408,7 +408,7 @@ export const getAllMarketer = async (params = {}) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -427,11 +427,32 @@ export const getAMarketer = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
 }
+
+export const deleteMarketer = async (id) => {
+  try {
+    const data = { _id: id };
+    const response = await axios.delete(`${base_url}api/market/detail/delete`, {
+      data,
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+};
 
 // Percentage APIS
 export const createPercentage = async (data) => {
@@ -447,7 +468,7 @@ export const createPercentage = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -466,7 +487,7 @@ export const getAllPercentage = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -485,7 +506,7 @@ export const getAPercentage = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -506,7 +527,7 @@ export const deletePercentage = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -525,7 +546,7 @@ export const updatePercentage = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -545,7 +566,7 @@ export const createMOD = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -564,7 +585,7 @@ export const getAllMOD = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -583,7 +604,7 @@ export const getAMOD = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -604,7 +625,7 @@ export const deleteMOD = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -623,7 +644,7 @@ export const updateMOD = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -643,7 +664,7 @@ export const createNVT = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -662,7 +683,7 @@ export const updateNVT = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -681,7 +702,7 @@ export const getAllNVT = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -700,7 +721,7 @@ export const getANVT = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -721,7 +742,7 @@ export const deleteNVT = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -741,7 +762,7 @@ export const createLFC = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -760,7 +781,7 @@ export const updateLFC = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -779,7 +800,7 @@ export const getAllLFC = async () => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -798,7 +819,7 @@ export const getALFC = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -819,7 +840,7 @@ export const deleteLFC = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -839,7 +860,7 @@ export const getANVTbyCus = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -859,7 +880,7 @@ export const CreateRole = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -879,7 +900,7 @@ export const getAllRoles = async () => {
     console.log("Error fetching roles:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -899,7 +920,7 @@ export const getRoleById = async (id) => {
     console.log("Error fetching roles:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -918,7 +939,7 @@ export const updateRole = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -939,7 +960,7 @@ export const deleteRole = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -959,7 +980,7 @@ export const createEmployee = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -979,7 +1000,7 @@ export const getAllEmployees = async () => {
     console.log("Error fetching employees:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -999,7 +1020,7 @@ export const getEmployeeById = async (id) => {
     console.log("Error fetching employee:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1018,7 +1039,7 @@ export const updateEmployee = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1039,7 +1060,7 @@ export const deleteEmployee = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1060,7 +1081,7 @@ export const getAllMenu = async () => {
     console.log("Error fetching menus:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1080,7 +1101,7 @@ export const createMenuMapping = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1100,7 +1121,7 @@ export const getAllRoleMenu = async () => {
     console.log("Error fetching role menus:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1120,7 +1141,7 @@ export const getRoleMenuById = async (id) => {
     console.log("Error fetching role menu:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1139,7 +1160,7 @@ export const updateMenuMapping = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1160,7 +1181,7 @@ export const deleteMenuMapping = async (id) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1184,7 +1205,7 @@ export const fileUpload = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1204,7 +1225,7 @@ export const commonCreate = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1250,7 +1271,7 @@ export const getAllBilling = async (params = {}) => {
     console.log("Error fetching billing:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1270,7 +1291,7 @@ export const getBillingById = async (id) => {
     console.log("Error fetching billing:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1289,7 +1310,7 @@ export const createbilling = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.error || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -1314,7 +1335,7 @@ export const getAllGeneral = async (customer) => {
     console.log("Error fetching general:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1334,7 +1355,7 @@ export const getGeneralById = async (id) => {
     console.log("Error fetching general:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1366,7 +1387,7 @@ export const getAllEmi = async ({ customerId, paid }) => {
     console.log("Error fetching EMI:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1386,7 +1407,7 @@ export const createCustomerEstimate = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.error || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -1406,7 +1427,7 @@ export const updateCustomerEstimate = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.error || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -1437,7 +1458,7 @@ export const getAllDetailByCustomerOrGeneral = async ({ cusId, genId }) => {
     console.log("Error fetching details:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1461,7 +1482,7 @@ export const getAllEstimateByCustomerId = async ({ cusId }) => {
     console.log("Error fetching estimates:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1485,7 +1506,7 @@ export const getOneEstimateByGeneralId = async ({ genId }) => {
     console.log("Error fetching estimate:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1504,7 +1525,7 @@ export const checkEmi = async (data) => {
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.error || error.message || 'An error occurred',
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
       status: error.response?.status || 500,
     };
   }
@@ -1524,7 +1545,7 @@ export const getBillingsByCustomerId = async (id) => {
     console.log("Error fetching billing:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1555,7 +1576,7 @@ export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
     console.log("Error fetching logs:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }
@@ -1587,7 +1608,7 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status })
     console.log("Error fetching custom billing report:", error);
     return {
       data: null,
-      message: error.response?.data?.message || error.message || "An error occurred",
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
       status: error.response?.status || 500,
     };
   }

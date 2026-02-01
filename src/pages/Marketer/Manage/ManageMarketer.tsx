@@ -1,31 +1,31 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useEffect, useState } from 'react';
-import {
-  Grid,
-  Typography,
-  Button,
-  TextField,
-  Card,
-  CardContent,
-  Divider,
-  styled,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Snackbar,
-  Alert,
-} from '@mui/material';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { createMarketer, getAllMarkingHead, updateMarketer } from 'src/utils/api.service';
-import CustomSelect from 'src/custom/select/select';
-import { useNavigate, useParams } from 'react-router-dom';
+import {
+    Alert,
+    Button,
+    Card,
+    CardContent,
+    Divider,
+    FormControl,
+    FormControlLabel,
+    FormLabel,
+    Grid,
+    Radio,
+    RadioGroup,
+    Snackbar,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import CustomSelect from 'src/custom/select/select';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { createMarketer, getAllMarkingHead, getAMarketer, updateMarketer } from 'src/utils/api.service';
+import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -102,9 +102,39 @@ const MarketerForm = () => {
       console.log(error)
     }
   }
+
+  const getMarketerData = async () => {
+    if (!id) return;
+    try {
+      setIsLoading(true);
+      const response = await getAMarketer(id);
+      if (response.status && response.data?.data) {
+        const marketerData = response.data.data;
+        // Populate form with fetched data
+        reset({
+          name: marketerData.name || '',
+          headBy: marketerData.headBy?._id || marketerData.headBy || '', // Handle populated or unpopulated field
+          phone: marketerData.phone || '',
+          address: marketerData.address || '',
+          status: marketerData.status ? 'active' : 'inactive',
+        });
+      } else {
+        showSnackbar('Failed to fetch marketer data', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching marketer:', error);
+      showSnackbar('Error loading data', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(()=>{
-    getALLMarketingHeadsData()
-  },[])
+    getALLMarketingHeadsData();
+    if (id) {
+      getMarketerData();
+    }
+  },[id])
 
   const onSubmit = async (data: MarketerFormData) => {
     try {
@@ -116,9 +146,14 @@ const MarketerForm = () => {
       //   return;
       // }
 
+      const payload = {
+        ...data,
+        status: data.status === 'active' // Convert string status back to boolean if API expects boolean
+      };
+
       const response = id 
-        ? await updateMarketer({ ...data, _id: id }) 
-        : await createMarketer(data);
+        ? await updateMarketer({ ...payload, _id: id }) 
+        : await createMarketer(payload);
 
       if (response && response.data) {
         const action = id ? 'updated' : 'created';
@@ -135,7 +170,7 @@ const MarketerForm = () => {
         toast.error(response.message)
       }
     } catch (error: any) {
-      toast.success(error)
+      toast.error(error)
       
     } finally {
       setIsSubmitting(false);
@@ -167,6 +202,7 @@ const MarketerForm = () => {
                   helperText={errors.name?.message}
                   fullWidth
                   variant="outlined"
+                  InputLabelProps={{ shrink: !!id ? true : undefined }}
                 />
               </Grid>
 
@@ -207,6 +243,7 @@ const MarketerForm = () => {
                   helperText={errors.phone?.message}
                   fullWidth
                   variant="outlined"
+                  InputLabelProps={{ shrink: !!id ? true : undefined }}
                 />
               </Grid>
 
@@ -220,6 +257,7 @@ const MarketerForm = () => {
                   variant="outlined"
                   multiline
                   rows={2}
+                  InputLabelProps={{ shrink: !!id ? true : undefined }}
                 />
               </Grid>
 

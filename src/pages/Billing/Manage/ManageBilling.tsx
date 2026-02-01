@@ -105,15 +105,13 @@ const BillingForm = () => {
     const [emiDialogOpen, setEmiDialogOpen] = useState(false);
 
     const [cusId, setCusId] = useState<any>("")
-
-        
+    
     // Pagination and search state for customer autocomplete
     const [customerPage, setCustomerPage] = useState(1);
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
     const [hasMoreCustomers, setHasMoreCustomers] = useState(true);
     const [customerLoading, setCustomerLoading] = useState(false);
-
 
     /**
      * Get the id from the URL parameters
@@ -516,7 +514,7 @@ const BillingForm = () => {
                                                 setValue('paymentDate', '', { shouldValidate: false });
                                                 setEmiError("");
                                             }}
-                                         ListboxProps={{
+                                            ListboxProps={{
                                                 onScroll: (event: React.SyntheticEvent) => {
                                                     const listboxNode = event.currentTarget;
                                                     const scrollTop = listboxNode.scrollTop;
@@ -534,7 +532,7 @@ const BillingForm = () => {
                                                 },
                                                 style: { maxHeight: '300px' }
                                             }}
-                                            renderOption={(props, option, { inputValue }) => {
+                                            renderOption={(props, option) => {
                                                 // Determine which identifier to display
                                                 const displayIdentifier = option.id ? option.id : option._id;
                                                 const searchTerm = debouncedCustomerSearch.toLowerCase().trim();
@@ -581,7 +579,7 @@ const BillingForm = () => {
                                                     }}
                                                 />
                                             )}
-                                              noOptionsText={customerLoading ? "Loading..." : "No customers found"}
+                                            noOptionsText={customerLoading ? "Loading..." : "No customers found"}
                                         />
                                         {/* Hidden input to register customerId with react-hook-form */}
                                         <input type="hidden" {...register('customerId')} />

@@ -39,7 +39,7 @@ const allNavData: NavItem[] = [
     ],
   },
   { title: "Percentage", path: "/percentage", icon: <Percent /> },
-  { title: "NVT", path: "/nvt", icon: <AppWindowMac /> },
+  // { title: "NVT", path: "/nvt", icon: <AppWindowMac /> }, // Commented out - may be requested by client in future
   { title: "MOD", path: "/mod", icon: <ReceiptText /> },
   { title: "Marketer", path: "/marketer", icon: <BadgeIndianRupee /> },
   { title: "Marketing Head", path: "/marketing-head", icon: <User /> },

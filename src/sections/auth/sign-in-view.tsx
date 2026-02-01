@@ -6,10 +6,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
+import { useTheme } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
 
 import { useRouter } from "src/routes/hooks";
 
@@ -42,7 +42,7 @@ export function SignInView() {
       const response = await login({ email, password });
 
       if (response?.status === 200) {
-        const token = response.data?.token || response.token;
+        const token = response.data?.data?.token || response.data?.token;
         if (token) {
           const permissions = await getUserAcc(response.data.roleId);
           const isAdmin = response.data?.isAdmin === true;

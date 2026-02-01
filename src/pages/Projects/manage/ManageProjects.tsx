@@ -1,24 +1,24 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useEffect, useState } from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
-  Grid,
-  Typography,
   Button,
-  TextField,
   Card,
   CardContent,
-  Divider,
-  styled,
   CircularProgress,
+  Divider,
+  Grid,
+  styled,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { DashboardContent } from 'src/layouts/dashboard';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { useNavigate, useParams } from 'react-router-dom';
-import { createProjects, getAProject, updateProject } from 'src/utils/api.service';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { createProjects, getAProject, updateProject } from 'src/utils/api.service';
+import * as yup from 'yup';
 
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -37,12 +37,12 @@ const projectSchema = yup.object().shape({
     .number()
     .typeError('EMI Amount must be a number')
     .required('EMI Amount is required'),
-  marketer: yup.string().required(),
+  // marketer: yup.string().required(),
   schema: yup.string().required('Schema is required'),
-  returns: yup
-    .number()
-    .typeError('Returns must be a number')
-    .required('Returns is required'),
+  // returns: yup
+  //   .number()
+  //   .typeError('Returns must be a number')
+  //   .required('Returns is required'),
   intrest: yup.string().required(),
   totalInvestimate: yup
     .number()
@@ -60,9 +60,9 @@ export interface ProjectFormData {
   shortName: string;
   duration: string;
   emiAmount: number;
-  marketer: string;
+  // marketer: string;
   schema: string;
-  returns: number;
+  // returns: number;
   intrest: string;
   totalInvestimate: number;
   totalReturnAmount: number;
@@ -86,9 +86,9 @@ const ProjectCreationForm = () => {
       shortName: '',
       duration: '',
       emiAmount: 0,
-      marketer: '',
+      // marketer: '',
       schema: 'Fixed Deposit',
-      returns: 1,
+      // returns: 1,
       intrest: '',
       totalInvestimate: 0,
       totalReturnAmount: 0,
@@ -154,6 +154,10 @@ const ProjectCreationForm = () => {
                     error={!!errors.projectName}
                     helperText={errors.projectName?.message}
                     fullWidth
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -165,6 +169,10 @@ const ProjectCreationForm = () => {
                     fullWidth
                     multiline
                     rows={3}
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -174,6 +182,10 @@ const ProjectCreationForm = () => {
                     error={!!errors.shortName}
                     helperText={errors.shortName?.message}
                     fullWidth
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -183,6 +195,10 @@ const ProjectCreationForm = () => {
                     error={!!errors.duration}
                     helperText={errors.duration?.message}
                     fullWidth
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -192,9 +208,13 @@ const ProjectCreationForm = () => {
                     error={!!errors.emiAmount}
                     helperText={errors.emiAmount?.message}
                     fullWidth
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+               {/*  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
                     label="Marketer"
                     {...register('marketer')}
@@ -202,7 +222,7 @@ const ProjectCreationForm = () => {
                     helperText={errors.marketer?.message}
                     fullWidth
                   />
-                </Grid>
+                </Grid> */}
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
                     label="Schem"
@@ -212,7 +232,7 @@ const ProjectCreationForm = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                {/* <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
                     label="Returns"
                     {...register('returns')}
@@ -220,7 +240,7 @@ const ProjectCreationForm = () => {
                     helperText={errors.returns?.message}
                     fullWidth
                   />
-                </Grid>
+                </Grid> */}
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
                     label="Intrest"
@@ -228,6 +248,10 @@ const ProjectCreationForm = () => {
                     error={!!errors.intrest}
                     helperText={errors.intrest?.message}
                     fullWidth
+                    required
+                    InputLabelProps={{
+                      sx: { '& .MuiInputLabel-asterisk': { color: 'red' } }
+                    }}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>

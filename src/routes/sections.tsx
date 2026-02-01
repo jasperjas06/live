@@ -139,6 +139,7 @@ export const routesSection: RouteObject[] = [
       { path: 'profile', element: <Profile /> },
       { path: 'marketer', element: <Marketer /> },
       { path: 'marketer/create', element: <CreateMarketer /> },
+      { path: 'marketer/edit/:id', element: <CreateMarketer /> },
       { path: 'marketer/view/:id', element: <ViewMarketer /> },
       { path: 'marketing-head', element: <MarketingHead /> },
       { path: 'marketing-head/create', element: <CreateMarketingHead /> },

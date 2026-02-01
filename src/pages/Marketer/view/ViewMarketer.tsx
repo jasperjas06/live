@@ -1,18 +1,18 @@
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
 
-import HomeIcon from '@mui/icons-material/Home';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EmailIcon from '@mui/icons-material/Email';
+import HomeIcon from '@mui/icons-material/Home';
+import PersonIcon from '@mui/icons-material/Person';
+import PhoneIcon from '@mui/icons-material/Phone';
 import {
   Box,
   Card,
+  CardContent,
   Grid,
   Skeleton,
   Typography,
-  CardContent,
 } from '@mui/material';
 
 import { getAMarketer } from 'src/utils/api.service';
@@ -66,6 +66,7 @@ const ViewMarketer = () => {
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Basic Info
               </Typography>
+              <DetailRow label="Name" value={data?.name} icon={<PersonIcon />} />
               <DetailRow label="Phone" value={data?.phone} icon={<PhoneIcon />} />
               <DetailRow label="Address" value={data?.address} icon={<HomeIcon />} />
               <DetailRow label="Status" value={data?.status} icon={<AccountCircleIcon />} />

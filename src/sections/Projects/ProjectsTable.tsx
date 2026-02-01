@@ -7,12 +7,12 @@ import {
   Card,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { Iconify } from 'src/components/iconify';
-import { DashboardContent } from 'src/layouts/dashboard';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Iconify } from 'src/components/iconify';
+import { Column, DataTable } from 'src/custom/dataTable/dataTable';
+import { DashboardContent } from 'src/layouts/dashboard';
 import { deleteProject, getAllProjects } from 'src/utils/api.service';
-import { ActionMenu, Column, DataTable } from 'src/custom/dataTable/dataTable';
 
 interface Project {
   _id?: any;
@@ -60,7 +60,7 @@ const tableData: ProjectWithId[] = data.map((item) => ({
   {
     id: 'projectName',
     label: 'Project Name',
-     sortable: true,
+    sortable: true,
     render: (_, row) => row.projectName || 'N/A',
   },
   // {
@@ -73,26 +73,33 @@ const tableData: ProjectWithId[] = data.map((item) => ({
     render: (_, row) => row.duration || 'N/A',
   },
   {
-    id: 'emiAmount',  
+    id: 'emiAmount',
     label: 'EMI Amount',
-    render: (_, row) => row.emiAmount ? `₹${row.emiAmount.toLocaleString('en-IN')}` : 'N/A',
-  },  
+    render: (_, row) => row.emiAmount ? `₹${row.emiAmount.toLocaleString('en-IN')}` : '0',
+  },
   {
     id: 'returns',
     label: 'Returns',
-     render: (_, row) => {
-      // Check if returns exists and is not 0
-      if (row.returns && row.returns !== 0) {
-        return `₹${row.returns.toLocaleString('en-IN')}`;
+    render: (_, row) => {
+      // Priority: totalReturnAmount (new) -> returns (old) -> N/A
+      const returnValue = row.totalReturnAmount || row.returns;
+      if (returnValue && returnValue !== 0) {
+        return `₹${returnValue.toLocaleString('en-IN')}`;
       }
-      return 'N/A';
+      return '0';
     },
   },
   {
     id: 'intrest',
     label: 'Interest',
-     render: (_, row) => {
-      // Priority: intrest (current) -> interest (old) -> N/A
+    render: (_, row) => {
+      // Priority: totalInvestimate (new) -> intrest (old) -> interest (old) -> N/A
+      const investmentValue = row.totalInvestimate;
+      if (investmentValue && investmentValue !== 0) {
+        return `₹${investmentValue.toLocaleString('en-IN')}`;
+      }
+      
+      // Fallback to old interest format (percentage)
       const interest = row.intrest || (row as any).interest;
       return interest && interest !== '0' ? interest : 'N/A';
     },
@@ -139,7 +146,8 @@ const handleDelete = async (id: string | number) => {
   data={data.map((item) => ({ ...item, id: item._id }))}
   columns={projectColumns}
   searchBy="projectName"
-  onDelete={handleDelete}
+          onDelete={handleDelete}
+          preserveOrder={true}
 />
 
       </Card>

@@ -103,8 +103,9 @@ const CustomExport = () => {
       // Prepare API parameters based on date selection
       const params: { date?: string; dateFrom?: string; dateTo?: string; status?: string } = {};
       
-      // If both dates are the same (e.g. both are today), send only 'date' param
-      if (fromDate === toDate) {
+      // If both dates are the same AND it is today's date, send only 'date' param
+      // The backend expects 'date' only for Today. For Yesterday (or past dates), it expects a range.
+      if (fromDate === toDate && fromDate === getTodayDate()) {
         params.date = fromDate;
       } else {
         // Otherwise, send both dateFrom and dateTo
@@ -128,7 +129,7 @@ const CustomExport = () => {
         const emiData = response.data.emi || [];
         
         if (billingData.length === 0 && emiData.length === 0) {
-          toast.error('No data found for the selected date range');
+          toast.error(response.message || 'No data found for the selected date range');
           setIsDownloading(false);
           return;
         }
@@ -139,9 +140,18 @@ const CustomExport = () => {
           const getVal = (val: any) => val || '';
           const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : ''; // DD/MM/YYYY
 
-          const project = item.general?.project?.projectName || item.customer?.projectId || '';
-          const marketerName = item.introducer?.name || '';
-          const marketerId = item.introducer?.id || item.introducer?._id || item.general?.marketer || item.introducer || '';
+          // Project ID with preference: shortName > _id > N/A
+          const projectShortName = item.general?.project?.shortName || item.general?.project?._id || 'N/A';
+          // Project Name
+          const projectName = item.general?.project?.projectName || 'N/A';
+          
+          // CED (Customer Executive Director) details
+          const cedName = item.customer?.cedId?.name || '';
+          const cedId = item.customer?.cedId?.id || item.customer?.cedId?._id || '';
+          
+          // DD (Direct Director) details
+          const ddName = item.customer?.ddId?.name || '';
+          const ddId = item.customer?.ddId?.id || item.customer?.ddId?._id || '';
 
           // Calculations
           const emiAmount = Number(item.general?.emiAmount) || 0;
@@ -152,14 +162,15 @@ const CustomExport = () => {
           const totalPaid = totalAmount ? (Number(totalAmount) - balanceAmount) : '';
 
           return {
-            'Project': project,
+            'Project ID': projectShortName,
+            'Project Name': projectName,
             'Customer Name': getVal(item.customerName),
             'Customer ID': getVal(item.customerCode),
             'Phone': getVal(item.mobileNo),
-            'Marketer Name': marketerName,
-            'Marketer ID': marketerId,
-            'Leader': '',
-            'Leader ID': '',
+            'CED Name': cedName,
+            'CED ID': cedId,
+            'DD Name': ddName,
+            'DD ID': ddId,
             'Payment Date': formatDate(item.paymentDate),
             'Amount Paid': getVal(item.amountPaid),
             'Booking ID': getVal(item.general?._id),
@@ -181,26 +192,45 @@ const CustomExport = () => {
 
           const customer = item.customer || {};
           const general = item.general || {};
+          
+          // Project ID with preference: shortName > _id > N/A
+          const projectShortName = general.project?.shortName || general.project?._id || customer.projectId || 'N/A';
+          // Project Name
+          const projectName = general.project?.projectName || 'N/A';
+          
+          // CED (Customer Executive Director) details
+          const cedName = customer.cedId?.name || '';
+          const cedId = customer.cedId?.id || customer.cedId?._id || '';
+          
+          // DD (Direct Director) details
+          const ddName = customer.ddId?.name || '';
+          const ddId = customer.ddId?.id || customer.ddId?._id || '';
 
           return {
-             'Project': customer.projectId || '', // Fallback as mostly ID is coming
+             'Project ID': projectShortName,
+             'Project Name': projectName,
              'Customer Name': getVal(customer.name),
              'Customer ID': getVal(customer.id),
              'Phone': getVal(customer.phone),
+             'CED Name': cedName,
+             'CED ID': cedId,
+             'DD Name': ddName,
+             'DD ID': ddId,
              'EMI Amount': getVal(item.emiAmt),
              'EMI No': getVal(item.emiNo),
              'Date': formatDate(item.date),
-             'Status': 'Unpaid', // Context implies these are unpaid
-             'Marketer': general.marketer || '',
+             'Status': 'Unpaid',
           };
         });
 
         // Create Workbook
         const wb = XLSX.utils.book_new();
 
-        // Add Billing Sheet
-        const wsBilling = XLSX.utils.json_to_sheet(billingRows);
-        XLSX.utils.book_append_sheet(wb, wsBilling, 'Billing');
+        // Add Billing Sheet (only if there is data)
+        if (billingRows.length > 0) {
+          const wsBilling = XLSX.utils.json_to_sheet(billingRows);
+          XLSX.utils.book_append_sheet(wb, wsBilling, 'Billing');
+        }
 
         // Add Unpaid EMI Sheet
         if (emiRows.length > 0) {

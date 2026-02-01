@@ -65,15 +65,15 @@ const customerSchema = z.object({
     .min(1, 'Pincode is required')
     .regex(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
   email: z.string().min(1, 'Email is required').email('Invalid email format'),
+  projectId: z.string().min(1, 'Project is required'),
+  ddId: z.string().min(1, 'DD Name is required'),
 
   // Optional / domain fields
   plotNo: z.string().optional(),
   // date: z.string().optional(),
   // nameOfCustomer: z.string().optional(),
   gender: z.string().optional(),
-  projectId: z.string().optional(),
   emiAmount: z.number().optional(),
-  ddId: z.string().optional(),
   ddMobile: z.string().optional(),
   cedId: z.string().optional(),
   cedMobile: z.string().optional(),
@@ -200,10 +200,12 @@ const CustomerForm = () => {
         ...data,
         phone: cleanedPhone,
         mobileNo: cleanedMobileNo,
+        // Convert empty or undefined cedId to null to prevent MongoDB validation error
+        cedId: data.cedId && data.cedId.trim() !== '' ? data.cedId : null,
       };
       const response = id
         ? await updateCustomer({ ...payload, _id: id })
-        : await createCustomer(data, true);
+        : await createCustomer(payload, true);
 
       if (response.status === 200) {
         // Show success dialog with customer ID instead of immediate navigation
@@ -211,7 +213,7 @@ const CustomerForm = () => {
         setCreatedCustomerId(customerId);
         setSuccessDialogOpen(true);
       } else {
-        alert(`Error: ${response.message}`);
+        toast.error(response.message || 'Failed to save customer');
       }
     } catch (error: any) {
       console.error('Submission error:', error);
@@ -527,8 +529,14 @@ const CustomerForm = () => {
 
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
-                      label="Mobile No"
+                      label={
+                        <>
+                          Mobile No <span style={{ color: 'red' }}>*</span>
+                        </>
+                      }
                       {...register('phone')}
+                      error={!!errors.phone}
+                      helperText={errors.phone?.message}
                       fullWidth
                       variant="outlined"
                     />

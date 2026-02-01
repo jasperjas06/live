@@ -13,7 +13,11 @@ export const login = async (credentials) => {
     };
     } catch (error) {
         console.log("Login error:", error)
-        return error.response?.data || { success: false, message: "Login failed" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Login failed",
+      status: error.response?.status || 500,
+    };
     }
 } 
 
@@ -32,7 +36,11 @@ export const getUserAccess = async (id) => {
     }
     catch (error) {
         console.log("Get user access error:", error)
-        return error.response?.data || { success: false, message: "Failed to fetch user access" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to fetch user access",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -98,7 +106,11 @@ export const getBillingRequestById = async(id)=>{
     };
     } catch (error) {
         console.log("Get billing request error:", error)
-        return error.response?.data || { success: false, message: "Failed to fetch billing request" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to fetch billing request",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -120,7 +132,11 @@ export const updateBillingRequestStatus = async(id, status, validity)=>{
     };
     } catch (error) {
         console.log("Update billing request status error:", error)
-        return error.response?.data || { success: false, message: "Failed to update request status" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to update request status",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -138,7 +154,11 @@ export const getEditRequestByID = async(id)=>{
     };
     } catch (error) {
         console.log("Get edit request error:", error)
-        return error.response?.data || { success: false, message: "Failed to fetch edit request" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to fetch edit request",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -175,7 +195,11 @@ export const getUserProfile = async()=>{
     };
     } catch (error) {
         console.log("Get user profile error:", error)
-        return error.response?.data || { success: false, message: "Failed to fetch user profile" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to fetch user profile",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -194,7 +218,11 @@ export const updateUserProfile = async(profileData)=>{
     }
     catch (error) {
         console.log("Update user profile error:", error)
-        return error.response?.data || { success: false, message: "Failed to update user profile" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to update user profile",
+      status: error.response?.status || 500,
+    };
     }
 }
 
@@ -212,6 +240,10 @@ export const reSetPassword = async(data)=>{
     };
     }
     catch (error) {
-        return error.response?.data || { success: false, message: "Failed to update password" }
+        return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "Failed to update password",
+      status: error.response?.status || 500,
+    };
     }
 }
