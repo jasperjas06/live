@@ -1,7 +1,7 @@
 import type { Column } from 'src/custom/dataTable/dataTable';
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   Box,
@@ -47,15 +47,27 @@ type Customer = {
 
 const CustomerPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [data, setData] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  // Initialize state from URL params
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
   const [pagination, setPagination] = useState<CustomerPagination | null>(null);
   const pageSize = 10;
 
-  // console.log(permissions.Customer,"permissions")  
+  // console.log(permissions.Customer,"permissions")
+
+    // Sync state to URL params
+  useEffect(() => {
+    const params: any = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (currentPage > 1) params.page = currentPage.toString();
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch, currentPage, setSearchParams]);
+  
     // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {

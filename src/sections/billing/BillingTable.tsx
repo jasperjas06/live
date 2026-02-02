@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import { Box, Button, CircularProgress, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams  } from 'react-router-dom';
 import { permissions } from 'src/common/Permissions';
 import { Iconify } from 'src/components/iconify';
 import type { Column } from 'src/custom/dataTable/dataTable';
@@ -26,17 +26,28 @@ type Customer = {
 
 const BillingTable = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<Customer[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+    
+  // Initialize state from URL params
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
   const [pagination, setPagination] = useState<BillingPagination | null>(null);
   const pageSize = 10;
   let { id } = useParams();
   
   console.log(permissions, "permissions");
+
+    // Sync state to URL params
+  useEffect(() => {
+    const params: any = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (currentPage > 1) params.page = currentPage.toString();
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch, currentPage, setSearchParams]);
 
   
   // Debounce search input
