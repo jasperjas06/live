@@ -163,6 +163,7 @@ export const routesSection: RouteObject[] = [
       { path: 'all/request/view/:id', element: <ViewRequest /> },
       { path: 'all/request/view/billing/:id', element: <ViewBillingRequest /> },
       { path: 'billing/create', element: <ManageBilling /> },
+      { path: 'billing/edit/:id', element: <ManageBilling /> },
        { path: "logs", element: <Logs /> },
     ],
   },

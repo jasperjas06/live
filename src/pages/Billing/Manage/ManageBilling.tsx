@@ -162,33 +162,54 @@ const BillingForm = () => {
             const response = await getBillingById(id);
             if (response?.data?.data) {
                 const empData = response.data.data;
+                const customerData = empData.customer; // Changed from empData.customerId to empData.customer based on user JSON
+
+                const customerId = (typeof customerData === 'object' && customerData !== null) 
+                    ? customerData._id 
+                    : customerData;
+
                 reset({
-                    customerId: empData.customerId || '',
-                    billingMonth: empData.billingMonth || '',
-                    emi: empData.emi || '',
-                    modeOfPayment: empData.modeOfPayment || '',
+                    customerId: customerId || '',
+                    billingMonth: empData.billFor || '', // Changed from billingMonth to billFor
+                    emi: empData.emi?._id || empData.emi || '', // Handle EMI object or ID
+                    modeOfPayment: (empData.modeOfPayment || '').toLowerCase(),
                     referenceId: empData.referenceId || '',
                     cardNo: empData.cardNo || '',
                     cardHolderName: empData.cardHolderName || '',
-                    paymentDate: empData.paymentDate || '',
-                    status: empData.status || 'enquired',
+                    paymentDate: empData.paymentDate ? new Date(empData.paymentDate).toISOString().split('T')[0] : '', // Format date
+                    status: empData.status || 'Enquiry',
                     remarks: empData.remarks || '',
-                    amount: empData.amount || 0,
+                    amount: empData.amountPaid || 0, // Changed from amount to amountPaid
                 });
                 
-                // Find and set the selected customer for display
-                if (empData.customerId && customerOptions.length > 0) {
-                    const foundCustomer = customerOptions.find((option: any) => option.value === empData.customerId);
+                // Set Selected Customer directly if populated object is returned
+                if (typeof customerData === 'object' && customerData !== null) {
+                    setSelectedCustomer({
+                        value: customerData._id,
+                        label: customerData.name,
+                        id: customerData.id,
+                        _id: customerData._id,
+                        originalData: customerData,
+                    });
+                     // Set cusId state for EMI fetching
+                     setCusId(customerData._id);
+                } else if (customerId && customerOptions.length > 0) {
+                     // Fallback to finding in options if only ID string returned
+                    const foundCustomer = customerOptions.find((option: any) => option.value === customerId);
                     if (foundCustomer) {
                         setSelectedCustomer(foundCustomer);
+                        setCusId(customerId);
                     }
+                } else if (customerId) {
+                     setCusId(customerId);
                 }
+
             } else {
-                toast.error('Failed to fetch employee data');
+                toast.error('Failed to fetch billing data');
             }
         } catch (error) {
             console.error(error);
-            toast.error('Failed to fetch employee data');
+            toast.error('Failed to fetch billing data');
         } finally {
             setIsLoading(false);
         }
@@ -685,16 +706,13 @@ const BillingForm = () => {
                                             defaultValue=""
                                             rules={{ required: 'Payment Date is required' }}
                                             render={({ field, fieldState }) => {
-                                                // Always disable to prevent malpractice
-                                                const isDisabled = true;
-                                                
                                                 return (
                                                     <TextField
                                                         {...field}
                                                         label="Payment Date"
                                                         type="date"
                                                         fullWidth
-                                                        disabled={isDisabled}
+                                                        disabled={!id}
                                                         InputLabelProps={{ shrink: true }}
                                                         error={!!fieldState.error}
                                                         helperText={fieldState.error?.message}
@@ -813,6 +831,8 @@ const BillingForm = () => {
                                                     }}
                                                     options={[
                                                         { value: "enquired", label: "Enquired" },
+                                                        { value: "Enquiry", label: "Enquiry" },
+                                                        { value: "booked", label: "Booked" },
                                                         { value: "blocked", label: "Blocked" }
                                                     ]}
                                                     error={!!fieldState.error}

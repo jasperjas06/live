@@ -317,8 +317,8 @@ const BillingTable = () => {
           title="Customer Table"
           data={data}
           columns={customerColumns}
-          isDelete={false}
-          isEdit={false}
+          isDelete={permissions?.Billing?.delete === true ? true : false}
+          isEdit={permissions?.Billing?.update === true ? true : false}
           isView={permissions?.Billing?.read === true ? true : false}
           disableSearch={true}
           disablePagination={true}
