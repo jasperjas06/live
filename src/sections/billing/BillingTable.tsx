@@ -68,6 +68,7 @@ const BillingTable = () => {
         billingData = billingData.map((item: any) => ({
           ...item,
           customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
+          customerName: item.customer?.name || item.customerName || 'N/A',
           marketerName: item.introducer?.name || item?.customer?.marketerName || 'N/A',
           paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || 'N/A',
           // emiId: item.emi?._id || 'N/A',

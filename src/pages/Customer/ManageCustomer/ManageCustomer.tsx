@@ -22,11 +22,14 @@ import {
   Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { createCustomer, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, updateCustomer } from 'src/utils/api.service';
+import Flat from "src/pages/CustomerDetails/ManageCustomer/Flat";
+import General from "src/pages/CustomerDetails/ManageCustomer/General";
+import Plot from "src/pages/CustomerDetails/ManageCustomer/Plot";
+import { createCustomer, createCustomerEstimate, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, updateCustomer, updateCustomerEstimate } from 'src/utils/api.service';
 import { z } from 'zod';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -50,7 +53,8 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 }));
 
 // Zod schema
-const customerSchema = z.object({
+// Base schema for customer details
+const baseCustomerSchema = z.object({
   // Required fields
   name: z.string().min(1, 'Name is required'),
   address: z.string().min(1, 'Address is required'),
@@ -70,14 +74,14 @@ const customerSchema = z.object({
 
   // Optional / domain fields
   plotNo: z.string().optional(),
-  // date: z.string().optional(),
-  // nameOfCustomer: z.string().optional(),
   gender: z.string().optional(),
-  emiAmount: z.number().optional(),
+  emiAmount: z.preprocess((val) => Number(val), z.number().optional()),
   ddMobile: z.string().optional(),
-  cedId: z.string().optional(),
+  cedId: z.string().nullable().optional(), // Allow nullable for optional ObjectId
   cedMobile: z.string().optional(),
-  percentage: z.number().optional(),
+  // percentge field logic is in estimate for new, but technically part of customer schema too? 
+  // keeping optional fields as they were relative to customer collection
+  percentage: z.preprocess((val) => Number(val), z.number().optional()),
   projectArea: z.string().optional(),
   nationality: z.string().optional(),
   dob: z.string().optional(),
@@ -104,7 +108,27 @@ const customerSchema = z.object({
   photo: z.any().optional(),
 });
 
-type CustomerFormData = z.infer<typeof customerSchema>;
+// Schema for creating new customer (includes estimate details)
+const createCustomerSchema = baseCustomerSchema.extend({
+  general: z.object({
+    marketer: z.string().min(1, 'Marketer is required'),
+    saleType: z.string().min(1, 'Sale Type is required'),
+    percentage: z.preprocess((val) => Number(val), z.number().min(0).max(100, 'Percentage allow 0-100')),
+    emiAmount: z.preprocess((val) => Number(val), z.number().min(1, 'EMI Amount is required')),
+    noOfInstallments: z.preprocess((val) => Number(val), z.number().min(1, 'Installments is required')),
+    
+    // Optional estimate fields
+    paymentTerms: z.string().optional(),
+    status: z.string().optional(),
+    loan: z.string().optional(),
+    offered: z.string().optional(),
+    reason: z.string().optional(),
+    saleDeedDoc: z.any().optional(),
+    motherDoc: z.any().optional(),
+  }),
+});
+
+type CustomerFormData = z.infer<typeof baseCustomerSchema>;
 
 const CustomerForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -119,17 +143,14 @@ const CustomerForm = () => {
   const [cedOptions, setCedOptions] = useState<any[]>([]);
   const [cedLoading, setCedLoading] = useState(false);
   const [selectedCED, setSelectedCED] = useState<any>(null);
+  // Estimate form state
+  const [saleType, setSaleType] = useState("");
+  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string; percentage: string | number }[]>([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-  } = useForm<CustomerFormData>({
-    resolver: zodResolver(customerSchema),
+  const methods = useForm<any>({
+    resolver: zodResolver(createCustomerSchema),
     defaultValues: {
       // required
       name: '',
@@ -175,11 +196,24 @@ const CustomerForm = () => {
       diamountDirectorName: '',
       diamountDirectorPhone: '',
       photo: undefined,
-      guardianAddress: '',  
+      guardianAddress: '',
+      // Estimate form defaults
+      general: {},
+      plot: {},
+      flat: {},
     },
   });
 
-  const onSubmit: SubmitHandler<CustomerFormData> = async (data) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    trigger,
+  } = methods;
+
+  const onSubmit: SubmitHandler<any> = async (data) => {
     try {
             // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
       let cleanedPhone = data.phone;
@@ -196,24 +230,152 @@ const CustomerForm = () => {
         ? data.mobileNo.substring(1) 
         : data.mobileNo;
 
-      const payload = {
-        ...data,
-        phone: cleanedPhone,
-        mobileNo: cleanedMobileNo,
-        // Convert empty or undefined cedId to null to prevent MongoDB validation error
-        cedId: data.cedId && data.cedId.trim() !== '' ? data.cedId : null,
-      };
-      const response = id
-        ? await updateCustomer({ ...payload, _id: id })
-        : await createCustomer(payload, true);
+      // Validate estimate fields for new customers
+      // if (!id) {
+      //   // Check if basic estimate fields are valid
+      //   const isEstimateValid = await trigger([
+      //     'general.marketer', 
+      //     'general.saleType', 
+      //     'general.percentage',
+      //     'general.emiAmount',
+      //     'general.noOfInstallments'
+      //   ]);
+      //   if (!isEstimateValid) {
+      //     toast.error('Please fill in all required estimate fields');
+      //     return;
+      //   }
+      // }
 
-      if (response.status === 200) {
-        // Show success dialog with customer ID instead of immediate navigation
-        const customerId = response.data?.data?.id || '';
-        setCreatedCustomerId(customerId);
-        setSuccessDialogOpen(true);
+      // Prepare customer payload (exclude estimate fields)
+      const customerPayload: any = {
+        name: data.name,
+        address: data.address,
+        phone: cleanedPhone,
+        city: data.city,
+        state: data.state,
+        pincode: data.pincode,
+        email: data.email,
+        projectId: data.projectId,
+        ddId: data.ddId,
+        plotNo: data.plotNo,
+        gender: data.gender,
+        emiAmount: data.emiAmount,
+        ddMobile: data.ddMobile,
+        cedId: data.cedId && data.cedId.trim() !== '' ? data.cedId : null,
+        cedMobile: data.cedMobile,
+        percentage: data.percentage,
+        projectArea: data.projectArea,
+        nationality: data.nationality,
+        dob: data.dob,
+        occupation: data.occupation,
+        qualification: data.qualification,
+        panNo: data.panNo,
+        communicationAddress: data.communicationAddress,
+        mobileNo: cleanedMobileNo,
+        landLineNo: data.landLineNo,
+        fatherOrHusbandName: data.fatherOrHusbandName,
+        motherName: data.motherName,
+        nomineeName: data.nomineeName,
+        nomineeAge: data.nomineeAge,
+        nomineeRelationship: data.nomineeRelationship,
+        nameOfGuardian: data.nameOfGuardian,
+        so_wf_do: data.so_wf_do,
+        relationshipWithCustomer: data.relationshipWithCustomer,
+        introducerName: data.introducerName,
+        introducerMobileNo: data.introducerMobileNo,
+        immSupervisorName: data.immSupervisorName,
+        diamountDirectorName: data.diamountDirectorName,
+        diamountDirectorPhone: data.diamountDirectorPhone,
+        guardianAddress: data.guardianAddress,
+        photo: data.photo,
+      };
+
+      let response;
+      // If editing existing customer
+      if (id) {
+        // Update existing customer
+        // We need to pass _id for update
+        response = await updateCustomer({ ...customerPayload, _id: id }, true);
+        
+        if (response.status === 200) {
+           // Handle Estimate Update
+           if (Object.keys(data.general || {}).length > 0) {
+              const estimatePayload: any = {
+                general: data.general,
+                customerId: id, // Use existing ID
+                // For update, we might need _id of the general/plot records if the API requires it. 
+                // The form data populated from fetch should contain them.
+              };
+
+              if (saleType.toLowerCase() === 'plot') {
+                estimatePayload.plot = data.plot;
+              }
+              if (saleType.toLowerCase() === 'flat') {
+                estimatePayload.flat = data.flat;
+              }
+              
+              // We call updateCustomerEstimate 
+              // Note: The API likely needs the structure { general: { _id: ..., ... }, ... }
+              // The form values should have these _ids if they were fetched correctly.
+              await updateCustomerEstimate(estimatePayload);
+           }
+           
+           toast.success('Customer updated successfully');
+           navigate('/customer/list');
+           return;
+        }
       } else {
-        toast.error(response.message || 'Failed to save customer');
+        // Create new customer
+        response = await createCustomer(customerPayload, true);
+      }
+
+      const customerResponse = response;
+
+      if (customerResponse.status === 200) {
+        // Prioritize _id (MongoDB ID) for estimate creation logic
+        const mongoId = customerResponse.data?.data?._id;
+        // Prioritize id (Customer Code) for display/clipboard
+        const displayId = customerResponse.data?.data?.id || mongoId;
+        
+        if (!mongoId) {
+          toast.error('Customer created but ID not returned');
+          return;
+        }
+
+        // Check if estimate data exists
+        if (Object.keys(data.general || {}).length > 0) {
+          // Prepare estimate payload
+          let estimatePayload: any = {
+            general: data.general,
+            customerId: mongoId, // Use MongoDB ID for linking
+          };
+
+          if (saleType.toLowerCase() === 'plot' || saleType.toLowerCase() === 'villa') {
+            estimatePayload.plot = data.plot;
+          }
+          if (saleType.toLowerCase() === 'flat') {
+            estimatePayload.flat = data.flat;
+          }
+
+          // Create estimate
+          const estimateResponse = await createCustomerEstimate(estimatePayload);
+
+          if (estimateResponse.status === 200) {
+            setCreatedCustomerId(displayId); // Show friendly ID
+            setSuccessDialogOpen(true);
+            toast.success('Customer and estimate created successfully!');
+          } else {
+            toast.error(estimateResponse.message || 'Customer created but estimate creation failed');
+            setCreatedCustomerId(displayId);
+            setSuccessDialogOpen(true);
+          }
+        } else {
+          // No estimate data, just show success for customer
+          setCreatedCustomerId(displayId);
+          setSuccessDialogOpen(true);
+        }
+      } else {
+        toast.error(customerResponse.message || 'Failed to create customer');
       }
     } catch (error: any) {
       console.error('Submission error:', error);
@@ -237,14 +399,66 @@ const CustomerForm = () => {
     try {
       setIsLoading(true);
       const response = await getACustomer(id);
-      const customerData = response?.data?.data;
+      if (response?.data?.data) {
+          const customerData = response.data.data;
+          
+          // Map API response to form data
+          const formData = {
+            ...customerData,
+            // Handle populated fields (objects -> IDs)
+            projectId: customerData.projectId?._id || customerData.projectId,
+            ddId: customerData.ddId?._id || customerData.ddId,
+            cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
+            
+            // Map generalId to general form field
+            general: customerData.generalId || {}, 
+            plot: {}, // Initialize empty, will populate if needed
+            flat: {}
+          };
+          
+          // Reset form with mapped data
+          methods.reset(formData);
 
-      if (customerData) {
-        reset({
-          photo: undefined,
-          ...(customerData as Partial<CustomerFormData>),
-        });
-      }
+          // Handle special fields that need explicit setting or logic
+          
+          // 1. Auto-fill names/mobiles from populated objects if available, 
+          // although strict form usually relies on IDs. 
+          // But purely for display if referenced:
+          if (customerData.cedId?.phone) {
+             methods.setValue('cedMobile', customerData.cedId.phone);
+          }
+          if (customerData.ddId?.phone) {
+             methods.setValue('ddMobile', customerData.ddId.phone);
+          }
+
+          // 2. Set Sale Type if available in general data
+          if (customerData.generalId?.saleType) {
+            setSaleType(customerData.generalId.saleType);
+            
+            // If sale type exists, check for plot/flat data
+            // The API response might have them as top-level keys or inside general?
+            // User JSON didn't show plot/flat keys, assuming they might exist if saleType was set.
+            // If they are nested elsewhere, we'd map them here. 
+            // For now, assuming standard keys if they exist:
+            if (customerData.plot) methods.setValue('plot', customerData.plot);
+            if (customerData.flat) methods.setValue('flat', customerData.flat);
+          }
+
+          // 3. Set Autocomplete States for Project, DD, CED
+          if (customerData.projectId && typeof customerData.projectId === 'object') {
+             setSelectedScheme(customerData.projectId);
+          }
+          if (customerData.ddId && typeof customerData.ddId === 'object') {
+             setSelectedDD(customerData.ddId);
+             // Fetch CED options for the selected DD
+             if (customerData.ddId._id) {
+               fetchCEDs(customerData.ddId._id);
+             }
+          }
+          if (customerData.cedId && typeof customerData.cedId === 'object') {
+             setSelectedCED(customerData.cedId);
+          }
+        }
     } catch (error: any) {
       toast.error(error?.message || 'Failed to fetch customer');
       console.log('Error fetching customer data:', error);
@@ -302,9 +516,35 @@ const CustomerForm = () => {
     }
   };
 
+  // Fetch marketers for estimate form
+  const fetchMarketers = async () => {
+    try {
+      const response = await getAllMarketer();
+      if (response.status === 200 && response.data?.data) {
+        const marketers = response.data.data.map((m: any) => ({
+          label: m.name,
+          value: m._id,
+          percentage: m.percentageId?.rate || 0,
+        }));
+        setMarketerOptions(marketers);
+      }
+    } catch (error: any) {
+      console.error('Error fetching marketers:', error);
+    }
+  };
+
+  // Handle next for estimate form (just validates, doesn't navigate)
+  const handleNext = async () => {
+    const valid = await trigger('general');
+    if (!valid) {
+      toast.error('Please fill in all required estimate fields');
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
     fetchDDs();
+    fetchMarketers();
     getDataByID();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -323,6 +563,7 @@ const CustomerForm = () => {
             </Box>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)}>
+              <FormProvider {...methods}>
               {/* SECTION 1: BASIC DETAILS */}
               <FormSection>
                 <SectionTitle variant="h6">Basic Details</SectionTitle>
@@ -332,6 +573,7 @@ const CustomerForm = () => {
                     <Autocomplete
                       options={projects}
                       getOptionLabel={(option) => option.projectName || ''}
+                      isOptionEqualToValue={(option, value) => option._id === value._id}
                       loading={projectsLoading}
                       value={selectedScheme}
                       onChange={(event, newValue) => {
@@ -347,8 +589,28 @@ const CustomerForm = () => {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
+                          // Also update general.emiAmount for estimate form
+                          setValue('general.emiAmount', newValue.emiAmount, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                          // Update general.noOfInstallments from project duration
+                          if (newValue.duration) {
+                              setValue('general.noOfInstallments', newValue.duration, {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+                          }
                         } else {
                           setValue('emiAmount', 0, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                          setValue('general.emiAmount', 0, {
+                            shouldValidate: false,
+                            shouldDirty: false,
+                          });
+                          setValue('general.noOfInstallments', '', {
                             shouldValidate: false,
                             shouldDirty: false,
                           });
@@ -363,7 +625,7 @@ const CustomerForm = () => {
                             </>
                           }
                           error={!!errors.projectId}
-                          helperText={errors.projectId?.message}
+                          helperText={errors.projectId?.message as string}
                           InputProps={{
                             ...params.InputProps,
                             endAdornment: (
@@ -387,7 +649,7 @@ const CustomerForm = () => {
                       label="Name"
                       {...register('name')}
                       error={!!errors.name}
-                      helperText={errors.name?.message}
+                      helperText={errors.name?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -499,7 +761,7 @@ const CustomerForm = () => {
                       label="City"
                       {...register('city')}
                       error={!!errors.city}
-                      helperText={errors.city?.message}
+                      helperText={errors.city?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -510,7 +772,7 @@ const CustomerForm = () => {
                       label="State"
                       {...register('state')}
                       error={!!errors.state}
-                      helperText={errors.state?.message}
+                      helperText={errors.state?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -521,7 +783,7 @@ const CustomerForm = () => {
                       label="Pincode"
                       {...register('pincode')}
                       error={!!errors.pincode}
-                      helperText={errors.pincode?.message}
+                      helperText={errors.pincode?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -536,7 +798,7 @@ const CustomerForm = () => {
                       }
                       {...register('phone')}
                       error={!!errors.phone}
-                      helperText={errors.phone?.message}
+                      helperText={errors.phone?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -556,7 +818,7 @@ const CustomerForm = () => {
                       label="Email"
                       {...register('email')}
                       error={!!errors.email}
-                      helperText={errors.email?.message}
+                      helperText={errors.email?.message as string}
                       fullWidth
                       variant="outlined"
                     />
@@ -585,7 +847,7 @@ const CustomerForm = () => {
                       label="Address"
                       {...register('address')}
                       error={!!errors.address}
-                      helperText={errors.address?.message}
+                      helperText={errors.address?.message as string}
                       fullWidth
                       variant="outlined"
                       multiline
@@ -714,6 +976,7 @@ const CustomerForm = () => {
                     <Autocomplete
                       options={ddOptions}
                       getOptionLabel={(option) => option.name || ''}
+                      isOptionEqualToValue={(option, value) => option._id === value._id}
                       loading={ddLoading}
                       value={selectedDD}
                       onChange={(event, newValue) => {
@@ -739,12 +1002,12 @@ const CustomerForm = () => {
                         // Silently store DD's percentage for backend submission
                         if (newValue?.percentageId?.rate) {
                           const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
-                          setValue('percentage', percentageValue, {
+                          setValue('general.percentage', percentageValue, {
                             shouldValidate: false,
                             shouldDirty: false,
                           });
                         } else {
-                          setValue('percentage', 0, {
+                          setValue('general.percentage', 0, {
                             shouldValidate: false,
                             shouldDirty: false,
                           });
@@ -769,7 +1032,7 @@ const CustomerForm = () => {
                             </>
                           }
                           error={!!errors.ddId}
-                          helperText={errors.ddId?.message}
+                          helperText={errors.ddId?.message as string}
                           InputProps={{
                             ...params.InputProps,
                             endAdornment: (
@@ -796,7 +1059,7 @@ const CustomerForm = () => {
                       }
                       {...register('ddMobile')}
                       error={!!errors.ddMobile}
-                      helperText={errors.ddMobile?.message}
+                      helperText={errors.ddMobile?.message as string}
                       fullWidth
                       variant="outlined"
                       disabled
@@ -822,6 +1085,7 @@ const CustomerForm = () => {
                     <Autocomplete
                       options={cedOptions}
                       getOptionLabel={(option) => option.name || ''}
+                      isOptionEqualToValue={(option, value) => option._id === value._id}
                       loading={cedLoading}
                       value={selectedCED}
                       onChange={(event, newValue) => {
@@ -847,7 +1111,7 @@ const CustomerForm = () => {
                         // Silently store CED's percentage for backend submission (overrides DD percentage)
                         if (newValue?.percentageId?.rate) {
                           const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
-                          setValue('percentage', percentageValue, {
+                          setValue('general.percentage', percentageValue, {
                             shouldValidate: false,
                             shouldDirty: false,
                           });
@@ -855,16 +1119,26 @@ const CustomerForm = () => {
                           // If CED is cleared, revert to DD's percentage if DD is selected
                           if (selectedDD?.percentageId?.rate) {
                             const ddPercentageValue = Number((selectedDD.percentageId.rate as string).replace('%', ''));
-                            setValue('percentage', ddPercentageValue, {
+                            setValue('general.percentage', ddPercentageValue, {
                               shouldValidate: false,
                               shouldDirty: false,
                             });
                           } else {
-                            setValue('percentage', 0, {
+                            setValue('general.percentage', 0, {
                               shouldValidate: false,
                               shouldDirty: false,
                             });
                           }
+                        }
+
+                        // Auto-set General Marketer from CED
+                        if (newValue?._id) {
+                           setValue('general.marketer', newValue._id, {
+                              shouldValidate: true,
+                              shouldDirty: true
+                           });
+                        } else {
+                           setValue('general.marketer', '', { shouldValidate: false });
                         }
                       }}
                       renderInput={(params) => (
@@ -872,7 +1146,7 @@ const CustomerForm = () => {
                           {...params}
                           label="CED Name"
                           error={!!errors.cedId}
-                          helperText={errors.cedId?.message}
+                          helperText={errors.cedId?.message as string}
                           InputProps={{
                             ...params.InputProps,
                             endAdornment: (
@@ -895,7 +1169,7 @@ const CustomerForm = () => {
                       label="CED Mobile"
                       {...register('cedMobile')}
                       error={!!errors.cedMobile}
-                      helperText={errors.cedMobile?.message}
+                      helperText={errors.cedMobile?.message as string}
                       fullWidth
                       variant="outlined"
                       disabled
@@ -947,6 +1221,40 @@ const CustomerForm = () => {
                 </Grid>
               </FormSection>
 
+              {/* SECTION 4: ESTIMATE DETAILS */}
+              {/* SECTION 4: ESTIMATE DETAILS */}
+                <>
+                  <Divider sx={{ my: 4 }} />
+                  <FormSection>
+                    <SectionTitle variant="h6">Estimate Details</SectionTitle>
+                    <General
+                      marketer={marketerOptions}
+                      saleType={saleType}
+                      setSaleType={setSaleType}
+                      handleNext={handleNext}
+                      setTabIndex={() => {}} // Not used in this context
+                    />
+                  </FormSection>
+
+                  {/* Conditional Plot Section */}
+                  {(saleType.toLowerCase() === 'plot') && (
+                    <FormSection>
+                      <SectionTitle variant="h6">
+                        {saleType.charAt(0).toUpperCase() + saleType.slice(1)} Details
+                      </SectionTitle>
+                      <Plot control={methods.control} errors={methods.formState.errors} />
+                    </FormSection>
+                  )}
+
+                  {/* Conditional Flat Section */}
+                  {saleType.toLowerCase() === 'flat' && (
+                    <FormSection>
+                      <SectionTitle variant="h6">Flat Details</SectionTitle>
+                      <Flat control={methods.control} errors={methods.formState.errors} />
+                    </FormSection>
+                  )}
+                </>
+
               <Divider sx={{ my: 2 }} />
 
               <Grid container justifyContent="flex-end">
@@ -962,6 +1270,7 @@ const CustomerForm = () => {
                   </Button>
                 </Grid>
               </Grid>
+            </FormProvider>
             </form>
           )}
         </CardContent>

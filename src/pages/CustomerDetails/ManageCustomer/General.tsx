@@ -188,11 +188,11 @@ const General: React.FC<GeneralProps> = ({
                 InputProps={{
                   readOnly: true,
                 }}
+                inputProps={{ min: 0, max: 100, step: 0.01 }}
                 error={!!get(errors, "general.percentage")}
                 helperText={
                   get(errors, "general.percentage")?.message as string
                 }
-                inputProps={{ min: 0, max: 100, step: 0.01 }}
               />
             )}
           />
@@ -208,7 +208,8 @@ const General: React.FC<GeneralProps> = ({
                 {...field}
                 label="Payment Terms"
                 fullWidth
-                error={!!errors.paymentTerms}
+                error={!!get(errors, 'general.paymentTerms')}
+                helperText={get(errors, 'general.paymentTerms')?.message as string}
               />
             )}
           />
@@ -218,13 +219,16 @@ const General: React.FC<GeneralProps> = ({
           <Controller
             name="general.emiAmount"
             control={control}
+            rules={{ required: "EMI Amount is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
                 type="number"
                 label="EMI Amount"
                 fullWidth
-                error={!!errors.emiAmount}
+                error={!!get(errors, 'general.emiAmount')}
+                helperText={get(errors, 'general.emiAmount')?.message as string}
+                InputLabelProps={{ shrink: true }}
               />
             )}
           />
@@ -234,13 +238,16 @@ const General: React.FC<GeneralProps> = ({
           <Controller
             name="general.noOfInstallments"
             control={control}
+            rules={{ required: "No. of Installments is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
                 type="number"
                 label="No. of Installments"
                 fullWidth
-                error={!!errors.noOfInstallments}
+                error={!!get(errors, 'general.noOfInstallments')}
+                helperText={get(errors, 'general.noOfInstallments')?.message as string}
+                InputLabelProps={{ shrink: true }}
               />
             )}
           />
@@ -286,7 +293,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.status"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!errors.status}>
+              <FormControl fullWidth error={!!get(errors, 'general.status')}>
                 <InputLabel>Status</InputLabel>
                 <Select {...field} label="Status">
                   <MenuItem value="Enquired">Enquired</MenuItem>
@@ -302,7 +309,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.loan"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!errors.loan}>
+              <FormControl fullWidth error={!!get(errors, 'general.loan')}>
                 <InputLabel>Loan</InputLabel>
                 <Select {...field} label="Loan">
                   <MenuItem value="Yes">Yes</MenuItem>
@@ -318,7 +325,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.offered"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!errors.offered}>
+              <FormControl fullWidth error={!!get(errors, 'general.offered')}>
                 <InputLabel>Offered</InputLabel>
                 <Select {...field} label="Offered">
                   <MenuItem value="Yes">Yes</MenuItem>
@@ -368,7 +375,8 @@ const General: React.FC<GeneralProps> = ({
                 {...field}
                 label="Edit / Delete Reason"
                 fullWidth
-                error={!!errors.reason}
+                error={!!get(errors, 'general.reason')}
+                helperText={get(errors, 'general.reason')?.message as string}
               />
             )}
           />

@@ -41,6 +41,10 @@ interface Customer {
   marketerName: string;
   createdAt: string;
   updatedAt: string;
+  projectId: {
+    duration: string;
+    emiAmount: number;
+  }
 }
 
 const CustomerProfile = () => {
@@ -149,9 +153,9 @@ const CustomerProfile = () => {
             <Box sx={{ pl: 2 }}>
               <DetailItem 
                 label="EMI Amount" 
-                value={customer.emiAmount ? `₹${customer.emiAmount.toLocaleString('en-IN')}` : 'N/A'} 
+                value={customer.emiAmount ? `₹${customer.emiAmount.toLocaleString('en-IN')}` : customer.projectId.emiAmount ? `₹${customer.projectId.emiAmount.toLocaleString('en-IN')}` : 'N/A'} 
               />
-              <DetailItem label="Duration" value={customer.duration || 'N/A'} />
+              <DetailItem label="Duration" value={customer.duration || customer?.projectId?.duration || 'N/A'} />
               <DetailItem label="Payment Terms" value={customer.paymentTerms || 'N/A'} />
               <DetailItem label="Marketer" value={customer.marketerName || 'N/A'} />
             </Box>
