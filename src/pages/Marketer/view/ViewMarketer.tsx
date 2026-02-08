@@ -15,14 +15,17 @@ import {
   Typography,
 } from '@mui/material';
 
-import { getAMarketer } from 'src/utils/api.service';
-
+import { getAMarketer, getMarketerHierarchy } from 'src/utils/api.service';
+import type { Column } from 'src/custom/dataTable/dataTable';
+import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 const ViewMarketer = () => {
   const { id } = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+    const [hierarchyData, setHierarchyData] = useState<any>({ upline: [], downline: [] });
+  const [hierarchyLoading, setHierarchyLoading] = useState(true); 
 
   const getData = async () => {
     try {
@@ -37,8 +40,24 @@ const ViewMarketer = () => {
     }
   };
 
+  
+  const getHierarchy = async () => {
+    try {
+      setHierarchyLoading(true);
+      const response = await getMarketerHierarchy(id);
+      if (response.status === 200 && response.data?.data) {
+        setHierarchyData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching hierarchy:', error);
+    } finally {
+      setHierarchyLoading(false);
+    }
+  };
+
   useEffect(() => {
     getData();
+    getHierarchy();
   }, [id]);
 
   const DetailRow = ({ label, value, icon }: { label: string; value: any; icon?: React.ReactNode }) => (
@@ -53,13 +72,22 @@ const ViewMarketer = () => {
     </Box>
   );
 
+  
+  const columns: Column<any>[] = [
+    { id: 'name', label: 'Name', sortable: true },
+    { id: 'phone', label: 'Phone', sortable: false },
+    { id: 'level', label: 'Level', sortable: true },
+    { id: 'leaderName', label: 'Leader Name', sortable: true },
+    { id: 'status', label: 'Status', sortable: true },
+  ];
+
   return (
     <DashboardContent>
       <Typography variant="h4" fontWeight={600} gutterBottom>
         Marketer Details
       </Typography>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 12, md: 6 }}>
           <Card>
             <CardContent>
@@ -91,6 +119,41 @@ const ViewMarketer = () => {
           </Card>
         </Grid>
       </Grid>
+
+      
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+          Upline
+        </Typography>
+        <DataTable
+          title="Upline Marketers"
+          data={hierarchyData.upline || []}
+          columns={columns}
+          disableSearch
+          defaultRowsPerPage={5}
+          onDropDown={false}
+          isDelete={false}
+          isEdit={false}
+          isView={false}
+        />
+      </Box>
+
+      <Box>
+        <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+          Downline
+        </Typography>
+        <DataTable
+          title="Downline Marketers"
+          data={hierarchyData.downline || []}
+          columns={columns}
+          disableSearch
+          defaultRowsPerPage={5}
+          onDropDown={false}
+          isDelete={false}
+          isEdit={false}
+          isView={false}
+        />
+      </Box>
     </DashboardContent>
   );
 };

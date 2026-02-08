@@ -616,6 +616,26 @@ export const getAMOD = async (id) => {
   }
 }
 
+
+export const getMarketerHierarchy = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/market/detail/get/all/up/down/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
 export const getAllModCustomer = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams();
