@@ -19,7 +19,7 @@ const BillingView = () => {
             const response = await getBillingsByCustomerId(id)
             console.log(response.data.data, "response billing view")
             if (response.data && response.data.data) {
-                setData(response.data.data)
+                setData({ ...response.data.data, emiList: response.data?.emi || [] })
             }
         } catch (error) {
             console.log(error)

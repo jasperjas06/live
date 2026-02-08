@@ -79,11 +79,12 @@ const BillingTable = () => {
         let billingData = response.data.data;
         billingData = billingData.map((item: any) => ({
           ...item,
-          customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
-          marketerName: item.introducer?.name || item?.customer?.marketerName || item?.customer?.cedId?.name || 'N/A',
-          paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || 'N/A',
+           customerId: item.customer?.id || item.customer?._id || item.customerCode || '-',
+          marketerName: item.introducer?.name || item?.customer?.marketerName || item?.customer?.cedId?.name || item?.customer?.ddId?.name || '-',
+          paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || '-',
+          customerName: item?.general?.customer?.name || item?.customer?.name || "-",
           // emiId: item.emi?._id || 'N/A',
-          paidAmount: item.emi?.paidAmt || item?.amountPaid || 'N/A',
+          paidAmount: item.emi?.paidAmt || item?.amountPaid || '-',
         }));
         setData(billingData);
         setPagination(response.data.pagination || null);

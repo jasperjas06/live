@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { calculateEmiSummary } from "src/utils/billCalculation.utils";
 
 interface BillProps {
   data: any;
@@ -72,7 +73,13 @@ const numberToWords = (num: number): string => {
 
 const BillView = forwardRef<HTMLDivElement, { data: any }>(
   ({ data }, billRef) => {
-    console.log(billRef);
+        const {
+  totalAmount,
+  previousPaidAmount,
+  currentPaidAmount,
+  balanceAmount,
+} = calculateEmiSummary(data);
+
     return (
       <div
         style={{
@@ -145,7 +152,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     fontWeight: "900",
                   }}
                 >
-                  LIFE ALLIANCE ENTERPRISES
+                  LIFE HOUSING ENTERPRISES
                 </h1>
                 <p
                   style={{
@@ -682,11 +689,12 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       padding: "3px 0",
                       margin: "2px 0",
                       fontSize: "12px",
-                      wordBreak: "break-word",
-                      overflowWrap: "anywhere",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    LIFE SAVINGS SCHEME
+                    {data?.general?.project?.projectName || "-"}
                   </p>
                 </div>
                 <div
@@ -911,8 +919,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {data?.general?.emiAmount *
-                      data?.general?.noOfInstallments || "N/A"}
+                    {/* {data?.general?.emiAmount *
+                      data?.general?.noOfInstallments || "N/A"} */}
+                    {totalAmount}
                   </p>
                 </div>
                 <div
@@ -953,7 +962,8 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {(data?.general?.emiAmount * data?.general?.noOfInstallments) - data?.balanceAmount}
+                    {/* {(data?.general?.emiAmount * data?.general?.noOfInstallments) - data?.balanceAmount} */}
+                    {previousPaidAmount}
                   </p>
                 </div>
                 <div
@@ -994,7 +1004,8 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {data?.amountPaid || "N/A"}
+                    {/* {data?.amountPaid || "N/A"} */}
+                    {currentPaidAmount}
                   </p>
                 </div>
                 <span
@@ -1044,7 +1055,8 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {data?.balanceAmount || "N/A"}
+                    {/* {data?.balanceAmount || "N/A"} */}
+                    {balanceAmount}
                   </p>
                 </div>
                 <span
@@ -1115,7 +1127,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     for{" "}
                 <span style={{ fontWeight: "600", paddingLeft: "5px" }}>
                   {" "}
-                  LIFE ALLIANCE ENTERPRISES
+                  LIFE HOUSING ENTERPRISES
                 </span>
                 </p>
               </div>
