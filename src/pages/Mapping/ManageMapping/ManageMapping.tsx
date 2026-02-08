@@ -259,7 +259,7 @@ const onSubmit = async (data: RoleMenuFormData) => {
                       variant="outlined"
                       error={!!errors.role}
                     >
-                      <InputLabel id="role-label">Role</InputLabel>
+                      <InputLabel id="role-label" required>Role</InputLabel>
                       <Controller
                         name="role"
                         control={control}

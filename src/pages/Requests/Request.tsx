@@ -1,7 +1,7 @@
 import { Download, Eye, RefreshCw, X } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 import {
@@ -16,7 +16,6 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TablePagination,
   TableRow,
   Tabs,
   TextField,
@@ -30,13 +29,45 @@ import { getBillingRequest, getEditRequest } from "src/utils/api.auth";
 
 const Requests = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Initialize state from URL params for Billing tab
+  const [page, setPage] = useState((Number(searchParams.get('page')) || 1) - 1);
+  const [rowsPerPage, setRowsPerPage] = useState(Number(searchParams.get('limit')) || 10);
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || "");
+  
   const [selectedDate, setSelectedDate] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentTab, setCurrentTab] = useState(0); // 0: Billing, 1: Others
+  const [currentTab, setCurrentTab] = useState(Number(searchParams.get('tab')) || 0); // 0: Billing, 1: Others
+  const [pagination, setPagination] = useState<any>(null); // Backend pagination for Billing tab
+
+  // Sync state to URL params for both tabs
+  useEffect(() => {
+        const params: any = {};
+        params.tab = currentTab.toString();
+        if (debouncedSearch) params.search = debouncedSearch;
+        if (page > 0) params.page = (page + 1).toString();
+        if (rowsPerPage !== 10) params.limit = rowsPerPage.toString();
+        
+        setSearchParams(params, { replace: true });
+  }, [debouncedSearch, page, rowsPerPage, currentTab, setSearchParams]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      if (searchTerm !== debouncedSearch) {
+        setPage(0);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -46,6 +77,13 @@ const Requests = () => {
       // Only add date if user has selected one
       if (selectedDate) {
         params.date = selectedDate;
+      }
+
+      // Add pagination and search params for both tabs
+      params.page = page + 1; // Backend uses 1-indexed pages
+      params.limit = rowsPerPage;
+      if (debouncedSearch) {
+        params.search = debouncedSearch;
       }
 
       let response;
@@ -61,26 +99,52 @@ const Requests = () => {
 
       if (Array.isArray(response.data)) {
         setData(response.data);
+        setPagination(null);
       } else if (response.data?.data && Array.isArray(response.data.data)) {
         setData(response.data.data);
+        // Store pagination info
+        if (response.data.pagination) {
+          setPagination(response.data.pagination);
+        } else {
+          setPagination(null);
+        }
       } else {
         setData([]);
-        // toast.error("Invalid data format received");
+        setPagination(null);
       }
     } catch (error) {
       console.error("Error fetching requests:", error);
       toast.error("Failed to fetch requests");
       setData([]);
+      setPagination(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    setPage(0);
-    setData([]); 
-    fetchRequests();
-  }, [currentTab, selectedDate]); 
+    if (currentTab !== 0) { // This check was effectively useless as we want to trigger on any tab switch if handled properly, but since we reset state on tab change, let's keep the logic clean
+       // Actually, the reset logic is in handleTabChange, this effect was for initialization/refetch. 
+       // We can merge the fetching logic.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTab, selectedDate]);
+
+  // Fetch when page, rowsPerPage, debouncedSearch, selectedDate or tab changes
+  useEffect(() => {
+      // Re-initialize state from URL params when tab changes or initial load
+      // But handleTabChange wipes URL params.
+      // So when tab changes, URL params are empty -> state becomes default.
+      // If page reload -> URL params exist -> state restored.
+      
+      // We need to ensure we don't double fetch or overwrite state incorrectly.
+      // The previous logic for Billing had setPage etc inside useEffect.
+      
+      // If we simply fetch on dependency change, it should be fine.
+      fetchRequests();
+      
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, debouncedSearch, selectedDate, currentTab]); 
 
   const handleExportExcel = async () => {
     const toastId = toast.loading("Exporting requests...");
@@ -189,40 +253,17 @@ const Requests = () => {
     }
   };
 
-  const filteredData = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return data.filter((request) => {
-        if (currentTab === 0) {
-            // Billing
-             return (
-                 request.userId?.name?.toLowerCase().includes(term) ||
-                 request.userId?.email?.toLowerCase().includes(term) ||
-                 request.status?.toLowerCase().includes(term)
-             )
-        } else {
-            // Others
-            return (
-                request.targetModel?.toLowerCase().includes(term) ||
-                request.editedBy?.email?.toLowerCase().includes(term) ||
-                request.status?.toLowerCase().includes(term)
-              );
-        }
-    });
-  }, [data, searchTerm, currentTab]);
-
-  const paginatedData = useMemo(() => {
-    const start = page * rowsPerPage;
-    return filteredData.slice(start, start + rowsPerPage);
-  }, [filteredData, page, rowsPerPage]);
-
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
-  };
-
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
       setCurrentTab(newValue);
+      // Reset all filters and pagination
+      setSearchTerm("");
+      setDebouncedSearch("");
+      setSelectedDate("");
+      setPage(0);
+      setRowsPerPage(10);
+      
+      // Clear URL params but keep tab
+      setSearchParams({ tab: newValue.toString() }, { replace: true });
   }
 
   return (
@@ -321,7 +362,7 @@ const Requests = () => {
         >
           <CircularProgress />
         </Box>
-      ) : filteredData.length === 0 ? (
+      ) : data.length === 0 ? (
         <Box
           sx={{
             backgroundColor: "white",
@@ -360,7 +401,7 @@ const Requests = () => {
                  </TableHead>
              )}
             <TableBody>
-              {paginatedData.map((request) => (
+              {data.map((request) => (
                 <TableRow
                   key={request._id}
                   // Navigate for both billing (tab 0) and others (tab 1)
@@ -497,15 +538,38 @@ const Requests = () => {
             </TableBody>
           </Table>
 
-          <TablePagination
-            component="div"
-            count={filteredData.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
+          {/* Unified Pagination for both tabs */}
+          {pagination && (
+            <Box sx={{ mt: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Showing {pagination.totalRecords} record{pagination.totalRecords !== 1 ? 's' : ''}
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setPage(prev => prev - 1)}
+                  disabled={page === 0}
+                  size="small"
+                >
+                  Previous
+                </Button>
+                
+                <Typography variant="body2">
+                  Page {page + 1} of {pagination.totalPages}
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  onClick={() => setPage(prev => prev + 1)}
+                  disabled={page + 1 >= pagination.totalPages}
+                  size="small"
+                >
+                  Next
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
       )}
     </DashboardContent>

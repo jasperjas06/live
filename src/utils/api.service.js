@@ -192,9 +192,25 @@ export const getAProject = async (id) => {
   }
 }
 
-export const getAllProjects = async () => {
+export const getAllProjects = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/project/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/project/get/all${queryString ? `?${queryString}` : ''}`;
+
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -233,9 +249,25 @@ export const deleteProject = async (id) => {
 }
 
 // Marketing Head APIS
-export const getAllMarkingHead = async () => {
+export const getAllMarkingHead = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/market/head/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/market/head/get/all${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -390,29 +422,7 @@ export const updateMarketer = async (data) => {
   }
 }
 
-export const getAllMarketer = async (params = {}) => {
-  try {
-       const queryString = new URLSearchParams(params).toString();
-    const url = queryString 
-      ? `${base_url}api/market/detail/get/all?${queryString}`
-      : `${base_url}api/market/detail/get/all`;
 
-    const response = await axios.get(url, {
-      headers: getHeaders()
-    });
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-}
 
 export const getAMarketer = async (id) => {
   try {
@@ -432,27 +442,6 @@ export const getAMarketer = async (id) => {
     };
   }
 }
-
-export const deleteMarketer = async (id) => {
-  try {
-    const data = { _id: id };
-    const response = await axios.delete(`${base_url}api/market/detail/delete`, {
-      data,
-      headers: getHeaders()
-    });
-    return {
-      data: response.data,
-      message: response?.data?.message,
-      status: 200,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || 500,
-    };
-  }
-};
 
 // Percentage APIS
 export const createPercentage = async (data) => {
@@ -474,9 +463,25 @@ export const createPercentage = async (data) => {
   }
 };
 
-export const getAllPercentage = async () => {
+export const getAllPercentage = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/percentage/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/percentage/get/all${queryString ? `?${queryString}` : ''}`;
+
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -572,9 +577,10 @@ export const createMOD = async (data) => {
   }
 };
 
-export const getAllMOD = async () => {
+export const getAllMOD = async (params) => {
   try {
     const response = await axios.get(`${base_url}api/mod/get/all`, {
+      params,
       headers: getHeaders()
     });
     return {
@@ -594,6 +600,41 @@ export const getAllMOD = async () => {
 export const getAMOD = async (id) => {
   try {
     const response = await axios.get(`${base_url}api/mod/get/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const getAllModCustomer = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/mod/get/all-customer${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -886,9 +927,25 @@ export const CreateRole = async (data) => {
   }
 };
 
-export const getAllRoles = async () => {
+export const getAllRoles = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/role/get/all`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/role/get/all${queryString ? `?${queryString}` : ''}`;
+
+    const response = await axios.get(url, {
       headers: getHeaders()
     })
     return {
@@ -986,9 +1043,26 @@ export const createEmployee = async (data) => {
   }
 };
 
-export const getAllEmployees = async () => {
+export const getAllEmployees = async (params = {}) => {
   try {
-    const response = await axios.get(`${base_url}api/user/get/all?role`, {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+
+    const queryString = queryParams.toString();
+    // Append new params to the existing url which already has ?role
+    const url = `${base_url}api/user/get/all?role${queryString ? `&${queryString}` : ''}`;
+
+    const response = await axios.get(url, {
       headers: getHeaders()
     });
     return {
@@ -1316,6 +1390,25 @@ export const createbilling = async (data) => {
   }
 };
 
+export const updateBilling = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/common/update/billing`, data, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 // General APIS
 export const getAllGeneral = async (customer) => {
   try {
@@ -1605,7 +1698,6 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status })
       status: 200,
     };
   } catch (error) {
-    console.log("Error fetching custom billing report:", error);
     return {
       data: null,
       message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
@@ -1613,3 +1705,114 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status })
     };
   }
 };
+
+// Housing APIS
+export const getAllHousingData = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/housing/customer/form/get/all${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get(url, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error fetching housing data:", error);
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const deleteHousingData = async (id) => {
+  try {
+    const response = await axios.delete(`${base_url}api/housing/customer/form/delete/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+// Marketer APIS
+export const getAllMarketer = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination parameters (must be provided together)
+    if (params.page && params.limit) {
+      queryParams.append('page', params.page.toString());
+      queryParams.append('limit', params.limit.toString());
+    }
+    
+    // Add search parameter
+    if (params.search) {
+      queryParams.append('search', encodeURIComponent(params.search));
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/market/detail/get/all${queryString ? `?${queryString}` : ''}`;
+
+    const response = await axios.get(url, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
+export const deleteMarketer = async (id) => {
+  try {
+    const response = await axios.delete(`${base_url}api/market/detail/delete/${id}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}

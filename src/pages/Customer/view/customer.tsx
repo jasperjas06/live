@@ -1,31 +1,41 @@
-import { useParams } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Clock, 
-  MapPin, 
+import {
+  BadgeDollarSign,
+  Briefcase,
   Calendar,
-  UserCircle,
-  BadgeDollarSign
+  Clock,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  UserCircle
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import { 
-  Box, 
-  Grid, 
-  Chip, 
-  Paper, 
-  Avatar, 
+
+import {
+  Avatar,
+  Box,
+  Chip,
   Divider,
-  Typography, 
-  Stack
+  Grid,
+  Paper,
+  Stack,
+  Typography
 } from '@mui/material';
 
-import { getACustomer } from 'src/utils/api.service'; 
+import { getACustomer } from 'src/utils/api.service';
+
+interface ReferencePerson {
+  _id: string;
+  id: string;
+  name: string;
+  phone: string;
+  status?: string;
+}
 
 interface Customer {
-    id: string;
+  id: string;
   customerCode: string;
   _id: string;
   name: string;
@@ -41,10 +51,13 @@ interface Customer {
   marketerName: string;
   createdAt: string;
   updatedAt: string;
-  projectId: {
+  project: string; // Updated to string as per JSON
+  projectId?: { // Optional in case it exists in some responses
     duration: string;
     emiAmount: number;
-  }
+  };
+  ddId?: ReferencePerson;
+  cedId?: ReferencePerson;
 }
 
 const CustomerProfile = () => {
@@ -135,14 +148,44 @@ const CustomerProfile = () => {
     <DetailItem 
       icon={<MapPin size={18} />} 
       label="Address" 
-      value={
-        customer.address 
-          ? `${customer.address}, ${customer.city || ''}, ${customer.state || ''} - ${customer.pincode || ''}`
-          : 'N/A'
-      } 
+      value={[
+        customer.address,
+        customer.city,
+        customer.state,
+        customer.pincode && `Pincode: ${customer.pincode}`
+      ].filter(Boolean).join(', ') || 'N/A'} 
     />
   </Stack>
 </Box>
+          </Grid>
+          
+          {/* Reference Details (DD & CED) */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+              <Briefcase style={{ marginRight: 8 }} /> Reference Details
+            </Typography>
+            <Box sx={{ pl: 2 }}>
+              <Stack spacing={1.5}>
+                {customer.ddId && (
+                  <Box sx={{ mb: 1 }}>
+                     <Typography variant="subtitle2" color="primary" gutterBottom>Direct Director (DD)</Typography>
+                     <DetailItem label="Name" value={customer.ddId.name || 'N/A'} />
+                     <DetailItem label="ID" value={customer.ddId.id || 'N/A'} />
+                     <DetailItem label="Phone" value={customer.ddId.phone || 'N/A'} />
+                  </Box>
+                )}
+                {customer.ddId && customer.cedId && <Divider sx={{ my: 1, borderStyle: 'dashed' }} />}
+                {customer.cedId && (
+                  <Box>
+                     <Typography variant="subtitle2" color="primary" gutterBottom>Chief Executive Director (CED)</Typography>
+                     <DetailItem label="Name" value={customer.cedId.name || 'N/A'} />
+                     <DetailItem label="ID" value={customer.cedId.id || 'N/A'} />
+                     <DetailItem label="Phone" value={customer.cedId.phone || 'N/A'} />
+                  </Box>
+                )}
+                {!customer.ddId && !customer.cedId && <Typography variant="body2" color="text.secondary">No reference details available</Typography>}
+              </Stack>
+            </Box>
           </Grid>
 
           {/* Financial Information */}
@@ -151,9 +194,10 @@ const CustomerProfile = () => {
               <BadgeDollarSign style={{ marginRight: 8 }} /> Financial Details
             </Typography>
             <Box sx={{ pl: 2 }}>
+              <DetailItem label="Project ID" value={customer.project || 'N/A'} />
               <DetailItem 
                 label="EMI Amount" 
-                value={customer.emiAmount ? `₹${customer.emiAmount.toLocaleString('en-IN')}` : customer.projectId.emiAmount ? `₹${customer.projectId.emiAmount.toLocaleString('en-IN')}` : 'N/A'} 
+                value={customer?.emiAmount ? `₹${customer?.emiAmount.toLocaleString('en-IN')}` : customer?.projectId?.emiAmount ? `₹${customer?.projectId?.emiAmount.toLocaleString('en-IN')}` : 'N/A'} 
               />
               <DetailItem label="Duration" value={customer.duration || customer?.projectId?.duration || 'N/A'} />
               <DetailItem label="Payment Terms" value={customer.paymentTerms || 'N/A'} />

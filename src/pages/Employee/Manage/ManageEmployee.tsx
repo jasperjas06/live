@@ -184,6 +184,7 @@ const EmployeeForm = () => {
                       render={({ field }) => (
                         <TextField
                           {...field}
+                          required
                           label="Name"
                           error={!!errors.name}
                           helperText={errors.name?.message}
@@ -201,6 +202,7 @@ const EmployeeForm = () => {
                       render={({ field }) => (
                         <TextField
                           {...field}
+                           required
                           label="Email"
                           error={!!errors.email}
                           helperText={errors.email?.message}
@@ -218,6 +220,7 @@ const EmployeeForm = () => {
                       render={({ field }) => (
                         <TextField
                           {...field}
+                           required
                           label="Phone"
                           error={!!errors.phone}
                           helperText={errors.phone?.message}
@@ -230,7 +233,7 @@ const EmployeeForm = () => {
 
                   <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                     <FormControl fullWidth variant="outlined" error={!!errors.role}>
-                      <InputLabel id="role-label">Role</InputLabel>
+                      <InputLabel id="role-label"  required>Role</InputLabel>
                       <Controller
                         name="role"
                         control={control}
@@ -274,7 +277,7 @@ const EmployeeForm = () => {
                   <Button
                     variant="outlined"
                     size="large"
-                    sx={{ ml: 2, minWidth: 150 }}
+                    sx={{ ml: 2, minWidth: 150 }} 
                     onClick={handleClose}
                     disabled={isSubmitting}
                   >

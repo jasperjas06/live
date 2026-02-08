@@ -124,6 +124,7 @@ const onSubmit = async (data: RoleFormData) => {
         </Box>
       ) : (
         <TextField
+          required
           label="Role Name"
           {...register('role')}
           error={!!errors.role}

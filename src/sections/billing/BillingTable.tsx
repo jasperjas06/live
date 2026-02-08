@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import { Box, Button, CircularProgress, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate, useParams, useSearchParams  } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { permissions } from 'src/common/Permissions';
 import { Iconify } from 'src/components/iconify';
 import type { Column } from 'src/custom/dataTable/dataTable';
@@ -27,28 +27,29 @@ type Customer = {
 const BillingTable = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  
   const [data, setData] = useState<Customer[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-    
+  
   // Initialize state from URL params
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  
   const [pagination, setPagination] = useState<BillingPagination | null>(null);
   const pageSize = 10;
   let { id } = useParams();
   
   console.log(permissions, "permissions");
 
-    // Sync state to URL params
+  // Sync state to URL params
   useEffect(() => {
     const params: any = {};
     if (debouncedSearch) params.search = debouncedSearch;
     if (currentPage > 1) params.page = currentPage.toString();
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, currentPage, setSearchParams]);
-
   
   // Debounce search input
   useEffect(() => {
@@ -79,8 +80,7 @@ const BillingTable = () => {
         billingData = billingData.map((item: any) => ({
           ...item,
           customerId: item.customer?.id || item.customer?._id || item.customerCode || 'N/A',
-          customerName: item.customer?.name || item.customerName || 'N/A',
-          marketerName: item.introducer?.name || item?.customer?.marketerName || 'N/A',
+          marketerName: item.introducer?.name || item?.customer?.marketerName || item?.customer?.cedId?.name || 'N/A',
           paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || 'N/A',
           // emiId: item.emi?._id || 'N/A',
           paidAmount: item.emi?.paidAmt || item?.amountPaid || 'N/A',
@@ -328,7 +328,7 @@ const BillingTable = () => {
           title="Customer Table"
           data={data}
           columns={customerColumns}
-          isDelete={permissions?.Billing?.delete === true ? true : false}
+          // isDelete={permissions?.Billing?.delete === true ? true : false}
           isEdit={permissions?.Billing?.update === true ? true : false}
           isView={permissions?.Billing?.read === true ? true : false}
           disableSearch={true}

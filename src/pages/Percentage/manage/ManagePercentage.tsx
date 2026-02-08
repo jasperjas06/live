@@ -128,7 +128,8 @@ const ManagePercentage = ({
           <DialogContent>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12 }}>
-                <TextField
+                  <TextField
+                  required
                   label="Name"
                   fullWidth
                   {...register('name')}
@@ -139,7 +140,8 @@ const ManagePercentage = ({
               </Grid>
 
               <Grid size={{ xs: 12 }}>
-                <TextField
+                  <TextField
+                  required
                   label="Rate"
                   fullWidth
                   {...register('rate')}

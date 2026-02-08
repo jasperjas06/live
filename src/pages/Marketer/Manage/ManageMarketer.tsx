@@ -2,29 +2,29 @@
 /* eslint-disable perfectionist/sort-named-imports */
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
-    Alert,
-    Button,
-    Card,
-    CardContent,
-    Divider,
-    FormControl,
-    FormControlLabel,
-    FormLabel,
-    Grid,
-    Radio,
-    RadioGroup,
-    Snackbar,
-    styled,
-    TextField,
-    Typography,
+  Alert,
+  Autocomplete,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
+  Radio,
+  RadioGroup,
+  Snackbar,
+  styled,
+  TextField,
+  Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import CustomSelect from 'src/custom/select/select';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { createMarketer, getAllMarkingHead, getAMarketer, updateMarketer } from 'src/utils/api.service';
+import { createMarketer, getAllMarkingHead, getAllPercentage, getAMarketer, updateMarketer } from 'src/utils/api.service';
 import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -43,6 +43,7 @@ const modSchema = yup.object().shape({
     .matches(/^[0-9]{10}$/, 'Phone must be 10 digits'),
   address: yup.string().required('Address is required'),
   status: yup.string().oneOf(['active', 'inactive']).required('Status is required'),
+  percentageId: yup.string().required('Percentage is required'),
 });
 
 export interface MarketerFormData {
@@ -51,6 +52,13 @@ export interface MarketerFormData {
   phone: string;
   address: string;
   status: 'active' | 'inactive';
+  percentageId: string;
+}
+
+interface PercentageData {
+  _id: string;
+  name: string;
+  rate: string;
 }
 
 const MarketerForm = () => {
@@ -64,6 +72,7 @@ const MarketerForm = () => {
         message: '',
         severity: 'success' as 'success' | 'error' | 'warning' | 'info'
       });
+  const [percentages, setPercentages] = useState<PercentageData[]>([]);
   const {
     register,
     handleSubmit,
@@ -77,6 +86,7 @@ const MarketerForm = () => {
       phone: '',
       address: '',
       status: 'active',
+      percentageId: ''
     },
   });
 
@@ -103,6 +113,16 @@ const MarketerForm = () => {
     }
   }
 
+  const getPercen = async() =>{
+    try {
+      const response = await getAllPercentage()
+      setPercentages(response.data.data || []);
+    } catch (error) {
+      console.log(error)
+      showSnackbar('Failed to load percentages', 'error');
+    }
+  }
+
   const getMarketerData = async () => {
     if (!id) return;
     try {
@@ -117,6 +137,7 @@ const MarketerForm = () => {
           phone: marketerData.phone || '',
           address: marketerData.address || '',
           status: marketerData.status ? 'active' : 'inactive',
+          percentageId: marketerData.percentageId?._id || marketerData.percentageId || ''
         });
       } else {
         showSnackbar('Failed to fetch marketer data', 'error');
@@ -131,6 +152,7 @@ const MarketerForm = () => {
 
   useEffect(()=>{
     getALLMarketingHeadsData();
+    getPercen();
     if (id) {
       getMarketerData();
     }
@@ -196,6 +218,7 @@ const MarketerForm = () => {
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
+                  required
                   label="Name"
                   {...register('name')}
                   error={!!errors.name}
@@ -218,17 +241,25 @@ const MarketerForm = () => {
                 <Controller
                   control={control}
                   name="headBy"
-                  defaultValue=""
                   rules={{ required: "Head by is required" }}
                   render={({ field, fieldState }) => (
-                    <CustomSelect
-                      label="Head By"
-                      name="headBy"
-                      value={field.value}
-                      onChange={field.onChange}
+                    <Autocomplete
                       options={options}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message}
+                      getOptionLabel={(option: any) => option.label || ''}
+                      value={options.find((opt: any) => opt.value === field.value) || null}
+                      onChange={(_, newValue: any) => {
+                        field.onChange(newValue ? newValue.value : '');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          label="Head By"
+                          error={!!fieldState.error}
+                          helperText={fieldState.error?.message}
+                          variant="outlined"
+                        />
+                      )}
                     />
                   )}
                 />
@@ -237,6 +268,7 @@ const MarketerForm = () => {
 
               <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                 <TextField
+                  required
                   label="Phone Number"
                   {...register('phone')}
                   error={!!errors.phone}
@@ -247,8 +279,38 @@ const MarketerForm = () => {
                 />
               </Grid>
 
+              <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                <FormControl fullWidth error={!!errors.percentageId}>
+                  {/* <InputLabel id="percentage-label">Percentage</InputLabel> */}
+                  <Controller
+                    name="percentageId"
+                    control={control}
+                    render={({ field }) => (
+                      <Autocomplete
+                        options={percentages}
+                        getOptionLabel={(option) => `${option.name} - ${option.rate}`}
+                        value={percentages.find((p) => p._id === field.value) || null}
+                        onChange={(_, newValue) => {
+                          field.onChange(newValue ? newValue._id : '');
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            required
+                            label="Percentage"
+                            error={!!errors.percentageId}
+                            helperText={errors.percentageId?.message}
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </FormControl>
+              </Grid>
+
               <Grid size={{ xs: 12 }}>
                 <TextField
+                  required
                   label="Address"
                   {...register('address')}
                   error={!!errors.address}
@@ -263,7 +325,7 @@ const MarketerForm = () => {
 
               <Grid size={{ xs: 12 }}>
                 <FormControl component="fieldset" error={!!errors.status}>
-                  <FormLabel component="legend">Status</FormLabel>
+                  <FormLabel component="legend" required>Status</FormLabel>
                   <Controller
                     name="status"
                     control={control}

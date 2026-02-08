@@ -1,35 +1,33 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useEffect, useState } from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
-  Grid,
-  Typography,
+  Alert,
+  Autocomplete,
+  Box,
   Button,
-  TextField,
   Card,
   CardContent,
+  CircularProgress,
   Divider,
-  styled,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
   Radio,
   RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  CircularProgress,
-  Box,
-  Alert,
   Snackbar,
-  MenuItem,
-  Select,
-  InputLabel,
+  styled,
+  TextField,
+  Typography
 } from '@mui/material';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { useParams, useNavigate } from 'react-router-dom';
-import { createMarkinghead, getAllPercentage, getAMarketingHead, updateMarketingHead } from 'src/utils/api.service';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { createMarkinghead, getAllPercentage, getAMarketingHead, updateMarketingHead } from 'src/utils/api.service';
+import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -169,7 +167,7 @@ const MarketingHeadForm = () => {
           gender: customerData.gender || 'male',
           email: customerData.email || '',
           status: Boolean(customerData.status),
-          percentageId: customerData.percentageId || ''
+          percentageId: customerData.percentageId?._id || customerData.percentageId || ''
         };
         reset(formData);
         showSnackbar('Data loaded successfully', 'success');
@@ -275,6 +273,7 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
+                    required
                     label="Full Name"
                     {...register('name')}
                     error={!!errors.name}
@@ -290,6 +289,7 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
+                    required
                     label="Phone Number"
                     {...register('phone')}
                     error={!!errors.phone}
@@ -310,6 +310,7 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
+                    required
                     label="Age"
                     type="number"
                     {...register('age')}
@@ -328,6 +329,7 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <TextField
+                    required
                     label="Email Address"
                     type="email"
                     {...register('email')}
@@ -344,6 +346,7 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12 }}>
                   <TextField
+                    required
                     label="Address"
                     {...register('address')}
                     error={!!errors.address}
@@ -361,22 +364,28 @@ const MarketingHeadForm = () => {
 
                 <Grid size={{ xs: 12, sm: 12, md: 6 }}>
                   <FormControl fullWidth error={!!errors.percentageId} disabled={isSubmitting}>
-                    <InputLabel id="percentage-label">Percentage</InputLabel>
+                    {/* <InputLabel id="percentage-label">Percentage</InputLabel> */}
                     <Controller
                       name="percentageId"
                       control={control}
                       render={({ field }) => (
-                        <Select
-                          {...field}
-                          labelId="percentage-label"
-                          label="Percentage"
-                        >
-                          {percentages.map((percentage) => (
-                            <MenuItem key={percentage._id} value={percentage._id}>
-                              {percentage.name} - {percentage.rate}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                        <Autocomplete
+                          options={percentages}
+                          getOptionLabel={(option) => `${option.name} - ${option.rate}`}
+                          value={percentages.find((p) => p._id === field.value) || null}
+                          onChange={(_, newValue) => {
+                            field.onChange(newValue ? newValue._id : '');
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              label="Percentage"
+                              error={!!errors.percentageId}
+                              helperText={errors.percentageId?.message}
+                            />
+                          )}
+                        />
                       )}
                     />
                     {errors.percentageId && (

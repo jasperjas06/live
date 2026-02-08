@@ -1,30 +1,31 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import React, { useEffect, useState } from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
-  Grid,
-  Typography,
+  Autocomplete,
+  Box,
   Button,
-  TextField,
   Card,
   CardContent,
+  CircularProgress,
   Divider,
-  styled,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
   Radio,
   RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Box,
+  styled,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import CustomSelect from 'src/custom/select/select';
-import { createMOD, getAllCustomer, updateMOD } from 'src/utils/api.service';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { createMOD, getAllModCustomer, getAllProjects, getAMOD, updateMOD } from 'src/utils/api.service';
+import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -33,367 +34,748 @@ const StyledCard = styled(Card)(({ theme }) => ({
   backgroundColor: '#fff',
 }));
 
-// Yup validation schema
-const modSchema = yup.object().shape({
-  date: yup.string().required('Date is required'),
-  siteName: yup.string().required('Site Name is required'),
-  plotNo: yup.string().required('Plot No is required'),
-  customer: yup.string().required('Customer Name is required'),
+// Helper to clean phone numbers
+const cleanPhoneNumber = (phone: string) => {
+  if (!phone) return '';
+  // Remove all non-numeric characters
+  const cleaned = phone.replace(/\D/g, '');
+  return cleaned;
+};
 
-  introducerName: yup.string().required('Introducer Name is required'),
-  introducerPhone: yup.string()
-    .required('Introducer Mobile is required')
-    .matches(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
-  directorName: yup.string().required('Director Name is required'),
-  directorPhone: yup.string()
-    .required('Director Mobile is required')
-    .matches(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
-  EDName: yup.string().required('ED Name is required'),
-  EDPhone: yup.string()
-    .required('ED Mobile is required')
-    .matches(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
-  amount: yup.number()
-    .required('Amount is required')
+// Validations
+const phoneRegExp = /^[0-9]{10}$/;
+
+const modSchema = yup.object().shape({
+  // Toggle for customer type
+  isNewCustomer: yup.boolean(),
+  
+  // Conditional Customer Validation
+  modCustomerId: yup.string().when('isNewCustomer', {
+    is: false,
+    then: (schema) => schema.required('Customer selection is required for existing customers'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  
+  // Customer Fields - Conditional based on isNewCustomer (True for Edit Mode)
+  name: yup.string().when('isNewCustomer', {
+    is: true,
+    then: (schema) => schema.required('Customer Name is required'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  phone: yup.string().when('isNewCustomer', {
+    is: true,
+    then: (schema) => schema.required('Phone is required').matches(phoneRegExp, 'Phone number must be 10 digits'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  email: yup.string().when('isNewCustomer', {
+    is: true,
+    then: (schema) => schema.email('Invalid email format').required('Email is required'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  address: yup.string().when('isNewCustomer', {
+    is: true,
+    then: (schema) => schema.required('Address is required'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+
+  // Common Fields
+  projectId: yup.string().required('Project is required'),
+  plotNo: yup.string().required('Plot No is required'),
+  paidDate: yup.string().required('Paid Date is required'),
+  
+  // Financials
+  totalAmount: yup.number()
+    .required('Total Amount is required')
     .positive('Amount must be positive')
     .typeError('Amount must be a valid number'),
-  status: yup.string().oneOf(['active', 'inactive']).required('Status is required'),
+  paidAmount: yup.number()
+    .required('Paid Amount is required')
+    .positive('Amount must be positive')
+    .typeError('Amount must be a valid number'),
+  ratePerSqft: yup.number()
+    .required('Rate per Sqft is required')
+    .positive('Rate must be positive')
+    .typeError('Rate must be a valid number'),
+
+  // Personnel
+  introducerName: yup.string().notRequired(),
+  introducerPhone: yup.string()
+    .notRequired()
+    .test('is-valid-mobile', 'Mobile number must be 10 digits', (val) => {
+      if (!val) return true; // allow empty
+      return phoneRegExp.test(val);
+    }),
+  directorName: yup.string().notRequired(),
+  directorPhone: yup.string()
+    .notRequired()
+    .test('is-valid-mobile', 'Mobile number must be 10 digits', (val) => {
+      if (!val) return true; // allow empty
+      return phoneRegExp.test(val);
+    }),
+  EDName: yup.string().notRequired(),
+  EDPhone: yup.string()
+    .notRequired()
+    .test('is-valid-mobile', 'Mobile number must be 10 digits', (val) => {
+      if (!val) return true; // allow empty
+      return phoneRegExp.test(val);
+    }),
+  
+  // Status (we keep it in schema as default/hidden or if passing default 'active')
+  status: yup.string().oneOf(['active', 'inactive']).default('active'),
 });
 
 export interface MODFormData {
-  date: string;
-  siteName: string;
+  isNewCustomer: boolean;
+  modCustomerId?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  
+  projectId: string;
   plotNo: string;
-  customer: string;
-
+  paidDate: string;
+  
+  totalAmount: number;
+  paidAmount: number;
+  ratePerSqft: number;
+  
   introducerName: string;
   introducerPhone: string;
   directorName: string;
   directorPhone: string;
   EDName: string;
   EDPhone: string;
-  amount: number;
+  
   status: 'active' | 'inactive';
 }
 
 const MODForm = () => {
-    const [options, setOptions] = useState<any>([]);
-    const navigate = useNavigate()
-    const {id} = useParams()
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<MODFormData>({
-    resolver: yupResolver(modSchema),
-    defaultValues: {
-      date: new Date().toISOString().split('T')[0], // Today's date
-      siteName: '',
-      plotNo: '',
-      customer: '',
+    const navigate = useNavigate();
+    const {id} = useParams();
+    
+    // Project State
+    const [projectOptions, setProjectOptions] = useState<any[]>([]);
+    const [selectedProject, setSelectedProject] = useState<any>(null);
+    const [projectsLoading, setProjectsLoading] = useState(false);
 
-      introducerName: '',
-      introducerPhone: '',
-      directorName: '',
-      directorPhone: '',
-      EDName: '',
-      EDPhone: '',
-      amount: 0,
-      status: 'active',
-    },
-  });
+    // Customer Infinite Scroll State
+    const [customerOptions, setCustomerOptions] = useState<any[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+    const [customerPage, setCustomerPage] = useState(1);
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
+    const [hasMoreCustomers, setHasMoreCustomers] = useState(true);
+    const [customerLoading, setCustomerLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = async(data: MODFormData) => {
-    try {
-      const payload = id ? { ...data, _id: id } : data;
-            const response = id
-              ? await updateMOD(payload)
-              : await createMOD(data);
-      
-            if (response?.status === 200) {
-              toast.success(response.message)
-              navigate(-1)
-              // alert(`Project ${id ? 'updated' : 'created'} successfully.`);
-            } else {
-              toast(response.message)
-            }
-    } catch (error:any) {
-    toast.error(error)
-    }
-  };
+    const {
+      register,
+      handleSubmit,
+      control,
+      watch,
+      setValue,
+      reset,
+      formState: { errors },
+    } = useForm<MODFormData>({
+      resolver: yupResolver(modSchema) as any,
+      defaultValues: {
+        isNewCustomer: false,
+        modCustomerId: '',
+        paidDate: new Date().toISOString().split('T')[0],
+        projectId: '',
+        plotNo: '',
+        totalAmount: 0,
+        paidAmount: 0,
+        ratePerSqft: 0,
+        status: 'active',
+        // Customer defaults
+        name: '',
+        phone: '',
+        email: '',
+        address: '',
+        // Personnel defaults
+        introducerName: '',
+        introducerPhone: '',
+        directorName: '',
+        directorPhone: '',
+        EDName: '',
+        EDPhone: '',
+      },
+    });
 
-  useEffect(() => {
-      const getData = async () => {
-        const res = await getAllCustomer();
-        if (res.status) {
-          // console.log(res,"res")
-          const newdata = res.data.data.map((item: any, index: number) => ({
-            value: item._id,
-            label: item.name,
-          }));
-          setOptions(newdata);
-        } else {
-          console.log("Failed to fetch customers:", res);
+    const isNewCustomer = watch('isNewCustomer');
+
+    // Fetch Projects
+    useEffect(() => {
+      const getProjects = async () => {
+        setProjectsLoading(true);
+        try {
+          const res = await getAllProjects();
+          if (res.status === 200) {
+           setProjectOptions(res.data.data.map((p: any) => ({
+             label: p.projectName,
+             value: p._id,
+             ...p
+           })));
+          }
+        } catch (err) {
+          console.error("Failed to fetch projects", err);
+        } finally {
+          setProjectsLoading(false);
         }
       };
-  
-      getData();
+      getProjects();
     }, []);
+
+    // Debounce Customer Search
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedCustomerSearch(customerSearch);
+        if (customerSearch !== debouncedCustomerSearch) {
+          setCustomerPage(1);
+          setCustomerOptions([]);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }, [customerSearch]);
+
+    // Fetch Customers (Infinite Scroll)
+    const fetchCustomers = async (page: number, search: string, append = false) => {
+      try {
+        setCustomerLoading(true);
+        const params: any = { page, limit: 10 };
+        if (search) params.search = search;
+
+        const res = await getAllModCustomer(params);
+
+        if (res.status === 200) {
+          const newOptions = res.data.data.map((item: any) => ({
+            label: item.name, // Assuming 'name' is the field
+            value: item._id, // Assuming '_id' is the field for modCustomerId
+            phone: item.phone,
+            email: item.email,
+            address: item.address,
+            ...item
+          }));
+
+          setCustomerOptions(prev => append ? [...prev, ...newOptions] : newOptions);
+          setHasMoreCustomers(res.data.pagination?.hasNextPage || false);
+        }
+      } catch (error) {
+        console.error("Error loading customers:", error);
+      } finally {
+        setCustomerLoading(false);
+      }
+    };
+
+    // Load Customers on search change or initial
+    useEffect(() => {
+      // Fetch if existing customer mode OR if we are in edit mode (where we always show dropdown)
+      if (!isNewCustomer || id) {
+        fetchCustomers(1, debouncedCustomerSearch, false);
+      }
+    }, [debouncedCustomerSearch, isNewCustomer, id]);
+
+    // Load more customers on page change
+    useEffect(() => {
+      if ((!isNewCustomer || id) && customerPage > 1 && hasMoreCustomers) {
+        fetchCustomers(customerPage, debouncedCustomerSearch, true);
+      }
+    }, [customerPage]);
+
+    // Fetch Data by ID for Edit Mode
+    useEffect(() => {
+        const getData = async () => {
+            if (!id) return;
+            setIsLoading(true);
+            try {
+                const res = await getAMOD(id);
+                if (res.status === 200 && res.data?.data) {
+                    const data = res.data.data;
+                    
+                    // Populate form fields
+                    reset({
+                        isNewCustomer: true, // Force to TRUE in Edit mode to validate fields
+                        projectId: data.projectId?._id || data.projectId,
+                        plotNo: data.plotNo,
+                        paidDate: data.paidDate ? data.paidDate.split('T')[0] : '',
+                        totalAmount: data.totalAmount,
+                        paidAmount: data.paidAmount,
+                        ratePerSqft: data.ratePerSqft,
+                        introducerName: data.introducerName,
+                        introducerPhone: data.introducerPhone,
+                        directorName: data.directorName,
+                        directorPhone: data.directorPhone,
+                        EDName: data.EDName,
+                        EDPhone: data.EDPhone,
+                        status: data.status || 'active',
+                        // Populate customer details
+                        name: data.customerId?.name || '',
+                        phone: data.customerId?.phone || '',
+                        email: data.customerId?.email || '',
+                        address: data.customerId?.address || '',
+                        modCustomerId: data.customerId?._id || data.customerId, // Map customerId
+                    });
+
+                    // Set Project Select State
+                    if (data.projectId && typeof data.projectId === 'object') {
+                        setSelectedProject({
+                             label: data.projectId.projectName,
+                             value: data.projectId._id,
+                             ...data.projectId
+                        });
+                    }
+                    
+                    // Set Customer Select State
+                    if (data.customerId && typeof data.customerId === 'object') {
+                        setSelectedCustomer({
+                             label: data.customerId.name,
+                             value: data.customerId._id,
+                             phone: data.customerId.phone,
+                             email: data.customerId.email,
+                             address: data.customerId.address,
+                             ...data.customerId
+                        });
+                        
+                        // Ensure option exists in dropdown
+                        setCustomerOptions(prev => {
+                             const exists = prev.some(opt => opt.value === data.customerId._id);
+                             if (!exists) return [...prev, {
+                                 label: data.customerId.name,
+                                 value: data.customerId._id,
+                                 phone: data.customerId.phone,
+                                 email: data.customerId.email,
+                                 address: data.customerId.address,
+                                 ...data.customerId
+                             }];
+                             return prev;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch MOD details", error);
+                toast.error("Failed to load details");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        getData();
+    }, [id, reset]);
+
+    const highlightText = (text: string, searchTerm: string) => {
+      if (!searchTerm || !text) return text;
+      const lowerText = text.toLowerCase();
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      const index = lowerText.indexOf(lowerSearchTerm);
+      if (index === -1) return text;
+      return (
+        <>
+          {text.substring(0, index)}
+          <span style={{ backgroundColor: '#ffeb3b', fontWeight: 'bold' }}>
+            {text.substring(index, index + searchTerm.length)}
+          </span>
+          {text.substring(index + searchTerm.length)}
+        </>
+      );
+    };
+
+    const onSubmit = async(data: MODFormData) => {
+      try {
+        // Prepare Payload
+        const payload: any = {
+           projectId: data.projectId,
+           plotNo: data.plotNo,
+           paidDate: data.paidDate,
+           totalAmount: data.totalAmount,
+           paidAmount: data.paidAmount,
+           ratePerSqft: data.ratePerSqft,
+           
+           introducerName: data.introducerName,
+           introducerPhone: data.introducerPhone,
+           directorName: data.directorName,
+           directorPhone: data.directorPhone,
+           EDName: data.EDName,
+           EDPhone: data.EDPhone,
+           status: 'active', // Defaulting status per instruction
+           
+           // Include Customer Details always (if present)
+           name: data.name,
+           phone: cleanPhoneNumber(data.phone || ''),
+           email: data.email,
+           address: data.address
+        };
+
+        // modCustomerId is relevant for both Existing (Create) and Edit mode
+        if (data.modCustomerId) {
+           payload.modCustomerId = data.modCustomerId;
+        }
+
+        const finalPayload = id ? { ...payload, _id: id } : payload;
+        const response = id
+               ? await updateMOD(finalPayload)
+               : await createMOD(finalPayload);
+       
+        if (response?.status === 200) {
+           toast.success(response.message);
+           navigate(-1);
+        } else {
+           toast.error(response.message);
+        }
+      } catch (error:any) {
+        toast.error(error.message || "An error occurred");
+      }
+    };
 
   return (
     <DashboardContent maxWidth="xl">
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
-        MOD Form
+        {id ? 'Edit MOD' : 'Create MOD'}
       </Typography>
 
       <StyledCard>
         <CardContent>
+          {isLoading ? (
+             <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+             </Box>
+          ) : (
           <form onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={3}>
-              {/* Basic Information Section */}
+              
+              {/* Customer Type Toggle - Only Show in CREATE Mode */}
+              {!id && (
               <Grid size={{ xs: 12 }}>
+                <FormControl component="fieldset">
+                  <FormLabel component="legend" sx={{ fontWeight: 600, color: 'primary.main', mb: 1 }}>Customer Type</FormLabel>
+                   <Controller
+                    name="isNewCustomer"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup 
+                        row 
+                        {...field}
+                        onChange={(e) => {
+                           field.onChange(e.target.value === 'true');
+                           if (e.target.value === 'true') {
+                             // Reset customer ID if switching to new
+                             setValue('modCustomerId', '');
+                             setSelectedCustomer(null);
+                           }
+                        }}
+                        value={field.value?.toString()}
+                      >
+                        <FormControlLabel value="false" control={<Radio />} label="Existing Customer" />
+                        <FormControlLabel value="true" control={<Radio />} label="New Customer" />
+                      </RadioGroup>
+                    )}
+                  />
+                </FormControl>
+              </Grid>
+              )}
+
+              {/* Existing Customer Select - Show if Existing OR Edit Mode */}
+              {(!isNewCustomer || id) && (
+                 <Grid size={{ xs: 12, md: 6 }}>
+                    <Autocomplete
+                        options={customerOptions}
+                        getOptionLabel={(option) => option.label || ''}
+                        loading={customerLoading}
+                        value={selectedCustomer}
+                        onInputChange={(event, value, reason) => {
+                            if (reason === 'input') setCustomerSearch(value);
+                            else if (reason === 'clear') {
+                                setCustomerSearch('');
+                                setCustomerPage(1);
+                            }
+                        }}
+                        onChange={(event, newValue) => {
+                            setSelectedCustomer(newValue);
+                            if (newValue) {
+                              setValue('modCustomerId', newValue.value || '', { shouldValidate: true });
+                              // Pre-fill fields
+                              setValue('name', newValue.label || '', { shouldValidate: true });
+                              setValue('phone', newValue.phone || '', { shouldValidate: true });
+                              setValue('email', newValue.email || '', { shouldValidate: true });
+                              setValue('address', newValue.address || '', { shouldValidate: true });
+                            } else {
+                              setValue('modCustomerId', '', { shouldValidate: true });
+                            }
+                        }}
+                        ListboxProps={{
+                            onScroll: (event: React.SyntheticEvent) => {
+                                const listboxNode = event.currentTarget;
+                                if (
+                                    listboxNode.scrollTop + listboxNode.clientHeight >= listboxNode.scrollHeight * 0.8 &&
+                                    hasMoreCustomers &&
+                                    !customerLoading
+                                ) {
+                                    setCustomerPage(prev => prev + 1);
+                                }
+                            },
+                            style: { maxHeight: '300px' }
+                        }}
+                        renderOption={(props, option) => (
+                            <li {...props} key={option.value}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                    <Typography variant="body1">
+                                        {highlightText(option.label, debouncedCustomerSearch)}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {option.phone}
+                                    </Typography>
+                                </Box>
+                            </li>
+                        )}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Search Customer"
+                                error={!!errors.modCustomerId}
+                                helperText={errors.modCustomerId?.message}
+                                required
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <>
+                                            {customerLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                            {params.InputProps.endAdornment}
+                                        </>
+                                    ),
+                                }}
+                            />
+                        )}
+                    />
+                    <input type="hidden" {...register('modCustomerId')} />
+                 </Grid>
+              )}
+
+              {/* Customer Fields - Show if New OR Edit Mode */}
+              {(isNewCustomer || id) && (
+                 <>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Customer Name"
+                      {...register('name')}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Phone Number"
+                      {...register('phone')}
+                      error={!!errors.phone}
+                      helperText={errors.phone?.message}
+                      fullWidth
+                      inputProps={{ maxLength: 10 }}
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Email"
+                      {...register('email')}
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                   <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Address"
+                      {...register('address')}
+                      error={!!errors.address}
+                      helperText={errors.address?.message}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                 </>
+              )}
+
+              <Grid size={{ xs: 12 }}>
+                 <Divider sx={{ my: 1 }} />
+              </Grid>
+
+               {/* Project Details */}
+               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
-                  Basic Information
+                  Project Details
                 </Typography>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  label="Date"
-                  type="date"
-                  {...register('date')}
-                  error={!!errors.date}
-                  helperText={errors.date?.message}
-                  fullWidth
-                  variant="outlined"
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  label="Site Name"
-                  {...register('siteName')}
-                  error={!!errors.siteName}
-                  helperText={errors.siteName?.message}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  label="Plot No"
-                  {...register('plotNo')}
-                  error={!!errors.plotNo}
-                  helperText={errors.plotNo?.message}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-
-              {/* Customer & Personnel Details Section */}
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, fontWeight: 600, color: 'primary.main' }}>
-                  Customer & Personnel Details
-                </Typography>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                {/* <TextField
-                  label="Customer Name"
-                  {...register('customer')}
-                  error={!!errors.customer}
-                  helperText={errors.customer?.message}
-                  fullWidth
-                  variant="outlined"
-                /> */}
-                <Controller
-                                  control={control}
-                                  name="customer"
-                                  defaultValue=""
-                                  rules={{ required: "Customer is required" }}
-                                  render={({ field, fieldState }) => (
-                                    <CustomSelect
-                                      label="Customer"
-                                      name="customer"
-                                      value={field.value}
-                                      onChange={field.onChange}
-                                      options={options}
-                                      error={!!fieldState.error}
-                                      helperText={fieldState.error?.message}
-                                    />
-                                  )}
-                                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                {/* <TextField
-                  label="Customer Mobile"
-                  {...register('customerMobile')}
-                  error={!!errors.customerMobile}
-                  helperText={errors.customerMobile?.message}
-                  fullWidth
-                  variant="outlined"
-                  placeholder="10-digit mobile number"
-                  inputProps={{
-                    maxLength: 10,
-                    pattern: '[0-9]*',
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Autocomplete
+                  options={projectOptions}
+                  getOptionLabel={(option) => option.label || ''}
+                  loading={projectsLoading}
+                  value={selectedProject}
+                  onChange={(event, newValue) => {
+                     setSelectedProject(newValue);
+                     setValue('projectId', newValue?.value || '', { shouldValidate: true });
                   }}
-                /> */}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select Project"
+                      error={!!errors.projectId}
+                      helperText={errors.projectId?.message}
+                      required
+                      InputProps={{
+                         ...params.InputProps,
+                         endAdornment: (
+                           <>
+                             {projectsLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                             {params.InputProps.endAdornment}
+                           </>
+                         )
+                      }}
+                    />
+                  )}
+                />
+                 <input type="hidden" {...register('projectId')} />
               </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
+              
+               <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Plot No"
+                      {...register('plotNo')}
+                      error={!!errors.plotNo}
+                      helperText={errors.plotNo?.message}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  
+                <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="Introducer Name"
-                  {...register('introducerName')}
-                  error={!!errors.introducerName}
-                  helperText={errors.introducerName?.message}
+                  label="Rate Per Sqft"
+                  type="number"
+                  {...register('ratePerSqft')}
+                  error={!!errors.ratePerSqft}
+                  helperText={errors.ratePerSqft?.message}
                   fullWidth
-                  variant="outlined"
+                   InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography> }}
+                   required
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Introducer Mobile"
-                  {...register('introducerPhone')}
-                  error={!!errors.introducerPhone}
-                  helperText={errors.introducerPhone?.message}
-                  fullWidth
-                  variant="outlined"
-                  placeholder="10-digit mobile number"
-                  inputProps={{
-                    maxLength: 10,
-                    pattern: '[0-9]*',
-                  }}
-                />
-              </Grid>
+                   <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Paid Date"
+                      type="date"
+                      {...register('paidDate')}
+                      error={!!errors.paidDate}
+                      helperText={errors.paidDate?.message}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Director Name"
-                  {...register('directorName')}
-                  error={!!errors.directorName}
-                  helperText={errors.directorName?.message}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Director Mobile"
-                  {...register('directorPhone')}
-                  error={!!errors.directorPhone}
-                  helperText={errors.directorPhone?.message}
-                  fullWidth
-                  variant="outlined"
-                  placeholder="10-digit mobile number"
-                  inputProps={{
-                    maxLength: 10,
-                    pattern: '[0-9]*',
-                  }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="ED Name"
-                  {...register('EDName')}
-                  error={!!errors.EDName}
-                  helperText={errors.EDName?.message}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="ED Mobile"
-                  {...register('EDPhone')}
-                  error={!!errors.EDPhone}
-                  helperText={errors.EDPhone?.message}
-                  fullWidth
-                  variant="outlined"
-                  placeholder="10-digit mobile number"
-                  inputProps={{
-                    maxLength: 10,
-                    pattern: '[0-9]*',
-                  }}
-                />
-              </Grid>
-
-              {/* Financial Details Section */}
+              {/* Financial Attributes */}
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, fontWeight: 600, color: 'primary.main' }}>
                   Financial Details
                 </Typography>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="amount"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      label="Amount (₹)"
-                      {...field}
-                      error={!!errors.amount}
-                      helperText={errors.amount?.message}
-                      fullWidth
-                      variant="outlined"
-                      type="number"
-                      InputProps={{
-                        startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>₹</Typography>,
-                      }}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0;
-                        field.onChange(value);
-                      }}
-                    />
-                  )}
+               <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Total Amount"
+                  type="number"
+                  {...register('totalAmount')}
+                  error={!!errors.totalAmount}
+                  helperText={errors.totalAmount?.message}
+                  fullWidth
+                  InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography> }}
+                  required
+                />
+              </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Paid Amount"
+                  type="number"
+                  {...register('paidAmount')}
+                  error={!!errors.paidAmount}
+                  helperText={errors.paidAmount?.message}
+                  fullWidth
+                   InputProps={{ startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography> }}
+                   required
                 />
               </Grid>
 
-              {/* Status Section */}
-              <Grid size={{ xs: 12 }}>
+              {/* Personnel Details */}
+               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2, mt: 2, fontWeight: 600, color: 'primary.main' }}>
-                  Status
+                  Personnel Details
                 </Typography>
               </Grid>
 
-              <Grid size={{ xs: 12 }}>
-                <FormControl component="fieldset" error={!!errors.status}>
-                  <FormLabel component="legend" sx={{ fontWeight: 500 }}>Status</FormLabel>
-                  <Controller
-                    name="status"
-                    control={control}
-                    render={({ field }) => (
-                      <RadioGroup row {...field} sx={{ mt: 1 }}>
-                        <FormControlLabel
-                          value="active"
-                          control={<Radio color="primary" />}
-                          label="Active"
-                          sx={{ mr: 4 }}
-                        />
-                        <FormControlLabel
-                          value="inactive"
-                          control={<Radio color="primary" />}
-                          label="Inactive"
-                        />
-                      </RadioGroup>
-                    )}
-                  />
-                  {errors.status && (
-                    <Typography color="error" variant="caption" sx={{ mt: 1 }}>
-                      {errors.status.message}
-                    </Typography>
-                  )}
-                </FormControl>
-              </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="Introducer Name"
+                  {...register('introducerName')}
+                  error={!!errors.introducerName}
+                  helperText={errors.introducerName?.message}
+                  fullWidth
+                 />
+               </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="Introducer Mobile"
+                  {...register('introducerPhone')}
+                  error={!!errors.introducerPhone}
+                  helperText={errors.introducerPhone?.message}
+                  fullWidth
+                  inputProps={{ maxLength: 10 }}
+                 />
+               </Grid>
 
-              {/* Submit Section */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="Director Name"
+                  {...register('directorName')}
+                  error={!!errors.directorName}
+                  helperText={errors.directorName?.message}
+                  fullWidth
+                 />
+               </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="Director Mobile"
+                  {...register('directorPhone')}
+                  error={!!errors.directorPhone}
+                  helperText={errors.directorPhone?.message}
+                  fullWidth
+                  inputProps={{ maxLength: 10 }}
+                 />
+               </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="ED Name"
+                  {...register('EDName')}
+                  error={!!errors.EDName}
+                  helperText={errors.EDName?.message}
+                  fullWidth
+                 />
+               </Grid>
+               <Grid size={{ xs: 12, md: 6 }}>
+                 <TextField
+                  label="ED Mobile"
+                  {...register('EDPhone')}
+                  error={!!errors.EDPhone}
+                  helperText={errors.EDPhone?.message}
+                  fullWidth
+                  inputProps={{ maxLength: 10 }}
+                 />
+               </Grid>
+
+              {/* Buttons */}
               <Grid size={{ xs: 12 }}>
                 <Divider sx={{ my: 3 }} />
                 <Box display="flex" gap={2} justifyContent="center">
@@ -401,9 +783,9 @@ const MODForm = () => {
                     variant="outlined" 
                     size="large" 
                     sx={{ minWidth: 120 }}
-                    onClick={() => window.location.reload()}
+                    onClick={() => navigate(-1)}
                   >
-                    Reset
+                    Cancel
                   </Button>
                   <Button 
                     variant="contained" 
@@ -418,6 +800,7 @@ const MODForm = () => {
               </Grid>
             </Grid>
           </form>
+          )}
         </CardContent>
       </StyledCard>
     </DashboardContent>

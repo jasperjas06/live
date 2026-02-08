@@ -23,6 +23,7 @@ import { Iconify } from 'src/components/iconify';
 import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
 import type { CustomerPagination } from 'src/types/customer';
+import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
 
 type Customer = {
   id: string;
@@ -174,19 +175,41 @@ const CustomerPage = () => {
 
 
 
-const handleDelete = async (id: string | number) => {
-  const confirmed = window.confirm('Are you sure you want to delete this customer?');
-  if (!confirmed) return;
+
+
+  // State for delete dialog
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+const handleDeleteClick = (id: string | number) => {
+  setDeleteId(String(id));
+  setOpenConfirmDialog(true);
+};
+
+const handleDeleteConfirm = async () => {
+  if (!deleteId) return;
+  setOpenConfirmDialog(false);
 
   try {
-    await deleteCustomer(String(id)); // convert to string if needed by API
-    getCustomerData(); // re-fetch data (not getAllCustomer again)
+    await deleteCustomer(deleteId);
+    getCustomerData();
+    toast.success('Customer deleted successfully');
   } catch (error) {
     console.error('Failed to delete customer:', error);
+    toast.error('Failed to delete customer');
+  } finally {
+    setDeleteId(null);
   }
-  };
-  
-    const handlePreviousPage = () => {
+};
+
+const handleCloseConfirmDialog = () => {
+    setOpenConfirmDialog(false);
+    setDeleteId(null);
+};
+
+// ... unused handleDelete removed ... 
+
+  const handlePreviousPage = () => {
     if (pagination?.hasPreviousPage) {
       setCurrentPage(prev => prev - 1);
     }
@@ -269,7 +292,7 @@ const handleDelete = async (id: string | number) => {
           isDelete={permissions?.Customer?.delete === true ? true : false}
           isEdit={permissions?.Customer?.update === true ? true : false}
           isView={permissions?.Customer?.read === true ? true : false}
-          onDelete={handleDelete}
+          onDelete={handleDeleteClick}
           preserveOrder={true}
           disableSearch={true}
           disablePagination={true}
@@ -307,6 +330,16 @@ const handleDelete = async (id: string | number) => {
           </Box>
         </Box>
       )}
+
+      <ConfirmDialog
+        open={openConfirmDialog}
+        onClose={handleCloseConfirmDialog}
+        title="Delete Customer"
+        content="Are you sure you want to delete this customer? This action cannot be undone."
+        action={handleDeleteConfirm}
+        cancelText="Cancel"
+        actionText="Delete"
+      />
     </DashboardContent> 
   );
 };

@@ -62,7 +62,7 @@ export function SignInView() {
             const adminMenus = [
               "Customer",
               "Projects",
-              "NVT",
+              // "NVT",
               "MOD",
               "Marketer",
               "Marketing Head",
@@ -93,6 +93,7 @@ export function SignInView() {
               })
             );
           } else {
+            // const permissions = await getUserAcc(response.data.roleId);
             localStorage.setItem("isAdmin", "false");
             if (permissions.role.name.toLowerCase().trim() === "admin") {
               // Check if Request menu already exists in permissions
@@ -151,6 +152,7 @@ export function SignInView() {
   const getUserAcc = async (id: string) => {
     try {
       const response = await getUserAccess(id);
+      console.log("response", response, "no response");
       return response.data.data;
     } catch (error) {
       console.log(error);

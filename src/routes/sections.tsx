@@ -1,17 +1,17 @@
 /* eslint-disable import/no-unresolved */
 import type { RouteObject } from 'react-router';
 
-import { lazy, Suspense } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
-import { Outlet, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
+import { DashboardLayout } from 'src/layouts/dashboard';
 import Billing from 'src/pages/Billing/Billing';
 import ViewLFC from 'src/pages/LFC/view/ViewLFC';
-import { DashboardLayout } from 'src/layouts/dashboard';
 
 
 
@@ -130,6 +130,7 @@ export const routesSection: RouteObject[] = [
       { path: 'mod', element: <MOD /> },
       { path: 'mod/view/:id', element: <ViewMOD /> },
       { path: 'mod/create', element: <ManageMOD /> },
+      { path: 'mod/edit/:id', element: <ManageMOD /> },
       { path: 'nvt', element: <NVT /> },
       { path: 'nvt/create-nvt', element: <NVTForm /> },
       { path: 'nvt/edit/:id', element: <NVTForm /> },

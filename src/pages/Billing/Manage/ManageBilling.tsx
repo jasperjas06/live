@@ -29,7 +29,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CustomSelect from 'src/custom/select/select';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { DetailRow } from 'src/pages/LFC/view/ViewLFC';
-import { /* checkEmi, */ createbilling, getAllCustomer, getAllEmi, getBillingById, updateEmployee } from 'src/utils/api.service';
+import { /* checkEmi, */ createbilling, getAllCustomer, getAllEmi, getBillingById, updateBilling } from 'src/utils/api.service';
 import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -177,7 +177,7 @@ const BillingForm = () => {
                     cardNo: empData.cardNo || '',
                     cardHolderName: empData.cardHolderName || '',
                     paymentDate: empData.paymentDate ? new Date(empData.paymentDate).toISOString().split('T')[0] : '', // Format date
-                    status: empData.status || 'Enquiry',
+                    status: (empData.status && empData.status.toLowerCase().includes('enquir')) ? 'enquired' : (empData.status || 'enquired'),
                     remarks: empData.remarks || '',
                     amount: empData.amountPaid || 0, // Changed from amount to amountPaid
                 });
@@ -414,7 +414,7 @@ const BillingForm = () => {
             };
 
             const response = id
-                ? await updateEmployee({ ...apiData, _id: id })
+                ? await updateBilling({ ...apiData, _id: id })
                 : await createbilling(apiData);
 
             if (response.status === 200) {
@@ -831,8 +831,6 @@ const BillingForm = () => {
                                                     }}
                                                     options={[
                                                         { value: "enquired", label: "Enquired" },
-                                                        { value: "Enquiry", label: "Enquiry" },
-                                                        { value: "booked", label: "Booked" },
                                                         { value: "blocked", label: "Blocked" }
                                                     ]}
                                                     error={!!fieldState.error}
