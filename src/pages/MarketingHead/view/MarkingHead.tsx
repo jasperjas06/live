@@ -1,45 +1,36 @@
 import type { ReactNode } from "react";
 import { DataTable } from "src/custom/dataTable/dataTable";
 
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import React, { useState, useEffect } from "react";
 
 import {
-  Box,
-  Grid,
-  Card,
-  Chip,
-  Stack,
-  Paper,
-  Avatar,
-  Divider,
-  Skeleton,
-  Typography,
-  IconButton,
-  CardContent,
-} from "@mui/material";
-import {
-  Edit,
-  Email,
-  Phone,
-  Badge,
-  Person,
-  Delete,
-  Percent,
-  Business,
-  LocationOn,
-  Visibility,
   AttachMoney,
-  CalendarToday,
+  Badge,
+  Business,
+  Email,
+  LocationOn,
+  Percent,
+  Person,
+  Phone
 } from "@mui/icons-material";
-
 import {
-  getAMarketingHead,
-  getMarketingHeadEstimates,
-} from "src/utils/api.service";
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  Paper,
+  Skeleton,
+  Typography
+} from "@mui/material";
 
-import { DashboardContent } from "src/layouts/dashboard";
+import { getAMarketingHead, getMarketingHeadEstimates, getMarketingHeadFullHierarchy } from 'src/utils/api.service';
+
 import estimateColumns from "src/custom/dataTable/estimatedColuumns";
+import { DashboardContent } from "src/layouts/dashboard";
 
 interface InfoCardProps {
   title: string;
@@ -377,7 +368,7 @@ const MarketingHead = () => {
             />
           </InfoCard>
         </Grid> */}
-        {isAdmin && ( // ← ADD THIS CONDITION
+       {isAdmin && (
           <Grid size={{ xs: 12 }}>
             <InfoCard title="Sales & Estimates">
               {estimatesLoading ? (
@@ -398,7 +389,90 @@ const MarketingHead = () => {
           </Grid>
         )}
       </Grid>
+            
+      <HierarchySection id={id} />
     </DashboardContent>
+  );
+};
+
+
+const HierarchySection = ({ id }: { id?: string }) => {
+  const [hierarchyData, setHierarchyData] = useState<any>({ upline: [], downline: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHierarchy = async () => {
+      try {
+        setLoading(true);
+        const response = await getMarketingHeadFullHierarchy(id);
+        if (response.status === 200 && response.data) {
+          setHierarchyData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching hierarchy:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchHierarchy();
+    }
+  }, [id]);
+
+  const columns: any[] = [
+    { id: 'name', label: 'Name', sortable: true },
+    { id: 'phone', label: 'Phone', sortable: false },
+    { id: 'level', label: 'Level', sortable: true },
+    { id: 'leaderName', label: 'Leader Name', sortable: true },
+    { id: 'status', label: 'Status', sortable: true },
+  ];
+
+  if (loading) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Skeleton variant="rectangular" height={200} sx={{ mb: 2 }} />
+        <Skeleton variant="rectangular" height={200} />
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ mt: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+          Upline
+        </Typography>
+        <DataTable
+          title="Upline Marketing Heads"
+          data={hierarchyData.upline || []}
+          columns={columns}
+          disableSearch
+          defaultRowsPerPage={5}
+          onDropDown={false}
+          isDelete={false}
+          isEdit={false}
+          isView={false}
+        />
+      </Box>
+
+      <Box>
+        <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+          Downline
+        </Typography>
+        <DataTable
+          title="Downline Marketing Heads"
+          data={hierarchyData.downline || []}
+          columns={columns}
+          disableSearch
+          defaultRowsPerPage={5}
+          onDropDown={false}
+          isDelete={false}
+          isEdit={false}
+          isView={false}
+        />
+      </Box>
+    </Box>
   );
 };
 
