@@ -368,7 +368,7 @@ const MarketingHead = () => {
             />
           </InfoCard>
         </Grid> */}
-       {isAdmin && (
+{/*        {isAdmin && (
           <Grid size={{ xs: 12 }}>
             <InfoCard title="Sales & Estimates">
               {estimatesLoading ? (
@@ -387,7 +387,7 @@ const MarketingHead = () => {
               )}
             </InfoCard>
           </Grid>
-        )}
+        )} */}
       </Grid>
             
       <HierarchySection id={id} />

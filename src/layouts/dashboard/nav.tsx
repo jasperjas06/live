@@ -121,7 +121,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
       <img src="/assets/logo/log.jpg" alt="" width={30} height={30} />
       {slots?.topArea}
         <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
-          <span className="text-indigo-900">Life Groups</span>
+          <span className="text-indigo-900">Housing</span>
         </h1>
        </div>
 
