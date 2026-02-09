@@ -421,11 +421,11 @@ const HierarchySection = ({ id }: { id?: string }) => {
   }, [id]);
 
   const columns: any[] = [
-    { id: 'name', label: 'Name', sortable: true },
-    { id: 'phone', label: 'Phone', sortable: false },
-    { id: 'level', label: 'Level', sortable: true },
-    { id: 'leaderName', label: 'Leader Name', sortable: true },
-    { id: 'status', label: 'Status', sortable: true },
+    { id: 'name', label: 'Name', sortable: true, render: (value: any) => value || '-' },
+    { id: 'phone', label: 'Phone', sortable: false, render: (value: any) => value || '-' },
+    { id: 'level', label: 'Level', sortable: true, render: (value: any) => value || '-' },
+    { id: 'leaderName', label: 'Leader Name', sortable: true, render: (value: any) => value || '-' },
+    { id: 'status', label: 'Status', sortable: true, render: (value: any) => value || '-' },
   ];
 
   if (loading) {
