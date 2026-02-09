@@ -24,7 +24,7 @@ import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { createMarketer, getAllMarkingHead, getAllPercentage, getAMarketer, updateMarketer } from 'src/utils/api.service';
+import { createMarketer, getAllMarketerBoth, getAllPercentage, getAMarketer, updateMarketer } from 'src/utils/api.service';
 import * as yup from 'yup';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -98,9 +98,26 @@ const MarketerForm = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const getALLMarketingHeadsData = async()=>{
+  // Debounce function
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+    return debouncedValue;
+  };
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const getALLMarketingHeadsData = async(search = '')=>{
     try {
-      const response:any = await getAllMarkingHead()
+      const response:any = await getAllMarketerBoth({ limit: 100, search })
       if(response.status){
         const newdata = response.data.data.map((item: any, index: number) => ({
           value: item._id,
@@ -112,6 +129,12 @@ const MarketerForm = () => {
       console.log(error)
     }
   }
+
+  
+  useEffect(() => {
+    getALLMarketingHeadsData(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
 
   const getPercen = async() =>{
     try {
@@ -151,7 +174,6 @@ const MarketerForm = () => {
   };
 
   useEffect(()=>{
-    getALLMarketingHeadsData();
     getPercen();
     if (id) {
       getMarketerData();
@@ -249,6 +271,9 @@ const MarketerForm = () => {
                       value={options.find((opt: any) => opt.value === field.value) || null}
                       onChange={(_, newValue: any) => {
                         field.onChange(newValue ? newValue.value : '');
+                      }}
+                      onInputChange={(_, newInputValue) => {
+                        setSearchTerm(newInputValue);
                       }}
                       renderInput={(params) => (
                         <TextField

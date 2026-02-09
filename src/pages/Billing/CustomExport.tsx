@@ -164,9 +164,9 @@ const CustomExport = () => {
           return {
             'Project ID': projectShortName,
             'Project Name': projectName,
-            'Customer Name': getVal(item.customerName),
-            'Customer ID': getVal(item.customerCode),
-            'Phone': getVal(item.mobileNo),
+            'Customer Name': getVal(item.customerName || item?.customer?.name),
+            'Customer ID': getVal(item.customerCode || item?.customer?.id),
+            'Phone': getVal(item.mobileNo || item?.customer?.phone),
             'CED Name': cedName,
             'CED ID': cedId,
             'DD Name': ddName,

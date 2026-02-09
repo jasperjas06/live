@@ -1,40 +1,37 @@
 import type { Column } from 'src/custom/dataTable/dataTable';
 
-import { useNavigate, useParams } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 
-import HomeIcon from "@mui/icons-material/Home";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
+import HomeIcon from "@mui/icons-material/Home";
+import LocalParkingIcon from "@mui/icons-material/LocalParking";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import SquareFootIcon from "@mui/icons-material/SquareFoot";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-import LocalParkingIcon from "@mui/icons-material/LocalParking";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PaidIcon from "@mui/icons-material/Paid";
+import SquareFootIcon from "@mui/icons-material/SquareFoot";
 
 import {
     Box,
     Card,
-    Button,
-    Typography,
-    IconButton,
-    Stack,
-    Grid,
     CardContent,
     Chip,
     Divider,
+    Grid,
     LinearProgress,
     linearProgressClasses,
+    Typography
 } from '@mui/material';
 
-import { deleteCustomer, getAllCustomer, getAllDetailByCustomerOrGeneral, getAllEstimateByCustomerId, getOneEstimateByGeneralId } from 'src/utils/api.service';
+import { deleteCustomer, getCommissionByCustomerId, getOneEstimateByGeneralId } from 'src/utils/api.service';
 
-import { DashboardContent } from 'src/layouts/dashboard';
-import { ActionMenu, DataTable } from 'src/custom/dataTable/dataTable';
-import { BriefcaseBusinessIcon, CalendarIcon, LocationEditIcon, PercentIcon } from 'lucide-react';
+import { PercentIcon } from 'lucide-react';
 import { varAlpha } from 'minimal-shared/utils';
+import { DataTable } from 'src/custom/dataTable/dataTable';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 type Customer = {
     id: string;
@@ -171,6 +168,18 @@ const CustomerDetails = () => {
     const [plotData, setPlotData] = useState<any>({});
     const [billingData, setBillingData] = useState<any[]>([]);
     const [marketerData, setMarketerData] = useState<any[]>([]);
+    const [customerId, setCustomerId] = useState<string>('');
+
+    const formatDate = (dateString: any) => {
+        if (!dateString) return '-'
+        const date = new Date(dateString)
+        // Format: DD-MM-YYYY
+        return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace(/ /g, '-')
+    }
 
     const getCustomerData = async () => {
         try {
@@ -180,6 +189,13 @@ const CustomerDetails = () => {
             });
             if (res?.status === 200) {
                 console.log(res, "res");
+                
+                // Store customer ID for commission API call
+                const cusId = res.data.data.general?.customer?._id || res.data.data.general?.customer;
+                if (cusId) {
+                    setCustomerId(cusId);
+                }
+                
                 if (res.data.data.emi.length > 0) {
                     let emiData = res?.data.data.emi.map((item: any) => {
                         return {
@@ -188,8 +204,8 @@ const CustomerDetails = () => {
                             emiNo: item.emiNo || 'N/A',
                             date: item.date || 'N/A',
                             emiAmt: item.emiAmt || 'N/A',
-                            paidDate: item.paidDate?.split('T')[0] || 'N/A',
-                            paidAmt: item.paidAmt || 'N/A',
+                            paidDate: formatDate(item.paidDate),
+                            paidAmt: item.paidAmt || '',
                         }
                     })
                     setEmiData(emiData)
@@ -232,7 +248,7 @@ const CustomerDetails = () => {
                             transactionType: item.transactionType || 'N/A',
                             cardNo: item?.cardNo || 'N/A',
                             cardHolderName: item?.cardHolderName || 'N/A',
-                            paymentDate: item.paymentDate?.split('T')[0] || 'N/A',
+                            paymentDate: formatDate(item.paymentDate),
                             amountPaid: item.amountPaid || 'N/A',
                             balanceAmount: item.balanceAmount || 'N/A',
                             status: item.status || 'N/A',
@@ -241,20 +257,6 @@ const CustomerDetails = () => {
                         }
                     })
                     setBillingData(billingData)
-                }
-                if (res.data.data.marketer.length > 0) {
-                    let marketerData = res?.data.data.marketer.map((item: any) => {
-                        return {
-                            id: item._id || 'N/A',
-                            emiNo: item.emiNo || 'N/A',
-                            marketerName: item.marketer?.name || 'N/A',
-                            paidDate: item.paidDate?.split('T')[0] || 'N/A',
-                            paidAmt: item.paidAmt || 'N/A',
-                            commPercentage: item.commPercentage || 'N/A',
-                            commAmount: item.commAmount || 'N/A'
-                        }
-                    })
-                    setMarketerData(marketerData)
                 }
             }
         } catch (error) {
@@ -265,9 +267,49 @@ const CustomerDetails = () => {
         }
     };
 
+    const getCommissionData = async () => {
+        if (!customerId) return;
+        
+        try {
+            const res = await getCommissionByCustomerId(customerId);
+            if (res?.status === 200 && res.data?.data?.length > 0) {
+                console.log(res, "commission res");
+                // Flatten the marketer array from each EMI record
+                let marketerData: any[] = [];
+                res.data.data.forEach((item: any) => {
+                    // Each item has an emi object and a marketer array
+                    const emiInfo = item.emi || {};
+                    const marketers = item.marketer || [];
+                    
+                    // Process each marketer in the array
+                    marketers.forEach((marketer: any) => {
+                        marketerData.push({
+                            id: item._id || '-',
+                            emiNo: emiInfo.emiNo || '-',
+                            marketerName: marketer.marketerId?.name || '-',
+                            paidDate: formatDate(emiInfo.paidDate) || '-',
+                            paidAmt: emiInfo.paidAmt || '-',
+                            commPercentage: marketer.percentage || '-',
+                            commAmount: marketer.commAmount || '-'
+                        });
+                    });
+                });
+                setMarketerData(marketerData);
+            }
+        } catch (error) {
+            console.log('Commission fetch error:', error);
+        }
+    };
+
     useEffect(() => {
         getCustomerData();
     }, [estimateId]);
+
+    useEffect(() => {
+        if (customerId) {
+            getCommissionData();
+        }
+    }, [customerId]);
 
     const formatCurrency = (amount: number) => {
         if (!amount) return 'N/A'

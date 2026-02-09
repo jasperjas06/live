@@ -134,6 +134,26 @@ export const deleteCustomer = async (id) => {
   }
 }
 
+// Commission APIS
+export const getCommissionByCustomerId = async (customerId) => {
+  try {
+    const response = await axios.get(`${base_url}api/commission/customer/${customerId}`, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
+
 // Projects APIS
 export const createProjects = async (data) => {
   try {
@@ -576,6 +596,37 @@ export const createMOD = async (data) => {
     };
   }
 };
+
+export const getAllMarketerBoth = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.head) queryParams.append('head', params.head);
+
+    const queryString = queryParams.toString();
+    const url = queryString 
+      ? `${base_url}api/market/detail/get/all/both?${queryString}`
+      : `${base_url}api/market/detail/get/all/both`;
+
+    const response = await axios.get(url, {
+      headers: getHeaders()
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message: error.response?.data?.error || error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+    };
+  }
+}
 
 export const getAllMOD = async (params) => {
   try {

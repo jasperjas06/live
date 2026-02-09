@@ -1,16 +1,19 @@
+import { Icon } from '@iconify/react';
 import {
   Box,
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   LinearProgress,
   MenuItem,
   Select,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Controller, get, useFormContext } from "react-hook-form";
 
 import { fileUpload } from "src/utils/api.service";
@@ -38,27 +41,28 @@ const General: React.FC<GeneralProps> = ({
   const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
   const [fileNames, setFileNames] = useState<{ [key: string]: string }>({});
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
+  const [uploadedUrls, setUploadedUrls] = useState<{ [key: string]: string }>({});
 
-  // Add this inside your component, after the useState declarations:
-  useEffect(() => {
-    const currentMarketerValue = control._formValues?.general?.marketer;
-
-    if (currentMarketerValue && marketer) {
-      const selectedMarketer = marketer.find(
-        (m) => m.value === currentMarketerValue
-      );
-
-      if (selectedMarketer?.percentage) {
-        const percentageValue = Number(
-          (selectedMarketer.percentage as string).replace("%", "")
-        );
-        setValue("general.percentage", percentageValue, {
-          shouldValidate: false,
-          shouldDirty: false,
-        });
-      }
-    }
-  }, [marketer]); // Run when marketer data is available
+  // COMMENTED OUT - Auto-fill percentage logic - Can be restored in future
+  // useEffect(() => {
+  //   const currentMarketerValue = control._formValues?.general?.marketer;
+  //
+  //   if (currentMarketerValue && marketer) {
+  //     const selectedMarketer = marketer.find(
+  //       (m) => m.value === currentMarketerValue
+  //     );
+  //
+  //     if (selectedMarketer?.percentage) {
+  //       const percentageValue = Number(
+  //         (selectedMarketer.percentage as string).replace("%", "")
+  //       );
+  //       setValue("general.percentage", percentageValue, {
+  //         shouldValidate: false,
+  //         shouldDirty: false,
+  //       });
+  //     }
+  //   }
+  // }, [marketer]); // Run when marketer data is available
 
   const handleFileUpload = async (field: any, file: File, name: string) => {
     if (!file) return;
@@ -68,8 +72,10 @@ const General: React.FC<GeneralProps> = ({
       const formData = new FormData();
       formData.append("files", file);
       const res = await fileUpload(formData);
-      field.onChange(res.data.data[0]);
+      const uploadedUrl = res.data.data[0];
+      field.onChange(uploadedUrl);
       setFileNames((prev) => ({ ...prev, [name]: file.name }));
+      setUploadedUrls((prev) => ({ ...prev, [name]: uploadedUrl }));
     } catch (err: any) {
       setUploadError((prev) => ({
         ...prev,
@@ -80,11 +86,22 @@ const General: React.FC<GeneralProps> = ({
     }
   };
 
+  const handleRemoveFile = (field: any, name: string) => {
+    field.onChange("");
+    setFileNames((prev) => ({ ...prev, [name]: "" }));
+    setUploadedUrls((prev) => ({ ...prev, [name]: "" }));
+    setUploadError((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleViewFile = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   return (
     <Box>
       <Grid container spacing={2}>
-        {/* Marketer */}
-        <Grid size={{ xs: 12, sm: 6 }}>
+        {/* COMMENTED OUT - Marketer field - Can be restored in future */}
+        {/* <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
             name="general.marketer"
             control={control}
@@ -129,7 +146,7 @@ const General: React.FC<GeneralProps> = ({
               </FormControl>
             )}
           />
-        </Grid>
+        </Grid> */}
         {/* Sale Deed Doc */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -137,25 +154,49 @@ const General: React.FC<GeneralProps> = ({
             control={control}
             render={({ field }) => (
               <>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  disabled={uploading.saleDeedDoc}
-                >
-                  {uploading.saleDeedDoc
-                    ? "Uploading..."
-                    : fileNames.saleDeedDoc || "Upload Sale Deed Doc (PDF)"}
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    hidden
-                    onChange={(e) =>
-                      e.target.files &&
-                      handleFileUpload(field, e.target.files[0], "saleDeedDoc")
-                    }
-                  />
-                </Button>
+                {!fileNames.saleDeedDoc ? (
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    fullWidth
+                    disabled={uploading.saleDeedDoc}
+                  >
+                    {uploading.saleDeedDoc
+                      ? "Uploading..."
+                      : "Upload Sale Deed Doc (PDF)"}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      hidden
+                      onChange={(e) =>
+                        e.target.files &&
+                        handleFileUpload(field, e.target.files[0], "saleDeedDoc")
+                      }
+                    />
+                  </Button>
+                ) : (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {fileNames.saleDeedDoc}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => handleViewFile(uploadedUrls.saleDeedDoc || field.value)}
+                      title="View Document"
+                    >
+                      <Icon icon="mdi:eye" width={20} />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveFile(field, "saleDeedDoc")}
+                      title="Remove Document"
+                    >
+                      <Icon icon="mdi:close" width={20} />
+                    </IconButton>
+                  </Stack>
+                )}
                 {uploading.saleDeedDoc && <LinearProgress />}
                 {uploadError.saleDeedDoc && (
                   <Typography color="error" variant="caption">
@@ -166,10 +207,9 @@ const General: React.FC<GeneralProps> = ({
             )}
           />
         </Grid>
-        {/* Percentage */}
-        <Grid size={{ xs: 12, sm: 6 }}>
+        {/* COMMENTED OUT - Percentage field - Can be restored in future */}
+        {/* <Grid size={{ xs: 12, sm: 6 }}>
           {" "}
-          {/* ✅ Add this Grid wrapper */}
           <Controller
             name="general.percentage"
             control={control}
@@ -196,8 +236,7 @@ const General: React.FC<GeneralProps> = ({
               />
             )}
           />
-        </Grid>{" "}
-        {/* ✅ Close Grid here */}
+        </Grid>{" "} */}
         {/* Payment Terms */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
@@ -226,6 +265,7 @@ const General: React.FC<GeneralProps> = ({
                 type="number"
                 label="EMI Amount"
                 fullWidth
+                required
                 error={!!get(errors, 'general.emiAmount')}
                 helperText={get(errors, 'general.emiAmount')?.message as string}
                 InputLabelProps={{ shrink: true }}
@@ -245,6 +285,7 @@ const General: React.FC<GeneralProps> = ({
                 type="number"
                 label="No. of Installments"
                 fullWidth
+                required
                 error={!!get(errors, 'general.noOfInstallments')}
                 helperText={get(errors, 'general.noOfInstallments')?.message as string}
                 InputLabelProps={{ shrink: true }}
@@ -258,25 +299,49 @@ const General: React.FC<GeneralProps> = ({
             control={control}
             render={({ field }) => (
               <>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  disabled={uploading.motherDoc}
-                >
-                  {uploading.motherDoc
-                    ? "Uploading..."
-                    : fileNames.motherDoc || "Upload Mother Doc (PDF)"}
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    hidden
-                    onChange={(e) =>
-                      e.target.files &&
-                      handleFileUpload(field, e.target.files[0], "motherDoc")
-                    }
-                  />
-                </Button>
+                {!fileNames.motherDoc ? (
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    fullWidth
+                    disabled={uploading.motherDoc}
+                  >
+                    {uploading.motherDoc
+                      ? "Uploading..."
+                      : "Upload Mother Doc (PDF)"}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      hidden
+                      onChange={(e) =>
+                        e.target.files &&
+                        handleFileUpload(field, e.target.files[0], "motherDoc")
+                      }
+                    />
+                  </Button>
+                ) : (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {fileNames.motherDoc}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => handleViewFile(uploadedUrls.motherDoc || field.value)}
+                      title="View Document"
+                    >
+                      <Icon icon="mdi:eye" width={20} />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveFile(field, "motherDoc")}
+                      title="Remove Document"
+                    >
+                      <Icon icon="mdi:close" width={20} />
+                    </IconButton>
+                  </Stack>
+                )}
                 {uploading.motherDoc && <LinearProgress />}
                 {uploadError.motherDoc && (
                   <Typography color="error" variant="caption">
@@ -342,7 +407,7 @@ const General: React.FC<GeneralProps> = ({
             control={control}
             rules={{ required: "Sale Type is required" }}
             render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, "general.saleType")}>
+              <FormControl fullWidth error={!!get(errors, "general.saleType")} required>
                 <InputLabel>Sale Type</InputLabel>
                 <Select
                   {...field}

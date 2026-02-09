@@ -194,14 +194,29 @@ const CustomerProfile = () => {
               <BadgeDollarSign style={{ marginRight: 8 }} /> Financial Details
             </Typography>
             <Box sx={{ pl: 2 }}>
-              <DetailItem label="Project ID" value={customer.project || 'N/A'} />
+              <DetailItem 
+                label="Project" 
+                value={
+                  customer.project || 
+                  (customer as any).projectId?.projectName || 
+                  (customer as any).projectId?.id || 
+                  'N/A'
+                } 
+              />
               <DetailItem 
                 label="EMI Amount" 
                 value={customer?.emiAmount ? `₹${customer?.emiAmount.toLocaleString('en-IN')}` : customer?.projectId?.emiAmount ? `₹${customer?.projectId?.emiAmount.toLocaleString('en-IN')}` : 'N/A'} 
               />
               <DetailItem label="Duration" value={customer.duration || customer?.projectId?.duration || 'N/A'} />
               <DetailItem label="Payment Terms" value={customer.paymentTerms || 'N/A'} />
-              <DetailItem label="Marketer" value={customer.marketerName || 'N/A'} />
+              <DetailItem 
+                label="Marketer/CED" 
+                value={
+                  customer.marketerName || 
+                  (customer as any).cedId?.name || 
+                  'N/A'
+                } 
+              />
             </Box>
           </Grid>
 

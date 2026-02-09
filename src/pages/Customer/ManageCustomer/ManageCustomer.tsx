@@ -29,7 +29,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import Flat from "src/pages/CustomerDetails/ManageCustomer/Flat";
 import General from "src/pages/CustomerDetails/ManageCustomer/General";
 import Plot from "src/pages/CustomerDetails/ManageCustomer/Plot";
-import { createCustomer, createCustomerEstimate, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, updateCustomer, updateCustomerEstimate } from 'src/utils/api.service';
+import { createCustomer, createCustomerEstimate, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, getAPercentage, updateCustomer, updateCustomerEstimate } from 'src/utils/api.service';
 import { z } from 'zod';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -111,9 +111,12 @@ const baseCustomerSchema = z.object({
 // Schema for creating new customer (includes estimate details)
 const createCustomerSchema = baseCustomerSchema.extend({
   general: z.object({
-    marketer: z.string().min(1, 'Marketer is required'),
+    // COMMENTED OUT - Marketer and Percentage fields - Can be restored in future
+    // marketer: z.string().min(1, 'Marketer is required'),
+    marketer: z.string().optional(), // Made optional to prevent validation errors
     saleType: z.string().min(1, 'Sale Type is required'),
-    percentage: z.preprocess((val) => Number(val), z.number().min(0).max(100, 'Percentage allow 0-100')),
+    // percentage: z.preprocess((val) => Number(val), z.number().min(0).max(100, 'Percentage allow 0-100')),
+    percentage: z.preprocess((val) => Number(val), z.number().optional()), // Made optional to prevent validation errors
     emiAmount: z.preprocess((val) => Number(val), z.number().min(1, 'EMI Amount is required')),
     noOfInstallments: z.preprocess((val) => Number(val), z.number().min(1, 'Installments is required')),
     
@@ -300,8 +303,53 @@ const CustomerForm = () => {
         if (response.status === 200) {
            // Handle Estimate Update
            if (Object.keys(data.general || {}).length > 0) {
+              // Extract percentage from CED or DD (same logic as create)
+              let finalPercentage = data.general.percentage || 0; // Keep existing if already set
+              
+              // Only extract if percentage is not already set or is 0
+              if (!finalPercentage || finalPercentage === 0) {
+                // Priority 1: Try to get percentage from CED (cedId)
+                if (data.cedId && selectedCED) {
+                  const cedPercentageId = selectedCED.percentageId;
+                  if (cedPercentageId && typeof cedPercentageId === 'object' && cedPercentageId.rate) {
+                    finalPercentage = Number((cedPercentageId.rate as string).replace('%', ''));
+                  } else if (cedPercentageId && typeof cedPercentageId === 'string') {
+                    // Current format: percentageId is just a string ID - fetch it via API
+                    try {
+                      const percentageResponse = await getAPercentage(cedPercentageId);
+                      if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
+                        finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                      }
+                    } catch (error) {
+                      console.error('Failed to fetch CED percentage:', error);
+                    }
+                  }
+                }
+                
+                // Priority 2: If no CED percentage, try DD (ddId)
+                if (finalPercentage === 0 && data.ddId && selectedDD) {
+                  const ddPercentageId = selectedDD.percentageId;
+                  if (ddPercentageId && typeof ddPercentageId === 'object' && ddPercentageId.rate) {
+                    finalPercentage = Number((ddPercentageId.rate as string).replace('%', ''));
+                  } else if (ddPercentageId && typeof ddPercentageId === 'string') {
+                    // Current format: percentageId is just a string ID - fetch it via API
+                    try {
+                      const percentageResponse = await getAPercentage(ddPercentageId);
+                      if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
+                        finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                      }
+                    } catch (error) {
+                      console.error('Failed to fetch DD percentage:', error);
+                    }
+                  }
+                }
+              }
+
               const estimatePayload: any = {
-                general: data.general,
+                general: {
+                  ...data.general,
+                  percentage: finalPercentage, // Add/update percentage
+                },
                 customerId: id, // Use existing ID
                 // For update, we might need _id of the general/plot records if the API requires it. 
                 // The form data populated from fetch should contain them.
@@ -342,11 +390,56 @@ const CustomerForm = () => {
           return;
         }
 
+
         // Check if estimate data exists
         if (Object.keys(data.general || {}).length > 0) {
+          // Extract percentage from CED or DD
+          let finalPercentage = 0;
+          
+          // Priority 1: Try to get percentage from CED (cedId)
+          if (data.cedId && selectedCED) {
+            const cedPercentageId = selectedCED.percentageId;
+            if (cedPercentageId && typeof cedPercentageId === 'object' && cedPercentageId.rate) {
+              // Future format: percentageId is populated object with rate
+              finalPercentage = Number((cedPercentageId.rate as string).replace('%', ''));
+            } else if (cedPercentageId && typeof cedPercentageId === 'string') {
+              // Current format: percentageId is just a string ID - fetch it via API
+              try {
+                const percentageResponse = await getAPercentage(cedPercentageId);
+                if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
+                  finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                }
+              } catch (error) {
+                console.error('Failed to fetch CED percentage:', error);
+              }
+            }
+          }
+          
+          // Priority 2: If no CED percentage, try DD (ddId)
+          if (finalPercentage === 0 && data.ddId && selectedDD) {
+            const ddPercentageId = selectedDD.percentageId;
+            if (ddPercentageId && typeof ddPercentageId === 'object' && ddPercentageId.rate) {
+              // Future format: percentageId is populated object with rate
+              finalPercentage = Number((ddPercentageId.rate as string).replace('%', ''));
+            } else if (ddPercentageId && typeof ddPercentageId === 'string') {
+              // Current format: percentageId is just a string ID - fetch it via API
+              try {
+                const percentageResponse = await getAPercentage(ddPercentageId);
+                if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
+                  finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                }
+              } catch (error) {
+                console.error('Failed to fetch DD percentage:', error);
+              }
+            }
+          }
+
           // Prepare estimate payload
           let estimatePayload: any = {
-            general: data.general,
+            general: {
+              ...data.general,
+              percentage: finalPercentage, // Add extracted percentage
+            },
             customerId: mongoId, // Use MongoDB ID for linking
           };
 
@@ -652,6 +745,7 @@ const CustomerForm = () => {
                       helperText={errors.name?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 3 }}>
@@ -764,6 +858,7 @@ const CustomerForm = () => {
                       helperText={errors.city?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                     />
                   </Grid>
 
@@ -775,6 +870,7 @@ const CustomerForm = () => {
                       helperText={errors.state?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                     />
                   </Grid>
 
@@ -786,6 +882,7 @@ const CustomerForm = () => {
                       helperText={errors.pincode?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                     />
                   </Grid>
 
@@ -821,6 +918,7 @@ const CustomerForm = () => {
                       helperText={errors.email?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                     />
                   </Grid>
 
@@ -850,6 +948,7 @@ const CustomerForm = () => {
                       helperText={errors.address?.message as string}
                       fullWidth
                       variant="outlined"
+                      required
                       multiline
                       rows={2}
                     />
@@ -927,7 +1026,8 @@ const CustomerForm = () => {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  {/* COMMENTED OUT - Photo Upload field - Can be restored in future */}
+                  {/* <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
                       Customer Photo
                     </Typography>
@@ -944,7 +1044,7 @@ const CustomerForm = () => {
                         {...register('photo')}
                       />
                     </Button>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </FormSection>
 

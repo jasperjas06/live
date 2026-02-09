@@ -151,7 +151,7 @@ const Mod = () => {
     if (!data?.customerId?._id && !data?.customerId?.id) return;
     
     try {
-      const customerId = data.customerId._id || data.customerId.id;
+      const customerId = data.customerId._id || data.customerId.id; 
       const response = await getAllMOD({ customerId });
       
       if (response.status === 200 && response.data?.data) {

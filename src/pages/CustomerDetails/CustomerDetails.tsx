@@ -1,21 +1,19 @@
 import type { Column } from 'src/custom/dataTable/dataTable';
 
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
 
 import {
   Box,
-  Card,
   Button,
-  Typography,
-  IconButton,
-  Stack,
+  Card,
+  Typography
 } from '@mui/material';
 
-import { deleteCustomer, getAllCustomer, getAllDetailByCustomerOrGeneral, getAllEstimateByCustomerId } from 'src/utils/api.service';
+import { deleteCustomer, getAllEstimateByCustomerId } from 'src/utils/api.service';
 
+import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ActionMenu, DataTable } from 'src/custom/dataTable/dataTable';
 
 type Customer = {
   id: string;
@@ -93,13 +91,15 @@ const handleDelete = async (id: string | number) => {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Estimate Details
         </Typography>
-        <Button
-          variant="contained"
-          color="inherit"
-          onClick={() => navigate("create")}
-        >
-          Add New Estimate
-        </Button>
+        {data.length === 0 && (
+          <Button
+            variant="contained"
+            color="inherit"
+            onClick={() => navigate("create")}
+          >
+            Add New Estimate
+          </Button>
+        )}
       </Box>
 
       <Card>
