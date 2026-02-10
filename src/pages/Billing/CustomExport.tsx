@@ -324,6 +324,7 @@ const CustomExport = () => {
                 sx={{ minWidth: '200px' }}
                 helperText="Optional: Filter by payment status"
               >
+                <MenuItem value="all">All</MenuItem>
                 <MenuItem value="paid">Paid</MenuItem>
                 <MenuItem value="unpaid">Unpaid</MenuItem>
                 <MenuItem value="blocked">Blocked</MenuItem>

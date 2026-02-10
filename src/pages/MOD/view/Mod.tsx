@@ -100,10 +100,26 @@ const Mod = () => {
     const headers = columns.map(col => `<th style="font-weight:bold;padding:4px;border:1px solid #000;">${col.header}</th>`).join("");
     const values = columns.map(col => `<td style="padding:4px;border:1px solid #000;">${col.value}</td>`).join("");
 
+    // Calculate balance
+    const balance = (data.totalAmount || 0) - (data.paidAmount || 0);
+    
+    // Create balance row - empty cells except for Total Amount (Balance label) and Paid Amount (balance value)
+    const balanceRow = columns.map((col, index) => {
+      if (col.header === "Total Amount") {
+        return `<td style="padding:4px;border:1px solid #000;font-weight:bold;">Balance</td>`;
+      } else if (col.header === "Paid Amount") {
+        return `<td style="padding:4px;border:1px solid #000;font-weight:bold;">${formatCurrency(balance)}</td>`;
+      } else {
+        return `<td style="padding:4px;border:1px solid #000;"></td>`;
+      }
+    }).join("");
+
     const tableHTML = `
       <table border="1" style="border-collapse:collapse;">
         <tr>${headers}</tr>
         <tr>${values}</tr>
+        <tr style="height:10px;">${columns.map(() => '<td style="border:none;"></td>').join("")}</tr>
+        <tr>${balanceRow}</tr>
       </table>
     `;
 
@@ -189,6 +205,65 @@ const Mod = () => {
               "Created At": formatDate(mod.createdAt),
               "Updated At": formatDate(mod.updatedAt),
             }));
+
+            // Calculate balance: First row total - sum of all paid amounts
+            const firstRowTotal = project.mod[0]?.totalAmount || 0;
+            const totalPaid = project.mod.reduce((sum: number, mod: any) => sum + (mod.paidAmount || 0), 0);
+            const balance = firstRowTotal - totalPaid;
+
+            // Add empty gap row
+            sheetData.push({
+              "Project Name": "",
+              "Project Code": "",
+              "Project Total Investimate": "",
+              "Project Total Return Amount": "",
+              "Plot Number": "",
+              "Paid Date": "",
+              "Total Amount": "",
+              "Paid Amount": "",
+              "Rate Per Sqft": "",
+              "Status": "",
+              "Customer Name": "",
+              "Customer Phone": "",
+              "Customer Email": "",
+              "Customer Address": "",
+              "Customer ID": "",
+              "Introducer Name": "",
+              "Introducer Phone": "",
+              "Director Name": "",
+              "Director Phone": "",
+              "Executive Director": "",
+              "Executive Director Phone": "",
+              "Created At": "",
+              "Updated At": "",
+            });
+
+            // Add balance row
+            sheetData.push({
+              "Project Name": "",
+              "Project Code": "",
+              "Project Total Investimate": "",
+              "Project Total Return Amount": "",
+              "Plot Number": "",
+              "Paid Date": "",
+              "Total Amount": "Balance",  // Balance label in Total Amount column
+              "Paid Amount": formatCurrency(balance),  // Balance value in Paid Amount column
+              "Rate Per Sqft": "",
+              "Status": "",
+              "Customer Name": "",
+              "Customer Phone": "",
+              "Customer Email": "",
+              "Customer Address": "",
+              "Customer ID": "",
+              "Introducer Name": "",
+              "Introducer Phone": "",
+              "Director Name": "",
+              "Director Phone": "",
+              "Executive Director": "",
+              "Executive Director Phone": "",
+              "Created At": "",
+              "Updated At": "",
+            });
 
             const ws = XLSX.utils.json_to_sheet(sheetData);
             
@@ -334,6 +409,35 @@ const Mod = () => {
                     Status
                   </Typography>
                   <Chip label={(data.status || 'N/A').toUpperCase()} color={getStatusColor(data.status) as any} size="small" />
+                </Box>
+              </Box>
+
+              {/* Divider for spacing */}
+              <Divider sx={{ my: 2 }} />
+
+              {/* Balance Display */}
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 2,
+                  p: 2,
+                  backgroundColor: 'action.hover',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider'
+                }}
+              >
+                <Box color="text.secondary" mr={2} display="flex" alignItems="center">
+                  <MoneyIcon />
+                </Box>
+                <Box flex={1}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Balance
+                  </Typography>
+                  <Typography variant="h6" fontWeight={600} color="primary">
+                    {formatCurrency((data.totalAmount || 0) - (data.paidAmount || 0))}
+                  </Typography>
                 </Box>
               </Box>
             </CardContent>

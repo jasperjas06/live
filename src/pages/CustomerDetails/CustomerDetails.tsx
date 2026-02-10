@@ -44,7 +44,7 @@ const CustomerDetails = () => {
             id: item.general?._id,
             name: item?.general?.customer?.name || 'N/A',
             marketer: item?.general?.marketer?.name || 'N/A',
-            status: item?.general?.status || 'N/A',
+            status: item?.general?.status || '-',
             saleType: item.plot.length > 0 ? 'Plot' : item.flat.length > 0 ? 'Flat' : 'N/A',
             noEmiPaid: item.emi.filter((emi: any) => emi.paidDate).length || "0",
             noOfInstallments: item.general?.noOfInstallments || "N/A",
@@ -66,7 +66,7 @@ const CustomerDetails = () => {
  const customerColumns: Column<Customer>[] = [
   { id: 'name', label: 'Name', sortable: true },
   { id: 'saleType', label: 'Sale Type', sortable: true },
-  { id: 'marketer', label: 'Marketer', sortable: false },
+  // { id: 'marketer', label: 'Marketer', sortable: false },
   { id: "status", label: "Status", sortable: false },
   { id: 'noOfInstallments', label: 'No of Installments', sortable: true },
   { id: 'noEmiPaid', label: 'Paid EMI', sortable: true },

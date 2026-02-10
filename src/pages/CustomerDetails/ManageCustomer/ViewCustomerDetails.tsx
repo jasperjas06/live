@@ -330,7 +330,7 @@ const CustomerDetails = () => {
 
     const billingColumns: Column<Billing>[] = [
         { id: 'emiNo', label: 'Emi No', sortable: true },
-        { id: 'introducer', label: 'Introducer', sortable: true },
+        // { id: 'introducer', label: 'Introducer', sortable: true },
         { id: 'modeOfPayment', label: 'Mode Of Payment', sortable: true },
         { id: 'paymentDate', label: 'Payment Date', sortable: true },
         { id: 'amountPaid', label: 'Amount Paid', sortable: true },
