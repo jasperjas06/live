@@ -74,6 +74,7 @@ const MarketerTable = () => {
       if (response.status) {
         const updatedData = response.data.data.map((item:any) => ({
           ...item,
+          phone: item.phone || '-',
           headbyName: item.headBy?.name || 'N/A',
         }));
         setData(updatedData);
