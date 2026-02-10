@@ -411,6 +411,7 @@ const BillingForm = () => {
                 amount: data.amount,
                 billFor: data.billingMonth, // Map billingMonth to billFor
                 remarks: data.remarks,
+                housing: true, // Default housing boolean field
             };
 
             const response = id

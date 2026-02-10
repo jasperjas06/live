@@ -169,6 +169,7 @@ const CustomerDetails = () => {
     const [billingData, setBillingData] = useState<any[]>([]);
     const [marketerData, setMarketerData] = useState<any[]>([]);
     const [customerId, setCustomerId] = useState<string>('');
+    const [customerData, setCustomerData] = useState<any>(null);
 
     const formatDate = (dateString: any) => {
         if (!dateString) return '-'
@@ -189,6 +190,19 @@ const CustomerDetails = () => {
             });
             if (res?.status === 200) {
                 console.log(res, "res");
+                                
+                // Store customer data
+                const customer = res.data?.data?.general?.customer;
+                if (customer) {
+                    setCustomerData({
+                        id: customer?.id || '-',
+                        name: customer?.name || '-',
+                        phone: customer?.phone || '-',
+                        pincode: customer?.pincode || '-',
+                        ddName: customer?.ddId?.name || '-',
+                        cedName: customer?.cedId?.name || '-',
+                    });
+                }
                 
                 // Store customer ID for commission API call
                 const cusId = res.data.data.general?.customer?._id || res.data.data.general?.customer;
@@ -274,23 +288,36 @@ const CustomerDetails = () => {
             const res = await getCommissionByCustomerId(customerId);
             if (res?.status === 200 && res.data?.data?.length > 0) {
                 console.log(res, "commission res");
+                  
+                // Sort the data by EMI number in descending order first
+                const sortedData = [...res.data.data].sort((a, b) => {
+                    const emiNoA = a.emi?.emiNo || 0;
+                    const emiNoB = b.emi?.emiNo || 0;
+                    return emiNoB - emiNoA; // Descending order (12, 11, 10, ...)
+                });
+                
                 // Flatten the marketer array from each EMI record
                 let marketerData: any[] = [];
-                res.data.data.forEach((item: any) => {
+                sortedData.forEach((item: any) => {
                     // Each item has an emi object and a marketer array
                     const emiInfo = item.emi || {};
                     const marketers = item.marketer || [];
                     
                     // Process each marketer in the array
                     marketers.forEach((marketer: any) => {
+                          // Format commission amount to 2 decimal places
+                        const formattedCommAmount = marketer.commAmount 
+                            ? parseFloat(marketer.commAmount).toFixed(2)
+                            : '-';
+                        
                         marketerData.push({
                             id: item._id || '-',
                             emiNo: emiInfo.emiNo || '-',
-                            marketerName: marketer.marketerId?.name || '-',
+                            marketerName: marketer.name || '-',
                             paidDate: formatDate(emiInfo.paidDate) || '-',
                             paidAmt: emiInfo.paidAmt || '-',
                             commPercentage: marketer.percentage || '-',
-                            commAmount: marketer.commAmount || '-'
+                            commAmount: formattedCommAmount
                         });
                     });
                 });
@@ -298,6 +325,7 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.log('Commission fetch error:', error);
+            setMarketerData([]);
         }
     };
 
@@ -370,6 +398,67 @@ const CustomerDetails = () => {
                 </Typography>
             </Box>
             {loading ? <RenderFallback /> : <>
+            {/* Customer Information Card */}
+            {customerData && (
+                <Card elevation={3} sx={{ borderRadius: 3, mb: 3, bgcolor: 'grey.100' }}>
+                    <CardContent>
+                        <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
+                            Customer Information
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Customer ID
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.id}
+                                </Typography>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Name
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.name}
+                                </Typography>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Phone
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.phone}
+                                </Typography>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Pincode
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.pincode}
+                                </Typography>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    DD Name
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.ddName}
+                                </Typography>
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    CED Name
+                                </Typography>
+                                <Typography variant="subtitle1" fontWeight={500}>
+                                    {customerData.cedName}
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+            )}
             {Object.keys(flotData).length > 0 && <Grid >
                 <Card elevation={3} sx={{ borderRadius: 3, mb: 3 }}>
                     <CardContent>
@@ -515,7 +604,8 @@ const CustomerDetails = () => {
                     columns={emiColumns}
                     searchBy="emiId"
                     onDelete={handleDelete}
-                    onDropDown= {false}
+                    onDropDown={false}
+                    preserveOrder={true}
                 />
             </Card>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -528,7 +618,8 @@ const CustomerDetails = () => {
                     columns={billingColumns}
                     searchBy="name"
                     onDelete={handleDelete}
-                    onDropDown= {false}
+                    onDropDown={false}
+                    preserveOrder={true}
                 />
             </Card>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -541,7 +632,8 @@ const CustomerDetails = () => {
                     columns={marketerColumns}
                     searchBy="name"
                     onDelete={handleDelete}
-                    onDropDown= {false}
+                    onDropDown={false}
+                    preserveOrder={true}
                 />
             </Card>
             </>
