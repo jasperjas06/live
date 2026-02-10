@@ -564,7 +564,7 @@ const downloadPDF = async () => {
                       Marketer Name
                     </Typography>
                     <Typography variant="body1" sx={{ mt: 0.5 }}>
-                      {data.customer.marketerName || "N/A"}
+                      {data.customer.marketerName || data?.customer?.cedId?.name || data?.customer?.ddId?.name || "N/A"}
                     </Typography>
                   </Box>
                 </Grid>
