@@ -15,7 +15,7 @@ export const calculateEmiSummary = (data: any) => {
     d ? new Date(d).toISOString().split("T")[0] : null;
 
   // Current Transaction Details
-  const currentPaidAmount = Number(data?.emi?.paidAmt ?? data?.amountPaid ?? 0);
+  const currentPaidAmount = Number(data?.enteredAmount ?? data?.emi?.paidAmt ?? data?.amountPaid ?? 0);
   const currentEmiNo = Number(data?.emi?.emiNo ?? data?.emiNo ?? 0);
 
   let totalAmount = 0;
@@ -33,7 +33,14 @@ export const calculateEmiSummary = (data: any) => {
     if (emi.paidAmt && emiNo < currentEmiNo) {
       previousPaidAmount += Number(emi.paidAmt);
     }
+     if (emiNo < currentEmiNo && emi.paidDate) {
+      previousPaidAmount += Number(emi.emiAmt);
+    }
+
   }
+
+
+  previousPaidAmount = data.previousBilling ? data.previousBilling : previousPaidAmount
 
   // Balance = Total - (Previous + Current)
   const balanceAmount = totalAmount - (previousPaidAmount + currentPaidAmount);

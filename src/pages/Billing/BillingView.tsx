@@ -422,7 +422,7 @@ const downloadPDF = async () => {
                     variant="body1"
                     sx={{ mt: 0.5, fontWeight: 600, color: "success.main" }}
                   >
-                    {formatCurrency(data.amountPaid)}
+                    {formatCurrency(data.enteredAmount ||data.amountPaid)}
                   </Typography>
                 </Box>
               </Grid>

@@ -84,7 +84,7 @@ const BillingTable = () => {
           paidDate: item.emi?.paidDate?.split('T')[0] || item?.paymentDate?.split('T')[0] || '-',
           customerName: item?.general?.customer?.name || item?.customer?.name || "-",
           // emiId: item.emi?._id || 'N/A',
-          paidAmount: item.emi?.paidAmt || item?.amountPaid || '-',
+          paidAmount:item.enteredAmount || item.emi?.paidAmt || item?.amountPaid || '-',
         }));
         setData(billingData);
         setPagination(response.data.pagination || null);
