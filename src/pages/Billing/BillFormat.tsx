@@ -6,7 +6,6 @@ interface BillProps {
   logo?: string;
 }
 
-
 const numberToWords = (num: number): string => {
   const a = [
     "",
@@ -44,7 +43,9 @@ const numberToWords = (num: number): string => {
   ];
 
   if ((num = num.toString() as any).length > 9) return "overflow";
-  const n: any = ("000000000" + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  const n: any = ("000000000" + num)
+    .substr(-9)
+    .match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
   if (!n) return "";
   let str = "";
   str +=
@@ -73,12 +74,18 @@ const numberToWords = (num: number): string => {
 
 const BillView = forwardRef<HTMLDivElement, { data: any }>(
   ({ data }, billRef) => {
-        const {
-  totalAmount,
-  previousPaidAmount,
-  currentPaidAmount,
-  balanceAmount,
-} = calculateEmiSummary(data);
+    // const {
+    //   totalAmount,
+    //   previousPaidAmount,
+    //   currentPaidAmount,
+    //   balanceAmount,
+    // } = calculateEmiSummary(data);
+
+    const totalAmount = data.billData?.totalAmount;
+    const previousPaidAmount = data.billData?.totalPreviouslyPaid;
+    const currentPaidAmount =
+      data.billData?.totalPaid - data.billData?.totalPreviouslyPaid;
+    const balanceAmount = data.billData?.totalunPaid;
 
     return (
       <div
@@ -204,7 +211,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       textAlign: "center",
                       display: "flex",
                       justifyContent: "flex-end",
-                      fontWeight: '900'
+                      fontWeight: "900",
                     }}
                   >
                     Receipt No
@@ -231,7 +238,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {(data?.id || data?._id) ? String(data?.id || data?._id).slice(0, 5) : ""}
+                    {data?.id || data?._id
+                      ? String(data?.id || data?._id).slice(0, 5)
+                      : ""}
                   </p>
                 </div>
                 <div
@@ -439,7 +448,10 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {data?.customer?.id || data?.customerCode || data?.customer?._id || "N/A"}
+                  {data?.customer?.id ||
+                    data?.customerCode ||
+                    data?.customer?._id ||
+                    "N/A"}
                 </p>
               </div>
               <div
@@ -533,11 +545,15 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {data?.introducer?._id ? String(data.introducer._id).slice(0, 5) : "N/A"}
+                  {data?.introducer?._id
+                    ? String(data.introducer._id).slice(0, 5)
+                    : "N/A"}
                 </p>
               </div>
               {data.customer?.cedId && (
-                <div style={{ width: "100%", display: "flex", fontSize: "12px" }}>
+                <div
+                  style={{ width: "100%", display: "flex", fontSize: "12px" }}
+                >
                   <p
                     style={{
                       width: "40%",
@@ -549,7 +565,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       textAlign: "center",
                     }}
                   >
-                  CHIEF EXECUTIVE DIRECTOR
+                    CHIEF EXECUTIVE DIRECTOR
                   </p>
                   <p
                     style={{
@@ -620,11 +636,11 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {(data.customer?.ddId?.name && data.customer?.ddId?.phone)
+                  {data.customer?.ddId?.name && data.customer?.ddId?.phone
                     ? `${data.customer.ddId.name}  / ${data.customer.ddId.phone}`
-                    : (data.introducer?.name && data.introducer?.phone) 
-                    ? `${data.introducer.name}  / ${data.introducer.phone}` 
-                    : "N/A"}
+                    : data.introducer?.name && data.introducer?.phone
+                      ? `${data.introducer.name}  / ${data.introducer.phone}`
+                      : "N/A"}
                 </p>
               </div>
             </div>
@@ -867,7 +883,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       fontWeight: "bold",
                     }}
                   >
-                    {data?.amountPaid ? ` ${numberToWords(data.amountPaid)} only` : "N/A"}
+                    {data?.amountPaid
+                      ? ` ${numberToWords(data.amountPaid)} only`
+                      : "N/A"}
                   </p>
                 </div>
               </div>
@@ -1096,7 +1114,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                         fontWeight: "500",
                         fontSize: "12px",
                         marginTop: "10px",
-                        marginBottom: "2px"
+                        marginBottom: "2px",
                       }}
                     >
                       Created By {data.createdBy.name}
@@ -1109,10 +1127,13 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                         color: "#000",
                         fontWeight: "500",
                         fontSize: "12px",
-                        marginTop: "0px"
+                        marginTop: "0px",
                       }}
                     >
-                      Created At {data?.createdAt ? new Date(data.createdAt).toLocaleString() : ""}
+                      Created At{" "}
+                      {data?.createdAt
+                        ? new Date(data.createdAt).toLocaleString()
+                        : ""}
                     </p>
                   </div>
                 )}
@@ -1124,18 +1145,33 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     overflowWrap: "anywhere",
                   }}
                 >
-                    for{" "}
-                <span style={{ fontWeight: "600", paddingLeft: "5px" }}>
-                  {" "}
-                  LIFE HOUSING ENTERPRISES
-                </span>
+                  for{" "}
+                  <span style={{ fontWeight: "600", paddingLeft: "5px" }}>
+                    {" "}
+                    LIFE HOUSING ENTERPRISES
+                  </span>
                 </p>
               </div>
             </div>
-            <p style={{ fontSize: "10px", margin: "4px 0", marginBottom: "0", marginLeft: "480px", marginTop: "5px", fontWeight: "300" }}>
+            <p
+              style={{
+                fontSize: "10px",
+                margin: "4px 0",
+                marginBottom: "0",
+                marginLeft: "480px",
+                marginTop: "5px",
+                fontWeight: "300",
+              }}
+            >
               Computerized bill signature not required
             </p>
-            <h1 style={{ fontWeight: "700", margin: "10px 16px 16px 16px", fontSize: "20px" }}>
+            <h1
+              style={{
+                fontWeight: "700",
+                margin: "10px 16px 16px 16px",
+                fontSize: "20px",
+              }}
+            >
               Come with us Grow with us
             </h1>
             {/* <p style={{ fontSize: "8px", margin: "0 16px", marginTop: "-8px", marginBottom: "16px", color: "#666" }}>

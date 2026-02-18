@@ -1500,6 +1500,34 @@ export const updateBilling = async (data) => {
   }
 };
 
+export const deleteBilling = async (id) => {
+  try {
+    const data = { _id: id };
+    const response = await axios.delete(
+      `${base_url}api/common/billing/delete`,
+      {
+        data,
+        headers: getHeaders(),
+      },
+    );
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 // General APIS
 export const getAllGeneral = async (customer) => {
   try {
