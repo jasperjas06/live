@@ -116,62 +116,85 @@ const CustomerPage = () => {
   }, [currentPage, debouncedSearch]);
 
   const customerColumns: Column<Customer>[] = [
-    { 
-    id: 'customerId', 
-    label: 'Customer ID', 
-    sortable: true,
-    render: (value: any, row: Customer) => {
-      const displayId = value || row.id || 'N/A';
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2">{displayId}</Typography>
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(displayId);
-              toast.success('Customer ID copied!');
-            }}
-            sx={{ 
-              width: 24, 
-              height: 24, 
-              color: 'text.secondary',
-              opacity: 0.7,
-              '&:hover': { 
-                opacity: 1,
-                color: 'primary.main',
-                bgcolor: 'action.hover' 
-              }
-            }}
-          >
-            <Icon icon="solar:copy-outline" width={16} />
-          </IconButton>
-        </Box>
-      );
-    }
-  },
-  { id: 'name', label: 'Name', sortable: true },
-  { id: 'email', label: 'Email', sortable: true },
-  { 
-    id: 'projectId', 
-    label: 'Marketer', 
-    sortable: false,
-    render: (_value: any, row: Customer) => (
-      <Typography variant="body2">
-       {row.projectId?.marketer || row?.ddId?.name || 'N/A'}
-      </Typography>
-    )
-  },
-  { 
-    id: 'id',   // 👈 match the API field
-    label: 'Estimate Details',
-    sortable: false,
-    render: (_value: any, row: Customer) => (
-      <button style={{background:"#2c2c2cff", padding:"5px", borderRadius:"5px", paddingRight:"10px", paddingLeft:"10px", cursor:"pointer", color:"white"}} onClick={(e) => {navigate(`${row.id}/estimate`) 
-      e.stopPropagation(); }}>Estimate</button>
-    )
-  }
-];
+    {
+      id: "customerId",
+      label: "Customer ID",
+      sortable: true,
+      render: (value: any, row: Customer) => {
+        const displayId = value || row.id || "N/A";
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="body2">{displayId}</Typography>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(displayId);
+                toast.success("Customer ID copied!");
+              }}
+              sx={{
+                width: 24,
+                height: 24,
+                color: "text.secondary",
+                opacity: 0.7,
+                "&:hover": {
+                  opacity: 1,
+                  color: "primary.main",
+                  bgcolor: "action.hover",
+                },
+              }}
+            >
+              <Icon icon="solar:copy-outline" width={16} />
+            </IconButton>
+          </Box>
+        );
+      },
+    },
+    { id: "name", label: "Name", sortable: true },
+    { id: "email", label: "Email", sortable: true },
+    {
+      id: "projectId",
+      label: "Marketer",
+      sortable: false,
+      render: (_value: any, row: Customer) => (
+        <Typography variant="body2">
+          {row.projectId?.marketer || row?.ddId?.name || "N/A"}
+        </Typography>
+      ),
+    },
+    {
+      id: "projectId",
+      label: "Marketer Head",
+      sortable: false,
+      render: (_value: any, row: Customer) => (
+        <Typography variant="body2">{row?.cedId?.name || "N/A"}</Typography>
+      ),
+    },
+    {
+      id: "id", // 👈 match the API field
+      label: "Estimate Details",
+      sortable: false,
+      render: (_value: any, row: Customer) => (
+        <button
+          style={{
+            background: "#2c2c2cff",
+            padding: "5px",
+            borderRadius: "5px",
+            paddingRight: "10px",
+            paddingLeft: "10px",
+            cursor: "pointer",
+            color: "white",
+          }}
+          onClick={(e) => {
+            navigate(`${row.id}/estimate`);
+            e.stopPropagation();
+          }}
+        >
+          Estimate
+        </button>
+      ),
+    },
+  ];
 
 
 
