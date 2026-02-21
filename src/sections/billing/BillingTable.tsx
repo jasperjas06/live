@@ -1,18 +1,24 @@
-import { Icon } from '@iconify/react';
-import { Box, Button, CircularProgress, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { permissions } from 'src/common/Permissions';
-import { Iconify } from 'src/components/iconify';
-import type { Column } from 'src/custom/dataTable/dataTable';
-import { DataTable } from 'src/custom/dataTable/dataTable';
+import { Icon } from "@iconify/react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { permissions } from "src/common/Permissions";
+import { Iconify } from "src/components/iconify";
+import type { Column } from "src/custom/dataTable/dataTable";
+import { DataTable } from "src/custom/dataTable/dataTable";
 import ConfirmDialog from "src/custom/dialog/ConfirmDialog";
-import { DashboardContent } from 'src/layouts/dashboard';
+import { DashboardContent } from "src/layouts/dashboard";
 import { BillingPagination } from "src/types/billing";
-import { deleteBilling, getAllBilling } from 'src/utils/api.service';
-
-
+import { deleteBilling, getAllBilling } from "src/utils/api.service";
 
 type Customer = {
   id: string;
@@ -33,6 +39,7 @@ const BillingTable = () => {
   const [data, setData] = useState<Customer[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   // Initialize state from URL params
   const [currentPage, setCurrentPage] = useState(
@@ -92,7 +99,8 @@ const BillingTable = () => {
           marketerName:
             item.introducer?.name ||
             item?.customer?.marketerName ||
-            item?.customer?.cedId?.name || "-",
+            item?.customer?.cedId?.name ||
+            "-",
           marketerHead: item?.customer?.ddId?.name || "-",
           paidDate:
             item.emi?.paidDate?.split("T")[0] ||
@@ -309,6 +317,24 @@ const BillingTable = () => {
             {isDownloading ? 'Downloading...' : 'Download Excel'}
           </Button> */}
 
+          {isAdmin && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<Iconify icon="mingcute:upload-line" />}
+              onClick={() => navigate("bulk-upload")}
+              sx={{
+                minWidth: "150px",
+                "&:hover": {
+                  backgroundColor: "secondary.light",
+                  color: "white",
+                },
+              }}
+            >
+              Bulk Upload
+            </Button>
+          )}
+
           <Button
             variant="outlined"
             color="primary"
@@ -444,6 +470,6 @@ const BillingTable = () => {
       />
     </DashboardContent>
   );
-};;
+};
 
 export default BillingTable;

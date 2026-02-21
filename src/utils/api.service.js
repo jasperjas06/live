@@ -1935,3 +1935,29 @@ export const deleteMarketer = async (id) => {
     };
   }
 }
+
+export const bulkEditBillingData = async (formData) => {
+  try {
+    const response = await axios.post(`api/bulk-bill-edit/`, formData, {
+      headers: {
+        Authorization: `${getAuthToken()}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
