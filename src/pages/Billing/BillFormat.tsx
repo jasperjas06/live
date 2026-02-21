@@ -547,7 +547,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                 >
                   {data?.introducer?._id
                     ? String(data.introducer._id).slice(0, 5)
-                    : "N/A"}
+                    : data?.customer?.ddId?.id ||
+                      data?.customer?.cedId?.id ||
+                      "N/A"}
                 </p>
               </div>
               {data.customer?.cedId && (
