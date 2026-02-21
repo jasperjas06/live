@@ -154,7 +154,7 @@ const CustomerPage = () => {
     { id: "email", label: "Email", sortable: true },
     {
       id: "projectId",
-      label: "Marketer",
+      label: "Marketer Head",
       sortable: false,
       render: (_value: any, row: Customer) => (
         <Typography variant="body2">
@@ -164,7 +164,7 @@ const CustomerPage = () => {
     },
     {
       id: "projectId",
-      label: "Marketer Head",
+      label: "Marketer",
       sortable: false,
       render: (_value: any, row: Customer) => (
         <Typography variant="body2">{row?.cedId?.name || "N/A"}</Typography>

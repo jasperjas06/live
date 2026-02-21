@@ -19,6 +19,7 @@ type Customer = {
   customerId?: string;
   customerName: string;
   marketerName: string;
+  marketerHead: string;
   emiNo: number;
   emiId: string;
   paidAmount: string;
@@ -91,9 +92,8 @@ const BillingTable = () => {
           marketerName:
             item.introducer?.name ||
             item?.customer?.marketerName ||
-            item?.customer?.cedId?.name ||
-            item?.customer?.ddId?.name ||
-            "-",
+            item?.customer?.cedId?.name || "-",
+          marketerHead: item?.customer?.ddId?.name || "-",
           paidDate:
             item.emi?.paidDate?.split("T")[0] ||
             item?.paymentDate?.split("T")[0] ||
@@ -155,6 +155,7 @@ const BillingTable = () => {
     },
     { id: "customerName", label: "Name", sortable: true },
     { id: "marketerName", label: "Marketer Name", sortable: true },
+    { id: "marketerHead", label: "Marketer Head", sortable: true },
     { id: "emiNo", label: "Emi No", sortable: true },
     // { id: 'emiId', label: 'Emi Id', sortable: true },
     { id: "paidAmount", label: "Paid Amount", sortable: true },
