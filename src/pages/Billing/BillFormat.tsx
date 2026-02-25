@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import { calculateEmiSummary } from "src/utils/billCalculation.utils";
 
 interface BillProps {
   data: any;
@@ -1133,8 +1132,15 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       }}
                     >
                       Created At{" "}
+                      {data?.paymentDate
+                        ? new Date(data.paymentDate).toLocaleDateString()
+                        : ""}{" "}
                       {data?.createdAt
-                        ? new Date(data.createdAt).toLocaleString()
+                        ? new Date(data.createdAt).toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          })
                         : ""}
                     </p>
                   </div>
@@ -1183,7 +1189,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 export default BillView;
