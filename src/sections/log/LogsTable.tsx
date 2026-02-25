@@ -30,8 +30,9 @@ interface LogItem {
   _id: string;
   moduleName: string;
   createdAt: string;
-  createdBy?: string;
+  createdBy?: any; // could be string or populated user object
   roleId: string | null;
+  customerCode?: string;
 }
 
 interface LogsResponse {
@@ -73,15 +74,15 @@ const LogsTable = () => {
 
   // Pagination
   const [page, setPage] = useState(
-    parseInt(searchParams.get("page") || "0", 10)
+    parseInt(searchParams.get("page") || "0", 10),
   );
   const [rowsPerPage, setRowsPerPage] = useState(
-    parseInt(searchParams.get("limit") || "10", 10)
+    parseInt(searchParams.get("limit") || "10", 10),
   );
   const [totalCount, setTotalCount] = useState(0);
   // Date filter
   const [selectedDate, setSelectedDate] = useState(
-    searchParams.get("date") || new Date().toISOString().split("T")[0]
+    searchParams.get("date") || new Date().toISOString().split("T")[0],
   );
 
   const getLogs = async (isExport = false) => {
@@ -142,7 +143,7 @@ const LogsTable = () => {
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -201,10 +202,16 @@ const LogsTable = () => {
 
       // Transform data for Excel
       const excelData = exportData.map((log: LogItem) => ({
-        "Module Name": log.moduleName,
-        "Created At": new Date(log.createdAt).toLocaleString("en-IN"),
-        "Created By": log.createdBy || "N/A",
-        ID: log._id,
+        "Module Name": log?.moduleName || "N/A",
+        "Customer Code": log?.customerCode || "N/A",
+        "Created At": log?.createdAt
+          ? new Date(log.createdAt).toLocaleString("en-IN")
+          : "N/A",
+        "Created By":
+          typeof log?.createdBy === "object" && log?.createdBy !== null
+            ? `${log?.createdBy?.name || "Unknown"} (${log?.createdBy?._id || "Unknown"})`
+            : log?.createdBy || "N/A",
+        ID: log?._id || "N/A",
       }));
 
       // Create worksheet
@@ -225,14 +232,20 @@ const LogsTable = () => {
     }
   };
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    try {
+      return new Date(dateString).toLocaleString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return "-";
+    }
+  };
 
   return (
     <DashboardContent>
@@ -300,7 +313,12 @@ const LogsTable = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
-                    Created At
+                    Customer Code
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Created By
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -308,13 +326,13 @@ const LogsTable = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={3} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
                     <Typography variant="body2" color="text.secondary">
                       No logs found for {selectedDate}
                     </Typography>
@@ -323,7 +341,7 @@ const LogsTable = () => {
               ) : (
                 data.map((log) => (
                   <TableRow
-                    key={log._id}
+                    key={log?._id || Math.random().toString()}
                     hover
                     onClick={() => handleRowClick(log)}
                     sx={{
@@ -335,17 +353,32 @@ const LogsTable = () => {
                   >
                     <TableCell>
                       <Typography variant="body2" fontWeight={500}>
-                        {log.moduleName}
+                        {log?.moduleName || "-"}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {log._id || "N/A"}
+                        {log?._id || "-"}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(log.createdAt)}
+                        {log?.customerCode || "-"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {typeof log?.createdBy === "object" &&
+                        log?.createdBy !== null
+                          ? `${log?.createdBy?.name || "Unknown"} (${
+                              log?.createdBy?._id || "Unknown"
+                            })`
+                          : log?.createdBy || "-"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {formatDate(log?.createdAt)}
                       </Typography>
                     </TableCell>
                   </TableRow>
