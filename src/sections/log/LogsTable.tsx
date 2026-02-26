@@ -203,15 +203,13 @@ const LogsTable = () => {
       // Transform data for Excel
       const excelData = exportData.map((log: LogItem) => ({
         "Module Name": log?.moduleName || "N/A",
-        "Customer Code": log?.customerCode || "N/A",
-        "Created At": log?.createdAt
-          ? new Date(log.createdAt).toLocaleString("en-IN")
-          : "N/A",
+        ID: log?._id || "N/A",
+        "Customer Code": log?.customerCode || "-",
         "Created By":
           typeof log?.createdBy === "object" && log?.createdBy !== null
-            ? `${log?.createdBy?.name || "Unknown"} (${log?.createdBy?._id || "Unknown"})`
-            : log?.createdBy || "N/A",
-        ID: log?._id || "N/A",
+            ? log?.createdBy?.name || "Unknown"
+            : log?.createdBy || "-",
+        "Created At": log?.createdAt ? formatDate(log.createdAt) : "-",
       }));
 
       // Create worksheet
@@ -370,9 +368,7 @@ const LogsTable = () => {
                       <Typography variant="body2" color="text.secondary">
                         {typeof log?.createdBy === "object" &&
                         log?.createdBy !== null
-                          ? `${log?.createdBy?.name || "Unknown"} (${
-                              log?.createdBy?._id || "Unknown"
-                            })`
+                          ? log?.createdBy?.name || "Unknown"
                           : log?.createdBy || "-"}
                       </Typography>
                     </TableCell>

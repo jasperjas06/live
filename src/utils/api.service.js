@@ -1574,17 +1574,24 @@ export const getGeneralById = async (id) => {
 }
 
 // EMI APIS
-export const getAllEmi = async ({ customerId, paid }) => {
+export const getAllEmi = async ({ customerId, paid, populate }) => {
   try {
     let url = `${base_url}api/common/emi/get/all`
     if (customerId) {
-      url = `${base_url}api/common/emi/get/all?customerId=${customerId}`
+      url = `${url}?customerId=${customerId}`
     }
     if (paid) {
       if (url.includes("?")) {
         url = `${url}&paid=${paid}`
       } else {
         url = `${url}?paid=${paid}`
+      }
+    }
+    if (populate) {
+      if (url.includes("?")) {
+        url = `${url}&populate=${populate}`
+      } else {
+        url = `${url}?populate=${populate}`
       }
     }
     const response = await axios.get(url, {

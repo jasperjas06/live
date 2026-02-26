@@ -299,7 +299,7 @@ const BillingForm = () => {
                 if (!cusId) {
                     return;
                 }
-                const res = await getAllEmi({ customerId: cusId, paid: "false" });
+                const res = await getAllEmi({ customerId: cusId, paid: "false", populate: "true" });
                 console.log(res, "res");
                 if (res.status === 200) {
                     const newdata = res.data.data.map((item: any, index: number) => ({
@@ -604,7 +604,19 @@ const BillingForm = () => {
                                             noOptionsText={customerLoading ? "Loading..." : "No customers found"}
                                         />
                                         {/* Hidden input to register customerId with react-hook-form */}
-                                        <input type="hidden" {...register('customerId')} />
+                                            <input type="hidden" {...register('customerId')} />
+                                                                                   
+                                        {/* Display DD Name and CED Name for info purpose */}
+                                        {selectedCustomer?.originalData?.ddId?.name && (
+                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                <strong>DD Name:</strong> {selectedCustomer.originalData.ddId.name}
+                                            </Typography>
+                                        )}
+                                        {selectedCustomer?.originalData?.cedId?.name && (
+                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                                <strong>CED Name:</strong> {selectedCustomer.originalData.cedId.name}
+                                            </Typography>
+                                        )}
                                     </Grid>
 
                                     <Grid size={{ xs: 12, sm: 12, md: 6 }}>
