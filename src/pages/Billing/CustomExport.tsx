@@ -1,10 +1,10 @@
-import { Box, Button, Card, CardContent, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { getCustomBillingReport } from 'src/utils/api.service';
+import { getAllProjects, getCustomBillingReport } from 'src/utils/api.service';
 import * as XLSX from 'xlsx';
 
 
@@ -22,6 +22,36 @@ const CustomExport = () => {
   const [toDate, setToDate] = useState(getTodayDate());
   const [dateFilter, setDateFilter] = useState('Custom');
   const [status, setStatus] = useState('paid');
+   const [projects, setProjects] = useState<any[]>([]);
+   const [selectedProject, setSelectedProject] = useState<any | null>(null);
+   const [projectSearchTerm, setProjectSearchTerm] = useState("");
+   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
+
+   useEffect(() => {
+     const fetchProjects = async () => {
+       setIsProjectsLoading(true);
+       try {
+         const response = await getAllProjects({
+           page: 1,
+           limit: 10,
+           search: projectSearchTerm,
+         });
+         if (response.status === 200 && response.data?.data) {
+           setProjects(response.data.data);
+         }
+       } catch (error) {
+         console.error("Failed to fetch projects:", error);
+       } finally {
+         setIsProjectsLoading(false);
+       }
+     };
+
+     const timer = setTimeout(() => {
+       fetchProjects();
+     }, 500);
+
+     return () => clearTimeout(timer);
+   }, [projectSearchTerm]);
 
   const handleDateFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filter = event.target.value;
@@ -101,7 +131,13 @@ const CustomExport = () => {
       }
 
       // Prepare API parameters based on date selection
-      const params: { date?: string; dateFrom?: string; dateTo?: string; status?: string } = {};
+      const params: {
+        date?: string;
+        dateFrom?: string;
+        dateTo?: string;
+        status?: string;
+        projectId?: string;
+      } = {};
       
       // If both dates are the same AND it is today's date, send only 'date' param
       // The backend expects 'date' only for Today. For Yesterday (or past dates), it expects a range.
@@ -117,6 +153,12 @@ const CustomExport = () => {
       if (status) {
         params.status = status;
         console.log('Using status filter:', status);
+      }
+     
+      if (selectedProject) {
+        params.projectId = selectedProject._id;
+      } else {
+        params.projectId = "";
       }
 
       console.log('API Params being sent:', params);
@@ -258,13 +300,13 @@ const CustomExport = () => {
 
   return (
     <DashboardContent>
-      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 5, display: "flex", alignItems: "center", gap: 2 }}>
         <Button
           variant="outlined"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => navigate('/billing')}
-          sx={{ minWidth: '120px' }}
+          onClick={() => navigate("/billing")}
+          sx={{ minWidth: "120px" }}
         >
           Back
         </Button>
@@ -278,21 +320,28 @@ const CustomExport = () => {
           <Typography variant="h6" sx={{ mb: 3 }}>
             Select Date Range
           </Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              Select a date range to export billing data. By default, today's date is selected.
+              Select a date range to export billing data. By default, today's
+              date is selected.
             </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+
+            <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
               <TextField
                 select
                 label="Date Range"
                 value={dateFilter}
                 onChange={handleDateFilterChange}
-                sx={{ minWidth: '200px' }}
+                sx={{ minWidth: "200px" }}
               >
-                {['Custom', 'Yesterday', 'Today', 'Last 1 Week', 'Last 1 Month'].map((option) => (
+                {[
+                  "Custom",
+                  "Yesterday",
+                  "Today",
+                  "Last 1 Week",
+                  "Last 1 Month",
+                ].map((option) => (
                   <MenuItem key={option} value={option}>
                     {option}
                   </MenuItem>
@@ -304,24 +353,24 @@ const CustomExport = () => {
                 value={fromDate}
                 onChange={handleFromDateChange}
                 InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1, minWidth: '200px' }}
+                sx={{ flex: 1, minWidth: "200px" }}
               />
-              
+
               <TextField
                 label="To Date"
                 type="date"
                 value={toDate}
                 onChange={handleToDateChange}
                 InputLabelProps={{ shrink: true }}
-                sx={{ flex: 1, minWidth: '200px' }}
+                sx={{ flex: 1, minWidth: "200px" }}
               />
-                
+
               <TextField
                 select
                 label="Status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                sx={{ minWidth: '200px' }}
+                sx={{ minWidth: "200px" }}
                 helperText="Optional: Filter by payment status"
               >
                 <MenuItem value="all">All</MenuItem>
@@ -329,6 +378,38 @@ const CustomExport = () => {
                 <MenuItem value="unpaid">Unpaid</MenuItem>
                 <MenuItem value="blocked">Blocked</MenuItem>
               </TextField>
+
+              <Autocomplete
+                options={projects}
+                getOptionLabel={(option) => option.projectName || ""}
+                value={selectedProject}
+                onChange={(_event, newValue) => {
+                  setSelectedProject(newValue);
+                }}
+                onInputChange={(_event, newInputValue) => {
+                  setProjectSearchTerm(newInputValue);
+                }}
+                loading={isProjectsLoading}
+                renderInput={(p) => (
+                  <TextField
+                    {...p}
+                    label="Project"
+                    helperText="Optional: Filter by project"
+                    InputProps={{
+                      ...p.InputProps,
+                      endAdornment: (
+                        <>
+                          {isProjectsLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {p.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                sx={{ minWidth: "200px", flex: 1 }}
+              />
             </Box>
 
             {/* <Box sx={{ mt: 2, p: 2, bgcolor: 'background.neutral', borderRadius: 1 }}>
@@ -338,11 +419,18 @@ const CustomExport = () => {
               </Typography>
             </Box> */}
 
-            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+              }}
+            >
               <Button
                 variant="outlined"
                 color="inherit"
-                onClick={() => navigate('/billing')}
+                onClick={() => navigate("/billing")}
                 disabled={isDownloading}
               >
                 Cancel
@@ -350,11 +438,17 @@ const CustomExport = () => {
               <Button
                 variant="contained"
                 color="primary"
-                startIcon={isDownloading ? <CircularProgress size={20} color="inherit" /> : <Iconify icon="mingcute:download-line" />}
+                startIcon={
+                  isDownloading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <Iconify icon="mingcute:download-line" />
+                  )
+                }
                 onClick={handleDownload}
                 disabled={isDownloading || !fromDate || !toDate}
               >
-                {isDownloading ? 'Downloading...' : 'Download Report'}
+                {isDownloading ? "Downloading..." : "Download Report"}
               </Button>
             </Box>
           </Box>

@@ -1803,20 +1803,27 @@ export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
 
 
 // Custom Billing Export API
-export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status }) => {
+export const getCustomBillingReport = async ({
+  dateFrom,
+  dateTo,
+  date,
+  status,
+  projectId,
+}) => {
   try {
     let url = `${base_url}api/common/billing/get/all/report?`;
     const params = [];
-    
+
     if (date) params.push(`date=${date}`);
     if (dateFrom) params.push(`dateFrom=${dateFrom}`);
     if (dateTo) params.push(`dateTo=${dateTo}`);
     if (status) params.push(`status=${status}`);
-    
-    url += params.join('&');
-    
+    if (projectId) params.push(`projectId=${projectId}`);
+
+    url += params.join("&");
+
     const response = await axios.get(url, {
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     return {
       data: response.data,
@@ -1826,7 +1833,11 @@ export const getCustomBillingReport = async ({ dateFrom, dateTo, date, status })
   } catch (error) {
     return {
       data: null,
-      message: error.response?.data?.error || error.response?.data?.message || error.message || "An error occurred",
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
       status: error.response?.status || 500,
     };
   }
