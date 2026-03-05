@@ -211,17 +211,26 @@ const CustomerDetails = () => {
                 }
                 
                 if (res.data.data.emi.length > 0) {
-                    let emiData = res?.data.data.emi.map((item: any) => {
+                    let emiData = res?.data.data.emi
+                      .map((item: any) => {
                         return {
-                            id: item._id || 'N/A',
-                            emiId: item._id || 'N/A',
-                            emiNo: item.emiNo || 'N/A',
-                            date: item.date || 'N/A',
-                            emiAmt: item.emiAmt || 'N/A',
-                            paidDate: formatDate(item.paidDate),
-                            paidAmt: item.paidAmt || '',
-                        }
-                    })
+                          id: item._id || "N/A",
+                          emiId: item._id || "N/A",
+                          emiNo: item.emiNo || "N/A",
+                          date: item.date || "N/A",
+                          emiAmt: item.emiAmt || "N/A",
+                          paidDate: formatDate(item.paidDate),
+                          paidAmt: item.paidAmt || "",
+                        };
+                      })
+                      .sort((a: any, b: any) => {
+                        // Treat 'N/A' as infinity to push items without an EMI number to the bottom
+                        const valA =
+                          a.emiNo === "N/A" ? Infinity : Number(a.emiNo);
+                        const valB =
+                          b.emiNo === "N/A" ? Infinity : Number(b.emiNo);
+                        return valA - valB;
+                      });
                     setEmiData(emiData)
                 }
                 if (res.data.data.plot.length > 0) {

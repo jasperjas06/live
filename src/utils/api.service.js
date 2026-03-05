@@ -80,10 +80,11 @@ export const getAllCustomer = async (params = {}) => {
   }
 };
 
-export const getACustomer = async (id) => {
+export const getACustomer = async (id, params = {}) => {
   try {
     const response = await axios.get(`${base_url}api/customer/get/${id}`, {
       headers: getHeaders(),
+      params,
     });
     return {
       data: response.data,

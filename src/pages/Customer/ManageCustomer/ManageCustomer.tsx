@@ -1,7 +1,7 @@
 /* eslint-disable perfectionist/sort-imports */
 /* eslint-disable perfectionist/sort-named-imports */
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Icon } from '@iconify/react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Icon } from "@iconify/react";
 import {
   Autocomplete,
   Box,
@@ -19,23 +19,33 @@ import {
   MenuItem,
   styled,
   TextField,
-  Typography
-} from '@mui/material';
-import { useEffect, useState } from 'react';
-import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
-import { DashboardContent } from 'src/layouts/dashboard';
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
+import { DashboardContent } from "src/layouts/dashboard";
 import Flat from "src/pages/CustomerDetails/ManageCustomer/Flat";
 import General from "src/pages/CustomerDetails/ManageCustomer/General";
 import Plot from "src/pages/CustomerDetails/ManageCustomer/Plot";
-import { createCustomer, createCustomerEstimate, getACustomer, getAllMarketer, getAllMarkingHead, getAllProjects, getAPercentage, updateCustomer, updateCustomerEstimate } from 'src/utils/api.service';
-import { z } from 'zod';
+import {
+  createCustomer,
+  createCustomerEstimate,
+  getACustomer,
+  getAllMarketer,
+  getAllMarkingHead,
+  getAllProjects,
+  getAPercentage,
+  updateCustomer,
+  updateCustomerEstimate,
+} from "src/utils/api.service";
+import { z } from "zod";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   padding: theme.spacing(3),
-  boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
 }));
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -47,30 +57,30 @@ const FormSection = styled(Box)(({ theme }) => ({
 const SectionTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   paddingBottom: theme.spacing(1),
-  borderBottom: '2px solid #3f51b5',
+  borderBottom: "2px solid #3f51b5",
   fontWeight: 600,
-  color: '#3f51b5',
+  color: "#3f51b5",
 }));
 
 // Zod schema
 // Base schema for customer details
 const baseCustomerSchema = z.object({
   // Required fields
-  name: z.string().min(1, 'Name is required'),
-  address: z.string().min(1, 'Address is required'),
+  name: z.string().min(1, "Name is required"),
+  address: z.string().min(1, "Address is required"),
   phone: z
     .string()
-    .min(1, 'Phone is required')
-    .regex(/^[0-9]{10,11}$/, 'Phone must be 10-11 digits'),
-  city: z.string().min(1, 'City is required'),
-  state: z.string().min(1, 'State is required'),
+    .min(1, "Phone is required")
+    .regex(/^[0-9]{10,11}$/, "Phone must be 10-11 digits"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
   pincode: z
     .string()
-    .min(1, 'Pincode is required')
-    .regex(/^[0-9]{6}$/, 'Pincode must be 6 digits'),
-  email: z.string().min(1, 'Email is required').email('Invalid email format'),
-  projectId: z.string().min(1, 'Project is required'),
-  ddId: z.string().min(1, 'DD Name is required'),
+    .min(1, "Pincode is required")
+    .regex(/^[0-9]{6}$/, "Pincode must be 6 digits"),
+  email: z.string().min(1, "Email is required").email("Invalid email format"),
+  projectId: z.string().min(1, "Project is required"),
+  ddId: z.string().min(1, "DD Name is required"),
 
   // Optional / domain fields
   plotNo: z.string().optional(),
@@ -79,7 +89,7 @@ const baseCustomerSchema = z.object({
   ddMobile: z.string().optional(),
   cedId: z.string().nullable().optional(), // Allow nullable for optional ObjectId
   cedMobile: z.string().optional(),
-  // percentge field logic is in estimate for new, but technically part of customer schema too? 
+  // percentge field logic is in estimate for new, but technically part of customer schema too?
   // keeping optional fields as they were relative to customer collection
   percentage: z.preprocess((val) => Number(val), z.number().optional()),
   projectArea: z.string().optional(),
@@ -114,12 +124,18 @@ const createCustomerSchema = baseCustomerSchema.extend({
     // COMMENTED OUT - Marketer and Percentage fields - Can be restored in future
     // marketer: z.string().min(1, 'Marketer is required'),
     marketer: z.string().optional(), // Made optional to prevent validation errors
-    saleType: z.string().min(1, 'Sale Type is required'),
+    saleType: z.string().min(1, "Sale Type is required"),
     // percentage: z.preprocess((val) => Number(val), z.number().min(0).max(100, 'Percentage allow 0-100')),
     percentage: z.preprocess((val) => Number(val), z.number().optional()), // Made optional to prevent validation errors
-    emiAmount: z.preprocess((val) => Number(val), z.number().min(1, 'EMI Amount is required')),
-    noOfInstallments: z.preprocess((val) => Number(val), z.number().min(1, 'Installments is required')),
-    
+    emiAmount: z.preprocess(
+      (val) => Number(val),
+      z.number().min(1, "EMI Amount is required"),
+    ),
+    noOfInstallments: z.preprocess(
+      (val) => Number(val),
+      z.number().min(1, "Installments is required"),
+    ),
+
     // Optional estimate fields
     paymentTerms: z.string().optional(),
     status: z.string().optional(),
@@ -148,7 +164,9 @@ const CustomerForm = () => {
   const [selectedCED, setSelectedCED] = useState<any>(null);
   // Estimate form state
   const [saleType, setSaleType] = useState("");
-  const [marketerOptions, setMarketerOptions] = useState<{ label: string; value: string; percentage: string | number }[]>([]);
+  const [marketerOptions, setMarketerOptions] = useState<
+    { label: string; value: string; percentage: string | number }[]
+  >([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -156,50 +174,50 @@ const CustomerForm = () => {
     resolver: zodResolver(createCustomerSchema),
     defaultValues: {
       // required
-      name: '',
-      address: '',
-      phone: '',
-      city: '',
-      state: '',
-      pincode: '',
-      email: '',
+      name: "",
+      address: "",
+      phone: "",
+      city: "",
+      state: "",
+      pincode: "",
+      email: "",
 
       // optional
-      plotNo: '',
-      // date: '',    
+      plotNo: "",
+      // date: '',
       // nameOfCustomer: '',
-      gender: '',
-      projectId: '',
+      gender: "",
+      projectId: "",
       emiAmount: 0,
-      ddId: '',
-      ddMobile: '',
-      cedId: '',
-      cedMobile: '',
+      ddId: "",
+      ddMobile: "",
+      cedId: "",
+      cedMobile: "",
       percentage: 0,
-      projectArea: '',
-      nationality: '',
-      dob: '',
-      occupation: '',
-      qualification: '',
-      panNo: '',
-      communicationAddress: '',
-      mobileNo: '',
-      landLineNo: '',
-      fatherOrHusbandName: '',
-      motherName: '',
-      nomineeName: '',
-      nomineeAge: '',
-      nomineeRelationship: '',
-      nameOfGuardian: '',
-      so_wf_do: '',
-      relationshipWithCustomer: '',
-      introducerName: '',
-      introducerMobileNo: '',
-      immSupervisorName: '',
-      diamountDirectorName: '',
-      diamountDirectorPhone: '',
+      projectArea: "",
+      nationality: "",
+      dob: "",
+      occupation: "",
+      qualification: "",
+      panNo: "",
+      communicationAddress: "",
+      mobileNo: "",
+      landLineNo: "",
+      fatherOrHusbandName: "",
+      motherName: "",
+      nomineeName: "",
+      nomineeAge: "",
+      nomineeRelationship: "",
+      nameOfGuardian: "",
+      so_wf_do: "",
+      relationshipWithCustomer: "",
+      introducerName: "",
+      introducerMobileNo: "",
+      immSupervisorName: "",
+      diamountDirectorName: "",
+      diamountDirectorPhone: "",
       photo: undefined,
-      guardianAddress: '',
+      guardianAddress: "",
       // Estimate form defaults
       general: {},
       plot: {},
@@ -218,27 +236,27 @@ const CustomerForm = () => {
 
   const onSubmit: SubmitHandler<any> = async (data) => {
     try {
-            // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
+      // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
       let cleanedPhone = data.phone;
-      if (cleanedPhone.startsWith('0')) {
+      if (cleanedPhone.startsWith("0")) {
         cleanedPhone = cleanedPhone.substring(1);
       }
-      
+
       // Validate cleaned phone is exactly 10 digits
       if (!/^[0-9]{10}$/.test(cleanedPhone)) {
-        toast.error('Phone must be exactly 10 digits');
+        toast.error("Phone must be exactly 10 digits");
         return;
       }
-      const cleanedMobileNo = data.mobileNo?.startsWith('0') 
-        ? data.mobileNo.substring(1) 
+      const cleanedMobileNo = data.mobileNo?.startsWith("0")
+        ? data.mobileNo.substring(1)
         : data.mobileNo;
 
       // Validate estimate fields for new customers
       // if (!id) {
       //   // Check if basic estimate fields are valid
       //   const isEstimateValid = await trigger([
-      //     'general.marketer', 
-      //     'general.saleType', 
+      //     'general.marketer',
+      //     'general.saleType',
       //     'general.percentage',
       //     'general.emiAmount',
       //     'general.noOfInstallments'
@@ -264,7 +282,7 @@ const CustomerForm = () => {
         gender: data.gender,
         emiAmount: data.emiAmount,
         ddMobile: data.ddMobile,
-        cedId: data.cedId && data.cedId.trim() !== '' ? data.cedId : null,
+        cedId: data.cedId && data.cedId.trim() !== "" ? data.cedId : null,
         cedMobile: data.cedMobile,
         percentage: data.percentage,
         projectArea: data.projectArea,
@@ -299,78 +317,114 @@ const CustomerForm = () => {
         // Update existing customer
         // We need to pass _id for update
         response = await updateCustomer({ ...customerPayload, _id: id }, true);
-        
+
         if (response.status === 200) {
-           // Handle Estimate Update
-           if (Object.keys(data.general || {}).length > 0) {
-              // Extract percentage from CED or DD (same logic as create)
-              let finalPercentage = data.general.percentage || 0; // Keep existing if already set
-              
-              // Only extract if percentage is not already set or is 0
-              if (!finalPercentage || finalPercentage === 0) {
-                // Priority 1: Try to get percentage from CED (cedId)
-                if (data.cedId && selectedCED) {
-                  const cedPercentageId = selectedCED.percentageId;
-                  if (cedPercentageId && typeof cedPercentageId === 'object' && cedPercentageId.rate) {
-                    finalPercentage = Number((cedPercentageId.rate as string).replace('%', ''));
-                  } else if (cedPercentageId && typeof cedPercentageId === 'string') {
-                    // Current format: percentageId is just a string ID - fetch it via API
-                    try {
-                      const percentageResponse = await getAPercentage(cedPercentageId);
-                      if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
-                        finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
-                      }
-                    } catch (error) {
-                      console.error('Failed to fetch CED percentage:', error);
+          // Handle Estimate Update
+          if (Object.keys(data.general || {}).length > 0) {
+            // Extract percentage from CED or DD (same logic as create)
+            let finalPercentage = data.general.percentage || 0; // Keep existing if already set
+
+            // Only extract if percentage is not already set or is 0
+            if (!finalPercentage || finalPercentage === 0) {
+              // Priority 1: Try to get percentage from CED (cedId)
+              if (data.cedId && selectedCED) {
+                const cedPercentageId = selectedCED.percentageId;
+                if (
+                  cedPercentageId &&
+                  typeof cedPercentageId === "object" &&
+                  cedPercentageId.rate
+                ) {
+                  finalPercentage = Number(
+                    (cedPercentageId.rate as string).replace("%", ""),
+                  );
+                } else if (
+                  cedPercentageId &&
+                  typeof cedPercentageId === "string"
+                ) {
+                  // Current format: percentageId is just a string ID - fetch it via API
+                  try {
+                    const percentageResponse =
+                      await getAPercentage(cedPercentageId);
+                    if (
+                      percentageResponse.status === 200 &&
+                      percentageResponse.data?.data?.rate
+                    ) {
+                      finalPercentage = Number(
+                        (percentageResponse.data.data.rate as string).replace(
+                          "%",
+                          "",
+                        ),
+                      );
                     }
-                  }
-                }
-                
-                // Priority 2: If no CED percentage, try DD (ddId)
-                if (finalPercentage === 0 && data.ddId && selectedDD) {
-                  const ddPercentageId = selectedDD.percentageId;
-                  if (ddPercentageId && typeof ddPercentageId === 'object' && ddPercentageId.rate) {
-                    finalPercentage = Number((ddPercentageId.rate as string).replace('%', ''));
-                  } else if (ddPercentageId && typeof ddPercentageId === 'string') {
-                    // Current format: percentageId is just a string ID - fetch it via API
-                    try {
-                      const percentageResponse = await getAPercentage(ddPercentageId);
-                      if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
-                        finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
-                      }
-                    } catch (error) {
-                      console.error('Failed to fetch DD percentage:', error);
-                    }
+                  } catch (error) {
+                    console.error("Failed to fetch CED percentage:", error);
                   }
                 }
               }
 
-              const estimatePayload: any = {
-                general: {
-                  ...data.general,
-                  percentage: finalPercentage, // Add/update percentage
-                },
-                customerId: id, // Use existing ID
-                // For update, we might need _id of the general/plot records if the API requires it. 
-                // The form data populated from fetch should contain them.
-              };
+              // Priority 2: If no CED percentage, try DD (ddId)
+              if (finalPercentage === 0 && data.ddId && selectedDD) {
+                const ddPercentageId = selectedDD.percentageId;
+                if (
+                  ddPercentageId &&
+                  typeof ddPercentageId === "object" &&
+                  ddPercentageId.rate
+                ) {
+                  finalPercentage = Number(
+                    (ddPercentageId.rate as string).replace("%", ""),
+                  );
+                } else if (
+                  ddPercentageId &&
+                  typeof ddPercentageId === "string"
+                ) {
+                  // Current format: percentageId is just a string ID - fetch it via API
+                  try {
+                    const percentageResponse =
+                      await getAPercentage(ddPercentageId);
+                    if (
+                      percentageResponse.status === 200 &&
+                      percentageResponse.data?.data?.rate
+                    ) {
+                      finalPercentage = Number(
+                        (percentageResponse.data.data.rate as string).replace(
+                          "%",
+                          "",
+                        ),
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Failed to fetch DD percentage:", error);
+                  }
+                }
+              }
+            }
 
-              if (saleType.toLowerCase() === 'plot') {
-                estimatePayload.plot = data.plot;
-              }
-              if (saleType.toLowerCase() === 'flat') {
-                estimatePayload.flat = data.flat;
-              }
-              
-              // We call updateCustomerEstimate 
-              // Note: The API likely needs the structure { general: { _id: ..., ... }, ... }
-              // The form values should have these _ids if they were fetched correctly.
-              await updateCustomerEstimate(estimatePayload);
-           }
-           
-           toast.success('Customer updated successfully');
-           navigate('/customer/list');
-           return;
+            const estimatePayload: any = {
+              general: {
+                ...data.general,
+                percentage: finalPercentage, // Add/update percentage
+              },
+              customerId: id, // Use existing ID
+              // For update, we might need _id of the general/plot records if the API requires it.
+              // The form data populated from fetch should contain them.
+            };
+
+            if (saleType.toLowerCase() === "plot") {
+              estimatePayload.plot = data.plot;
+            }
+            if (saleType.toLowerCase() === "flat") {
+              estimatePayload.flat = data.flat;
+            }
+
+            // We call updateCustomerEstimate
+            // Note: The API likely needs the structure { general: { _id: ..., ... }, ... }
+            // The form values should have these _ids if they were fetched correctly.
+            await updateCustomerEstimate(estimatePayload);
+          }
+
+          toast.success("Customer updated successfully");
+          navigate("/customer/list");
+          return;
         }
       } else {
         // Create new customer
@@ -384,52 +438,80 @@ const CustomerForm = () => {
         const mongoId = customerResponse.data?.data?._id;
         // Prioritize id (Customer Code) for display/clipboard
         const displayId = customerResponse.data?.data?.id || mongoId;
-        
+
         if (!mongoId) {
-          toast.error('Customer created but ID not returned');
+          toast.error("Customer created but ID not returned");
           return;
         }
-
 
         // Check if estimate data exists
         if (Object.keys(data.general || {}).length > 0) {
           // Extract percentage from CED or DD
           let finalPercentage = 0;
-          
+
           // Priority 1: Try to get percentage from CED (cedId)
           if (data.cedId && selectedCED) {
             const cedPercentageId = selectedCED.percentageId;
-            if (cedPercentageId && typeof cedPercentageId === 'object' && cedPercentageId.rate) {
+            if (
+              cedPercentageId &&
+              typeof cedPercentageId === "object" &&
+              cedPercentageId.rate
+            ) {
               // Future format: percentageId is populated object with rate
-              finalPercentage = Number((cedPercentageId.rate as string).replace('%', ''));
-            } else if (cedPercentageId && typeof cedPercentageId === 'string') {
+              finalPercentage = Number(
+                (cedPercentageId.rate as string).replace("%", ""),
+              );
+            } else if (cedPercentageId && typeof cedPercentageId === "string") {
               // Current format: percentageId is just a string ID - fetch it via API
               try {
-                const percentageResponse = await getAPercentage(cedPercentageId);
-                if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
-                  finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                const percentageResponse =
+                  await getAPercentage(cedPercentageId);
+                if (
+                  percentageResponse.status === 200 &&
+                  percentageResponse.data?.data?.rate
+                ) {
+                  finalPercentage = Number(
+                    (percentageResponse.data.data.rate as string).replace(
+                      "%",
+                      "",
+                    ),
+                  );
                 }
               } catch (error) {
-                console.error('Failed to fetch CED percentage:', error);
+                console.error("Failed to fetch CED percentage:", error);
               }
             }
           }
-          
+
           // Priority 2: If no CED percentage, try DD (ddId)
           if (finalPercentage === 0 && data.ddId && selectedDD) {
             const ddPercentageId = selectedDD.percentageId;
-            if (ddPercentageId && typeof ddPercentageId === 'object' && ddPercentageId.rate) {
+            if (
+              ddPercentageId &&
+              typeof ddPercentageId === "object" &&
+              ddPercentageId.rate
+            ) {
               // Future format: percentageId is populated object with rate
-              finalPercentage = Number((ddPercentageId.rate as string).replace('%', ''));
-            } else if (ddPercentageId && typeof ddPercentageId === 'string') {
+              finalPercentage = Number(
+                (ddPercentageId.rate as string).replace("%", ""),
+              );
+            } else if (ddPercentageId && typeof ddPercentageId === "string") {
               // Current format: percentageId is just a string ID - fetch it via API
               try {
                 const percentageResponse = await getAPercentage(ddPercentageId);
-                if (percentageResponse.status === 200 && percentageResponse.data?.data?.rate) {
-                  finalPercentage = Number((percentageResponse.data.data.rate as string).replace('%', ''));
+                if (
+                  percentageResponse.status === 200 &&
+                  percentageResponse.data?.data?.rate
+                ) {
+                  finalPercentage = Number(
+                    (percentageResponse.data.data.rate as string).replace(
+                      "%",
+                      "",
+                    ),
+                  );
                 }
               } catch (error) {
-                console.error('Failed to fetch DD percentage:', error);
+                console.error("Failed to fetch DD percentage:", error);
               }
             }
           }
@@ -443,22 +525,29 @@ const CustomerForm = () => {
             customerId: mongoId, // Use MongoDB ID for linking
           };
 
-          if (saleType.toLowerCase() === 'plot' || saleType.toLowerCase() === 'villa') {
+          if (
+            saleType.toLowerCase() === "plot" ||
+            saleType.toLowerCase() === "villa"
+          ) {
             estimatePayload.plot = data.plot;
           }
-          if (saleType.toLowerCase() === 'flat') {
+          if (saleType.toLowerCase() === "flat") {
             estimatePayload.flat = data.flat;
           }
 
           // Create estimate
-          const estimateResponse = await createCustomerEstimate(estimatePayload);
+          const estimateResponse =
+            await createCustomerEstimate(estimatePayload);
 
           if (estimateResponse.status === 200) {
             setCreatedCustomerId(displayId); // Show friendly ID
             setSuccessDialogOpen(true);
-            toast.success('Customer and estimate created successfully!');
+            toast.success("Customer and estimate created successfully!");
           } else {
-            toast.error(estimateResponse.message || 'Customer created but estimate creation failed');
+            toast.error(
+              estimateResponse.message ||
+                "Customer created but estimate creation failed",
+            );
             setCreatedCustomerId(displayId);
             setSuccessDialogOpen(true);
           }
@@ -468,93 +557,95 @@ const CustomerForm = () => {
           setSuccessDialogOpen(true);
         }
       } else {
-        toast.error(customerResponse.message || 'Failed to create customer');
+        toast.error(customerResponse.message || "Failed to create customer");
       }
     } catch (error: any) {
-      console.error('Submission error:', error);
-      toast.error(error?.message || 'Something went wrong');
+      console.error("Submission error:", error);
+      toast.error(error?.message || "Something went wrong");
     }
   };
 
-  
   const handleCopyCustomerId = () => {
     navigator.clipboard.writeText(createdCustomerId);
-    toast.success('Customer ID copied to clipboard!');
+    toast.success("Customer ID copied to clipboard!");
   };
 
   const handleSuccessDialogClose = () => {
     setSuccessDialogOpen(false);
-    navigate('/customer');
+    navigate("/customer");
   };
 
   const getDataByID = async () => {
     if (!id) return;
     try {
       setIsLoading(true);
-      const response = await getACustomer(id);
+      const response = await getACustomer(id, { general: true });
       if (response?.data?.data) {
-          const customerData = response.data.data;
-          
-          // Map API response to form data
-          const formData = {
-            ...customerData,
-            // Handle populated fields (objects -> IDs)
-            projectId: customerData.projectId?._id || customerData.projectId,
-            ddId: customerData.ddId?._id || customerData.ddId,
-            cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
-            
-            // Map generalId to general form field
-            general: customerData.generalId || {}, 
-            plot: {}, // Initialize empty, will populate if needed
-            flat: {}
-          };
-          
-          // Reset form with mapped data
-          methods.reset(formData);
+        const customerData = response.data.data;
 
-          // Handle special fields that need explicit setting or logic
-          
-          // 1. Auto-fill names/mobiles from populated objects if available, 
-          // although strict form usually relies on IDs. 
-          // But purely for display if referenced:
-          if (customerData.cedId?.phone) {
-             methods.setValue('cedMobile', customerData.cedId.phone);
-          }
-          if (customerData.ddId?.phone) {
-             methods.setValue('ddMobile', customerData.ddId.phone);
-          }
+        // Map API response to form data
+        const formData = {
+          ...customerData,
+          // Handle populated fields (objects -> IDs)
+          projectId: customerData.projectId?._id || customerData.projectId,
+          ddId: customerData.ddId?._id || customerData.ddId,
+          cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
 
-          // 2. Set Sale Type if available in general data
-          if (customerData.generalId?.saleType) {
-            setSaleType(customerData.generalId.saleType);
-            
-            // If sale type exists, check for plot/flat data
-            // The API response might have them as top-level keys or inside general?
-            // User JSON didn't show plot/flat keys, assuming they might exist if saleType was set.
-            // If they are nested elsewhere, we'd map them here. 
-            // For now, assuming standard keys if they exist:
-            if (customerData.plot) methods.setValue('plot', customerData.plot);
-            if (customerData.flat) methods.setValue('flat', customerData.flat);
-          }
+          // Map generalId to general form field
+          general: customerData.generalId || {},
+          plot: {}, // Initialize empty, will populate if needed
+          flat: {},
+        };
 
-          // 3. Set Autocomplete States for Project, DD, CED
-          if (customerData.projectId && typeof customerData.projectId === 'object') {
-             setSelectedScheme(customerData.projectId);
-          }
-          if (customerData.ddId && typeof customerData.ddId === 'object') {
-             setSelectedDD(customerData.ddId);
-             // Fetch CED options for the selected DD
-             if (customerData.ddId._id) {
-               fetchCEDs(customerData.ddId._id);
-             }
-          }
-          if (customerData.cedId && typeof customerData.cedId === 'object') {
-             setSelectedCED(customerData.cedId);
+        // Reset form with mapped data
+        methods.reset(formData);
+
+        // Handle special fields that need explicit setting or logic
+
+        // 1. Auto-fill names/mobiles from populated objects if available,
+        // although strict form usually relies on IDs.
+        // But purely for display if referenced:
+        if (customerData.cedId?.phone) {
+          methods.setValue("cedMobile", customerData.cedId.phone);
+        }
+        if (customerData.ddId?.phone) {
+          methods.setValue("ddMobile", customerData.ddId.phone);
+        }
+
+        // 2. Set Sale Type if available in general data
+        if (customerData.generalId?.saleType) {
+          setSaleType(customerData.generalId.saleType);
+
+          // If sale type exists, check for plot/flat data
+          // The API response might have them as top-level keys or inside general?
+          // User JSON didn't show plot/flat keys, assuming they might exist if saleType was set.
+          // If they are nested elsewhere, we'd map them here.
+          // For now, assuming standard keys if they exist:
+          if (customerData.plot) methods.setValue("plot", customerData.plot);
+          if (customerData.flat) methods.setValue("flat", customerData.flat);
+        }
+
+        // 3. Set Autocomplete States for Project, DD, CED
+        if (
+          customerData.projectId &&
+          typeof customerData.projectId === "object"
+        ) {
+          setSelectedScheme(customerData.projectId);
+        }
+        if (customerData.ddId && typeof customerData.ddId === "object") {
+          setSelectedDD(customerData.ddId);
+          // Fetch CED options for the selected DD
+          if (customerData.ddId._id) {
+            fetchCEDs(customerData.ddId._id);
           }
         }
+        if (customerData.cedId && typeof customerData.cedId === "object") {
+          setSelectedCED(customerData.cedId);
+        }
+      }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to fetch customer');
-      console.log('Error fetching customer data:', error);
+      toast.error(error?.message || "Failed to fetch customer");
+      console.log("Error fetching customer data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -569,8 +660,8 @@ const CustomerForm = () => {
         setProjects(response.data.data);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to fetch projects');
-      console.log('Error fetching projects:', error);
+      toast.error(error?.message || "Failed to fetch projects");
+      console.log("Error fetching projects:", error);
     } finally {
       setProjectsLoading(false);
     }
@@ -585,8 +676,8 @@ const CustomerForm = () => {
         setDdOptions(response.data.data);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to fetch DDs');
-      console.log('Error fetching DDs:', error);
+      toast.error(error?.message || "Failed to fetch DDs");
+      console.log("Error fetching DDs:", error);
     } finally {
       setDdLoading(false);
     }
@@ -602,8 +693,8 @@ const CustomerForm = () => {
         setCedOptions(response.data.data);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to fetch CEDs');
-      console.log('Error fetching CEDs:', error);
+      toast.error(error?.message || "Failed to fetch CEDs");
+      console.log("Error fetching CEDs:", error);
     } finally {
       setCedLoading(false);
     }
@@ -622,15 +713,15 @@ const CustomerForm = () => {
         setMarketerOptions(marketers);
       }
     } catch (error: any) {
-      console.error('Error fetching marketers:', error);
+      console.error("Error fetching marketers:", error);
     }
   };
 
   // Handle next for estimate form (just validates, doesn't navigate)
   const handleNext = async () => {
-    const valid = await trigger('general');
+    const valid = await trigger("general");
     if (!valid) {
-      toast.error('Please fill in all required estimate fields');
+      toast.error("Please fill in all required estimate fields");
     }
   };
 
@@ -651,113 +742,130 @@ const CustomerForm = () => {
       <StyledCard>
         <CardContent>
           {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight={300}
+            >
               <CircularProgress size={40} />
             </Box>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)}>
               <FormProvider {...methods}>
-              {/* SECTION 1: BASIC DETAILS */}
-              <FormSection>
-                <SectionTitle variant="h6">Basic Details</SectionTitle>
+                {/* SECTION 1: BASIC DETAILS */}
+                <FormSection>
+                  <SectionTitle variant="h6">Basic Details</SectionTitle>
                   <Grid container spacing={3}>
-                    
                     <Grid size={{ xs: 12, sm: 12, md: 12 }}>
-                    <Autocomplete
-                      options={projects}
-                      getOptionLabel={(option) => option.projectName || ''}
-                      isOptionEqualToValue={(option, value) => option._id === value._id}
-                      loading={projectsLoading}
-                      value={selectedScheme}
-                      onChange={(event, newValue) => {
-                        setSelectedScheme(newValue);
-                        setValue('projectId', newValue?._id || '', {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                        });
-
-                        // Auto-fill EMI Amount from selected scheme/project
-                        if (newValue && newValue.emiAmount !== null && newValue.emiAmount !== undefined) {
-                          setValue('emiAmount', newValue.emiAmount, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                          // Also update general.emiAmount for estimate form
-                          setValue('general.emiAmount', newValue.emiAmount, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                          // Update general.noOfInstallments from project duration
-                          if (newValue.duration) {
-                              setValue('general.noOfInstallments', newValue.duration, {
-                                shouldValidate: true,
-                                shouldDirty: true,
-                              });
-                          }
-                        } else {
-                          setValue('emiAmount', 0, {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                          setValue('general.emiAmount', 0, {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                          setValue('general.noOfInstallments', '', {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
+                      <Autocomplete
+                        options={projects}
+                        getOptionLabel={(option) => option.projectName || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          option._id === value._id
                         }
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label={
-                            <>
-                              Project <span style={{ color: 'red' }}>*</span>
-                            </>
+                        loading={projectsLoading}
+                        value={selectedScheme}
+                        onChange={(event, newValue) => {
+                          setSelectedScheme(newValue);
+                          setValue("projectId", newValue?._id || "", {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+
+                          // Auto-fill EMI Amount from selected scheme/project
+                          if (
+                            newValue &&
+                            newValue.emiAmount !== null &&
+                            newValue.emiAmount !== undefined
+                          ) {
+                            setValue("emiAmount", newValue.emiAmount, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                            // Also update general.emiAmount for estimate form
+                            setValue("general.emiAmount", newValue.emiAmount, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                            // Update general.noOfInstallments from project duration
+                            if (newValue.duration) {
+                              setValue(
+                                "general.noOfInstallments",
+                                newValue.duration,
+                                {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                },
+                              );
+                            }
+                          } else {
+                            setValue("emiAmount", 0, {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                            setValue("general.emiAmount", 0, {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                            setValue("general.noOfInstallments", "", {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
                           }
-                          error={!!errors.projectId}
-                          helperText={errors.projectId?.message as string}
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label={
                               <>
-                                {projectsLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                {params.InputProps.endAdornment}
+                                Project <span style={{ color: "red" }}>*</span>
                               </>
-                            ),
-                          }}
-                        />
-                      )}
-                    />
-                    {/* Hidden input to register projectId with react-hook-form */}
-                    <input type="hidden" {...register('projectId')} />
-                  </Grid>
-
-
+                            }
+                            error={!!errors.projectId}
+                            helperText={errors.projectId?.message as string}
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {projectsLoading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                      {/* Hidden input to register projectId with react-hook-form */}
+                      <input type="hidden" {...register("projectId")} />
+                    </Grid>
 
                     <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Name"
-                      {...register('name')}
-                      error={!!errors.name}
-                      helperText={errors.name?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 3 }}>
-                    <TextField
-                      label="Plot No"
-                      {...register('plotNo')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                      <TextField
+                        label="Name"
+                        {...register("name")}
+                        error={!!errors.name}
+                        helperText={errors.name?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 3 }}>
+                      <TextField
+                        label="Plot No"
+                        {...register("plotNo")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  {/* <Grid size={{ xs: 12, md: 3 }}>
+                    {/* <Grid size={{ xs: 12, md: 3 }}>
                     <TextField
                       label="Date"
                       type="date"
@@ -768,16 +876,16 @@ const CustomerForm = () => {
                     />
                   </Grid> */}
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="PAN No"
-                      {...register('panNo')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="PAN No"
+                        {...register("panNo")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  {/* <Grid size={{ xs: 12, md: 4 }}>
+                    {/* <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Name of Customer"
                       {...register('nameOfCustomer')}
@@ -786,248 +894,248 @@ const CustomerForm = () => {
                     />
                   </Grid> */}
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Gender"
-                      select
-                      {...register('gender')}
-                      fullWidth
-                      variant="outlined"
-                    >
-                      <MenuItem value="">Select</MenuItem>
-                      <MenuItem value="Male">Male</MenuItem>
-                      <MenuItem value="Female">Female</MenuItem>
-                      <MenuItem value="Other">Other</MenuItem>
-                    </TextField>
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Gender"
+                        select
+                        {...register("gender")}
+                        fullWidth
+                        variant="outlined"
+                      >
+                        <MenuItem value="">Select</MenuItem>
+                        <MenuItem value="Male">Male</MenuItem>
+                        <MenuItem value="Female">Female</MenuItem>
+                        <MenuItem value="Other">Other</MenuItem>
+                      </TextField>
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Date of Birth"
-                      type="date"
-                      InputLabelProps={{ shrink: true }}
-                      {...register('dob')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Date of Birth"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        {...register("dob")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Nationality"
-                      {...register('nationality')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Nationality"
+                        {...register("nationality")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Occupation"
-                      {...register('occupation')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Occupation"
+                        {...register("occupation")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Qualification"
-                      {...register('qualification')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Qualification"
+                        {...register("qualification")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label="Communication Address"
-                      {...register('communicationAddress')}
-                      fullWidth
-                      variant="outlined"
-                      multiline
-                      rows={2}
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 8 }}>
+                      <TextField
+                        label="Communication Address"
+                        {...register("communicationAddress")}
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={2}
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="City"
-                      {...register('city')}
-                      error={!!errors.city}
-                      helperText={errors.city?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="City"
+                        {...register("city")}
+                        error={!!errors.city}
+                        helperText={errors.city?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="State"
-                      {...register('state')}
-                      error={!!errors.state}
-                      helperText={errors.state?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="State"
+                        {...register("state")}
+                        error={!!errors.state}
+                        helperText={errors.state?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Pincode"
-                      {...register('pincode')}
-                      error={!!errors.pincode}
-                      helperText={errors.pincode?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Pincode"
+                        {...register("pincode")}
+                        error={!!errors.pincode}
+                        helperText={errors.pincode?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label={
-                        <>
-                          Mobile No <span style={{ color: 'red' }}>*</span>
-                        </>
-                      }
-                      {...register('phone')}
-                      error={!!errors.phone}
-                      helperText={errors.phone?.message as string}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label={
+                          <>
+                            Mobile No <span style={{ color: "red" }}>*</span>
+                          </>
+                        }
+                        {...register("phone")}
+                        error={!!errors.phone}
+                        helperText={errors.phone?.message as string}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Landline No"
-                      {...register('landLineNo')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Landline No"
+                        {...register("landLineNo")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Email"
-                      {...register('email')}
-                      error={!!errors.email}
-                      helperText={errors.email?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Email"
+                        {...register("email")}
+                        error={!!errors.email}
+                        helperText={errors.email?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label="Father / Husband Name"
-                      {...register('fatherOrHusbandName')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField
+                        label="Father / Husband Name"
+                        {...register("fatherOrHusbandName")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label="Mother Name"
-                      {...register('motherName')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField
+                        label="Mother Name"
+                        {...register("motherName")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label="Address"
-                      {...register('address')}
-                      error={!!errors.address}
-                      helperText={errors.address?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      required
-                      multiline
-                      rows={2}
-                    />
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label="Address"
+                        {...register("address")}
+                        error={!!errors.address}
+                        helperText={errors.address?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        required
+                        multiline
+                        rows={2}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
-              </FormSection>
+                </FormSection>
 
-              {/* SECTION 2: NOMINEE & GUARDIAN */}
-              <FormSection>
-                <SectionTitle variant="h6">Nominee & Guardian</SectionTitle>
-                <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Nominee Name"
-                      {...register('nomineeName')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                {/* SECTION 2: NOMINEE & GUARDIAN */}
+                <FormSection>
+                  <SectionTitle variant="h6">Nominee & Guardian</SectionTitle>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Nominee Name"
+                        {...register("nomineeName")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Nominee Age"
-                      type="number"
-                      {...register('nomineeAge')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Nominee Age"
+                        type="number"
+                        {...register("nomineeAge")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Nominee Relationship"
-                      {...register('nomineeRelationship')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Nominee Relationship"
+                        {...register("nomineeRelationship")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Guardian Name"
-                      {...register('nameOfGuardian')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Guardian Name"
+                        {...register("nameOfGuardian")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="S/O, W/O, D/O"
-                      {...register('so_wf_do')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="S/O, W/O, D/O"
+                        {...register("so_wf_do")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Relationship with Customer"
-                      {...register('relationshipWithCustomer')}
-                      fullWidth
-                      variant="outlined"
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Relationship with Customer"
+                        {...register("relationshipWithCustomer")}
+                        fullWidth
+                        variant="outlined"
+                      />
+                    </Grid>
 
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label="Guardian / Nominee Address"
-                      {...register('guardianAddress')}
-                      fullWidth
-                      variant="outlined"
-                      multiline
-                      rows={2}
-                    />
-                  </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label="Guardian / Nominee Address"
+                        {...register("guardianAddress")}
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={2}
+                      />
+                    </Grid>
 
-                  {/* COMMENTED OUT - Photo Upload field - Can be restored in future */}
-                  {/* <Grid size={{ xs: 12, md: 6 }}>
+                    {/* COMMENTED OUT - Photo Upload field - Can be restored in future */}
+                    {/* <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
                       Customer Photo
                     </Typography>
@@ -1045,14 +1153,16 @@ const CustomerForm = () => {
                       />
                     </Button>
                   </Grid> */}
-                </Grid>
-              </FormSection>
+                  </Grid>
+                </FormSection>
 
-              {/* SECTION 3: INTRODUCER & STAFF */}
-              <FormSection>
-                <SectionTitle variant="h6">Introducer & Staff Details</SectionTitle>
-                <Grid container spacing={3}>
-                  {/* <Grid size={{ xs: 12, md: 6 }}>
+                {/* SECTION 3: INTRODUCER & STAFF */}
+                <FormSection>
+                  <SectionTitle variant="h6">
+                    Introducer & Staff Details
+                  </SectionTitle>
+                  <Grid container spacing={3}>
+                    {/* <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Introducer Name"
                       {...register('introducerName')}
@@ -1070,227 +1180,271 @@ const CustomerForm = () => {
                     />
                   </Grid> */}
 
-                  {/* DD Name and DD Mobile - Side by Side */}
-                  {/* DD Name - Required (Autocomplete) */}
-                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <Autocomplete
-                      options={ddOptions}
-                      getOptionLabel={(option) => option.name || ''}
-                      isOptionEqualToValue={(option, value) => option._id === value._id}
-                      loading={ddLoading}
-                      value={selectedDD}
-                      onChange={(event, newValue) => {
-                        setSelectedDD(newValue);
-                        setValue('ddId', newValue?._id || '', {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                        });
-                        
-                        // Auto-fill DD Mobile
-                        if (newValue && newValue.phone !== null && newValue.phone !== undefined) {
-                          setValue('ddMobile', newValue.phone, {
+                    {/* DD Name and DD Mobile - Side by Side */}
+                    {/* DD Name - Required (Autocomplete) */}
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <Autocomplete
+                        options={ddOptions}
+                        getOptionLabel={(option) => option.name || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          option._id === value._id
+                        }
+                        loading={ddLoading}
+                        value={selectedDD}
+                        onChange={(event, newValue) => {
+                          setSelectedDD(newValue);
+                          setValue("ddId", newValue?._id || "", {
                             shouldValidate: true,
                             shouldDirty: true,
                           });
-                        } else {
-                          setValue('ddMobile', '', {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                        }
 
-                        // Silently store DD's percentage for backend submission
-                        if (newValue?.percentageId?.rate) {
-                          const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
-                          setValue('general.percentage', percentageValue, {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                        } else {
-                          setValue('general.percentage', 0, {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                        }
-
-                        // Fetch CEDs for this DD
-                        if (newValue?._id) {
-                          fetchCEDs(newValue._id);
-                        } else {
-                          setCedOptions([]);
-                          setSelectedCED(null);
-                          setValue('cedId', '', { shouldValidate: false });
-                          setValue('cedMobile', '', { shouldValidate: false });
-                        }
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label={
-                            <>
-                              DD Name <span style={{ color: 'red' }}>*</span>
-                            </>
+                          // Auto-fill DD Mobile
+                          if (
+                            newValue &&
+                            newValue.phone !== null &&
+                            newValue.phone !== undefined
+                          ) {
+                            setValue("ddMobile", newValue.phone, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                          } else {
+                            setValue("ddMobile", "", {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
                           }
-                          error={!!errors.ddId}
-                          helperText={errors.ddId?.message as string}
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {ddLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                {params.InputProps.endAdornment}
-                              </>
-                            ),
-                          }}
-                        />
-                      )}
-                    />
-                    {/* Hidden input to register ddId with react-hook-form */}
-                    <input type="hidden" {...register('ddId')} />
-                  </Grid>
 
-                  {/* DD Mobile - Required (Auto-filled and Disabled) */}
-                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <TextField
-                      label={
-                        <>
-                          DD Mobile <span style={{ color: 'red' }}>*</span>
-                        </>
-                      }
-                      {...register('ddMobile')}
-                      error={!!errors.ddMobile}
-                      helperText={errors.ddMobile?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      disabled
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        readOnly: true,
-                        style: { cursor: 'not-allowed' }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-input': {
-                          cursor: 'not-allowed',
-                          WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
-                        },
-                        '& .MuiInputBase-root': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                        }
-                      }}
-                    />
-                  </Grid>
-
-                  {/* CED Name - Required (Autocomplete) */}
-                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <Autocomplete
-                      options={cedOptions}
-                      getOptionLabel={(option) => option.name || ''}
-                      isOptionEqualToValue={(option, value) => option._id === value._id}
-                      loading={cedLoading}
-                      value={selectedCED}
-                      onChange={(event, newValue) => {
-                        setSelectedCED(newValue);
-                        setValue('cedId', newValue?._id || '', {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                        });
-                        
-                        // Auto-fill CED Mobile
-                        if (newValue && newValue.phone !== null && newValue.phone !== undefined) {
-                          setValue('cedMobile', newValue.phone, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                        } else {
-                          setValue('cedMobile', '', {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                        }
-
-                        // Silently store CED's percentage for backend submission (overrides DD percentage)
-                        if (newValue?.percentageId?.rate) {
-                          const percentageValue = Number((newValue.percentageId.rate as string).replace('%', ''));
-                          setValue('general.percentage', percentageValue, {
-                            shouldValidate: false,
-                            shouldDirty: false,
-                          });
-                        } else if (!newValue) {
-                          // If CED is cleared, revert to DD's percentage if DD is selected
-                          if (selectedDD?.percentageId?.rate) {
-                            const ddPercentageValue = Number((selectedDD.percentageId.rate as string).replace('%', ''));
-                            setValue('general.percentage', ddPercentageValue, {
+                          // Silently store DD's percentage for backend submission
+                          if (newValue?.percentageId?.rate) {
+                            const percentageValue = Number(
+                              (newValue.percentageId.rate as string).replace(
+                                "%",
+                                "",
+                              ),
+                            );
+                            setValue("general.percentage", percentageValue, {
                               shouldValidate: false,
                               shouldDirty: false,
                             });
                           } else {
-                            setValue('general.percentage', 0, {
+                            setValue("general.percentage", 0, {
                               shouldValidate: false,
                               shouldDirty: false,
                             });
                           }
-                        }
 
-                        // Auto-set General Marketer from CED
-                        if (newValue?._id) {
-                           setValue('general.marketer', newValue._id, {
-                              shouldValidate: true,
-                              shouldDirty: true
-                           });
-                        } else {
-                           setValue('general.marketer', '', { shouldValidate: false });
-                        }
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="CED Name"
-                          error={!!errors.cedId}
-                          helperText={errors.cedId?.message as string}
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
+                          // Fetch CEDs for this DD
+                          if (newValue?._id) {
+                            fetchCEDs(newValue._id);
+                          } else {
+                            setCedOptions([]);
+                            setSelectedCED(null);
+                            setValue("cedId", "", { shouldValidate: false });
+                            setValue("cedMobile", "", {
+                              shouldValidate: false,
+                            });
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label={
                               <>
-                                {cedLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                {params.InputProps.endAdornment}
+                                DD Name <span style={{ color: "red" }}>*</span>
                               </>
-                            ),
-                          }}
-                        />
-                      )}
-                    />
-                    {/* Hidden input to register cedId with react-hook-form */}
-                    <input type="hidden" {...register('cedId')} />
-                  </Grid>
+                            }
+                            error={!!errors.ddId}
+                            helperText={errors.ddId?.message as string}
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {ddLoading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                      {/* Hidden input to register ddId with react-hook-form */}
+                      <input type="hidden" {...register("ddId")} />
+                    </Grid>
 
-                  {/* CED Mobile - Optional (Auto-filled and Disabled) */}
-                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                    <TextField
-                      label="CED Mobile"
-                      {...register('cedMobile')}
-                      error={!!errors.cedMobile}
-                      helperText={errors.cedMobile?.message as string}
-                      fullWidth
-                      variant="outlined"
-                      disabled
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        readOnly: true,
-                        style: { cursor: 'not-allowed' }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-input': {
-                          cursor: 'not-allowed',
-                          WebkitTextFillColor: 'rgba(0, 0, 0, 0.6)',
-                        },
-                        '& .MuiInputBase-root': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    {/* DD Mobile - Required (Auto-filled and Disabled) */}
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <TextField
+                        label={
+                          <>
+                            DD Mobile <span style={{ color: "red" }}>*</span>
+                          </>
                         }
-                      }}
-                    />
-                  </Grid>
+                        {...register("ddMobile")}
+                        error={!!errors.ddMobile}
+                        helperText={errors.ddMobile?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        disabled
+                        InputLabelProps={{ shrink: true }}
+                        InputProps={{
+                          readOnly: true,
+                          style: { cursor: "not-allowed" },
+                        }}
+                        sx={{
+                          "& .MuiInputBase-input": {
+                            cursor: "not-allowed",
+                            WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+                          },
+                          "& .MuiInputBase-root": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)",
+                          },
+                        }}
+                      />
+                    </Grid>
 
-                  {/* <Grid size={{ xs: 12, md: 4 }}>
+                    {/* CED Name - Required (Autocomplete) */}
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <Autocomplete
+                        options={cedOptions}
+                        getOptionLabel={(option) => option.name || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          option._id === value._id
+                        }
+                        loading={cedLoading}
+                        value={selectedCED}
+                        onChange={(event, newValue) => {
+                          setSelectedCED(newValue);
+                          setValue("cedId", newValue?._id || "", {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+
+                          // Auto-fill CED Mobile
+                          if (
+                            newValue &&
+                            newValue.phone !== null &&
+                            newValue.phone !== undefined
+                          ) {
+                            setValue("cedMobile", newValue.phone, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                          } else {
+                            setValue("cedMobile", "", {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                          }
+
+                          // Silently store CED's percentage for backend submission (overrides DD percentage)
+                          if (newValue?.percentageId?.rate) {
+                            const percentageValue = Number(
+                              (newValue.percentageId.rate as string).replace(
+                                "%",
+                                "",
+                              ),
+                            );
+                            setValue("general.percentage", percentageValue, {
+                              shouldValidate: false,
+                              shouldDirty: false,
+                            });
+                          } else if (!newValue) {
+                            // If CED is cleared, revert to DD's percentage if DD is selected
+                            if (selectedDD?.percentageId?.rate) {
+                              const ddPercentageValue = Number(
+                                (
+                                  selectedDD.percentageId.rate as string
+                                ).replace("%", ""),
+                              );
+                              setValue(
+                                "general.percentage",
+                                ddPercentageValue,
+                                {
+                                  shouldValidate: false,
+                                  shouldDirty: false,
+                                },
+                              );
+                            } else {
+                              setValue("general.percentage", 0, {
+                                shouldValidate: false,
+                                shouldDirty: false,
+                              });
+                            }
+                          }
+
+                          // Auto-set General Marketer from CED
+                          if (newValue?._id) {
+                            setValue("general.marketer", newValue._id, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                          } else {
+                            setValue("general.marketer", "", {
+                              shouldValidate: false,
+                            });
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="CED Name"
+                            error={!!errors.cedId}
+                            helperText={errors.cedId?.message as string}
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {cedLoading ? (
+                                    <CircularProgress
+                                      color="inherit"
+                                      size={20}
+                                    />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                      {/* Hidden input to register cedId with react-hook-form */}
+                      <input type="hidden" {...register("cedId")} />
+                    </Grid>
+
+                    {/* CED Mobile - Optional (Auto-filled and Disabled) */}
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <TextField
+                        label="CED Mobile"
+                        {...register("cedMobile")}
+                        error={!!errors.cedMobile}
+                        helperText={errors.cedMobile?.message as string}
+                        fullWidth
+                        variant="outlined"
+                        disabled
+                        InputLabelProps={{ shrink: true }}
+                        InputProps={{
+                          readOnly: true,
+                          style: { cursor: "not-allowed" },
+                        }}
+                        sx={{
+                          "& .MuiInputBase-input": {
+                            cursor: "not-allowed",
+                            WebkitTextFillColor: "rgba(0, 0, 0, 0.6)",
+                          },
+                          "& .MuiInputBase-root": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)",
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    {/* <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Immediate Supervisor Name"
                       {...register('immSupervisorName')}
@@ -1318,11 +1472,11 @@ const CustomerForm = () => {
                       variant="outlined"
                     />
                   </Grid> */}
-                </Grid>
-              </FormSection>
+                  </Grid>
+                </FormSection>
 
-              {/* SECTION 4: ESTIMATE DETAILS */}
-              {/* SECTION 4: ESTIMATE DETAILS */}
+                {/* SECTION 4: ESTIMATE DETAILS */}
+                {/* SECTION 4: ESTIMATE DETAILS */}
                 <>
                   <Divider sx={{ my: 4 }} />
                   <FormSection>
@@ -1337,110 +1491,122 @@ const CustomerForm = () => {
                   </FormSection>
 
                   {/* Conditional Plot Section */}
-                  {(saleType.toLowerCase() === 'plot') && (
+                  {saleType.toLowerCase() === "plot" && (
                     <FormSection>
                       <SectionTitle variant="h6">
-                        {saleType.charAt(0).toUpperCase() + saleType.slice(1)} Details
+                        {saleType.charAt(0).toUpperCase() + saleType.slice(1)}{" "}
+                        Details
                       </SectionTitle>
-                      <Plot control={methods.control} errors={methods.formState.errors} />
+                      <Plot
+                        control={methods.control}
+                        errors={methods.formState.errors}
+                      />
                     </FormSection>
                   )}
 
                   {/* Conditional Flat Section */}
-                  {saleType.toLowerCase() === 'flat' && (
+                  {saleType.toLowerCase() === "flat" && (
                     <FormSection>
                       <SectionTitle variant="h6">Flat Details</SectionTitle>
-                      <Flat control={methods.control} errors={methods.formState.errors} />
+                      <Flat
+                        control={methods.control}
+                        errors={methods.formState.errors}
+                      />
                     </FormSection>
                   )}
                 </>
 
-              <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 2 }} />
 
-              <Grid container justifyContent="flex-end">
-                <Grid>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    color="primary"
-                    type="submit"
-                    sx={{ minWidth: 150 }}
-                  >
-                    Submit
-                  </Button>
+                <Grid container justifyContent="flex-end">
+                  <Grid>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      type="submit"
+                      sx={{ minWidth: 150 }}
+                    >
+                      Submit
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </FormProvider>
+              </FormProvider>
             </form>
           )}
         </CardContent>
       </StyledCard>
-      
+
       {/* Success Dialog */}
-      <Dialog 
-        open={successDialogOpen} 
+      <Dialog
+        open={successDialogOpen}
         onClose={(event, reason) => {
           // Prevent closing by clicking outside or pressing escape
-          if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          if (reason === "backdropClick" || reason === "escapeKeyDown") {
             return;
           }
         }}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ 
-          textAlign: 'center', 
-          pb: 1,
-          fontSize: '1.5rem',
-          fontWeight: 600,
-          color: '#4caf50'
-        }}>
+        <DialogTitle
+          sx={{
+            textAlign: "center",
+            pb: 1,
+            fontSize: "1.5rem",
+            fontWeight: 600,
+            color: "#4caf50",
+          }}
+        >
           ✓ Customer Created Successfully!
         </DialogTitle>
-        <DialogContent sx={{ textAlign: 'center', pt: 3, pb: 3 }}>
-          <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+        <DialogContent sx={{ textAlign: "center", pt: 3, pb: 3 }}>
+          <Typography variant="body1" sx={{ mb: 2, color: "text.secondary" }}>
             Your customer has been created with the following ID:
           </Typography>
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               gap: 1,
               p: 2,
-              backgroundColor: '#f5f5f5',
+              backgroundColor: "#f5f5f5",
               borderRadius: 2,
-              border: '2px solid #e0e0e0'
+              border: "2px solid #e0e0e0",
             }}
           >
-            <Typography 
-              variant="h5" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              sx={{
                 fontWeight: 700,
-                color: '#1976d2',
-                fontFamily: 'monospace'
+                color: "#1976d2",
+                fontFamily: "monospace",
               }}
             >
               {createdCustomerId}
             </Typography>
-            <IconButton 
+            <IconButton
               onClick={handleCopyCustomerId}
               size="small"
-              sx={{ 
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#e3f2fd' }
+              sx={{
+                color: "#1976d2",
+                "&:hover": { backgroundColor: "#e3f2fd" },
               }}
               title="Copy Customer ID"
             >
               <Icon icon="solar:copy-outline" width={24} />
             </IconButton>
           </Box>
-          <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
+          <Typography
+            variant="caption"
+            sx={{ mt: 2, display: "block", color: "text.secondary" }}
+          >
             Click the copy icon to copy the ID to your clipboard
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-          <Button 
+        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+          <Button
             onClick={handleSuccessDialogClose}
             variant="contained"
             size="large"
