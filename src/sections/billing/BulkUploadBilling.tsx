@@ -2,8 +2,10 @@ import { Icon } from "@iconify/react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -32,6 +34,39 @@ export default function BulkUploadBilling() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  
+  const handleDownloadSampleExcel = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      [
+        "EMI No",
+        "Pay Mode",
+        "Remarks",
+        "Created By",
+        "Total Amount",
+        "Total Paid",
+        "Total Balance",
+        "Billing Id",
+        "Payment Date Change",
+        "Payment Date",
+      ],
+      [
+        1,
+        "Cash",
+        "12.02.2026 CASH REF NO:44789 HDFC-(13.02.2026)",
+        "preetha",
+        200000,
+        200000,
+        "",
+        "69761ff0d29fd25c918a0ecf",
+        "2026-02-28",
+        "2026-01-25",
+      ],
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Model Format");
+    XLSX.writeFile(wb, "Bulk_Upload_Billing_Model.xlsx");
+  };
 
   // Handle Drag & Drop
   const handleDragEnter = (e: React.DragEvent) => {
@@ -146,6 +181,32 @@ export default function BulkUploadBilling() {
           <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
             Upload your Excel file to edit data.
           </Typography>
+
+          <Alert
+            severity="info"
+            sx={{ mb: 4, textAlign: "left", alignItems: "center" }}
+            action={
+              <Button
+                color="info"
+                size="small"
+                variant="outlined"
+                onClick={handleDownloadSampleExcel}
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                Download Model Excel
+              </Button>
+            }
+          >
+            <Typography variant="subtitle2" gutterBottom>
+              Need the correct Excel format?
+            </Typography>
+            <Typography variant="body2">
+              Download the model Excel file to ensure your data is formatted
+              correctly before uploading. The second row contains sample data
+              for your reference. please remove the sample data before
+              uploading.
+            </Typography>
+          </Alert>
 
           {!file ? (
             <Box
