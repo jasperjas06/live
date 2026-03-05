@@ -906,6 +906,7 @@ const BillingForm = () => {
                             { value: "card", label: "Card" },
                             { value: "cash", label: "Cash" },
                             { value: "online", label: "Online" },
+                            { value: "others", label: "Others" },
                           ]}
                           error={!!fieldState.error}
                           helperText={fieldState.error?.message}

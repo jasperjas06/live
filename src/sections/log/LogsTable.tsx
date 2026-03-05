@@ -230,6 +230,61 @@ const LogsTable = () => {
     }
   };
 
+  const handleExportFilteredLogs = async () => {
+    const toastId = toast.loading(`Exporting logs for ${selectedDate}...`);
+
+    try {
+      const response = await getAllLogs({
+        date: selectedDate,
+        page: undefined,
+        limit: undefined,
+        export: "true",
+      });
+
+      if (response.status !== 200) {
+        toast.dismiss(toastId);
+        toast.error(response.message || "Failed to export filtered logs");
+        return;
+      }
+
+      const exportData = response.data.data;
+
+      if (!exportData || exportData.length === 0) {
+        toast.dismiss(toastId);
+        toast.error("No data to export for the selected date");
+        return;
+      }
+
+      // Transform data for Excel
+      const excelData = exportData.map((log: LogItem) => ({
+        "Module Name": log?.moduleName || "N/A",
+        ID: log?._id || "N/A",
+        "Customer Code": log?.customerCode || "-",
+        "Created By":
+          typeof log?.createdBy === "object" && log?.createdBy !== null
+            ? log?.createdBy?.name || "Unknown"
+            : log?.createdBy || "-",
+        "Created At": log?.createdAt ? formatDate(log.createdAt) : "-",
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Logs");
+
+      const fileName = `logs_filtered_${selectedDate}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.dismiss(toastId);
+      toast.success(
+        `Exported ${exportData.length} logs for ${selectedDate} successfully!`,
+      );
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error("Failed to export filtered logs");
+      console.error("Export filtered error:", err);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
     try {
@@ -284,6 +339,15 @@ const LogsTable = () => {
             disabled={loading || data.length === 0}
           >
             Export Excel
+          </Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleExportFilteredLogs}
+            disabled={loading || data.length === 0}
+          >
+            Export Filtered Logs
           </Button>
         </Box>
       </Box>
