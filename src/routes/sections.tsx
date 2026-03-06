@@ -45,6 +45,9 @@ export const CreateMarketer = lazy(() => import('src/pages/Marketer/Manage/Manag
 export const CreateMarketingHead = lazy(() => import('src/pages/MarketingHead/manage/ManageMarketingHead'));
 export const MarketingHead = lazy(() => import('src/pages/MarketingHead/MarketingHead'));
 export const ViewMarketingHead = lazy(() => import('src/pages/MarketingHead/view/MarkingHead'));
+export const ExportMarketingHead = lazy(
+  () => import("src/pages/MarketingHead/export/MarketingHeadExport"),
+);
 export const ViewMOD = lazy(() => import('src/pages/MOD/view/Mod'));
 export const ViewNVT = lazy(() => import('src/pages/NVT/view/ViewNVT'));
 export const ViewMarketer = lazy(() => import('src/pages/Marketer/view/ViewMarketer'));
@@ -155,6 +158,7 @@ export const routesSection: RouteObject[] = [
       { path: "marketing-head/create", element: <CreateMarketingHead /> },
       { path: "marketing-head/edit/:id", element: <CreateMarketingHead /> },
       { path: "marketing-head/view/:id", element: <ViewMarketingHead /> },
+      { path: "marketing-head/export", element: <ExportMarketingHead /> },
       { path: "percentage", element: <Percentage /> },
       { path: "role", element: <Roles /> },
       { path: "role&menu-mapping", element: <RoleMenuMapping /> },

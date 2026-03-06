@@ -145,15 +145,24 @@ const MarketingHeadTable = () => {
 
   return (
     <DashboardContent>
-      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ mb: 5, display: "flex", alignItems: "center" }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Marketing Head
         </Typography>
         <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<Iconify icon="mingcute:download-line" />}
+          onClick={() => navigate("export")}
+          sx={{ mr: 1 }}
+        >
+          Export
+        </Button>
+        <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={() => navigate('create')}
+          onClick={() => navigate("create")}
           disabled={permissions["Marketing Head"]?.create !== true}
         >
           New Marketing Head
@@ -178,7 +187,7 @@ const MarketingHeadTable = () => {
                 <Button
                   size="small"
                   onClick={handleSearchClear}
-                  sx={{ minWidth: 'auto', p: 0.5 }}
+                  sx={{ minWidth: "auto", p: 0.5 }}
                 >
                   <Iconify icon="mingcute:close-line" />
                 </Button>
@@ -186,8 +195,8 @@ const MarketingHeadTable = () => {
             ),
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'background.paper',
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "background.paper",
             },
           }}
         />
@@ -195,35 +204,46 @@ const MarketingHeadTable = () => {
 
       {/* Loading Indicator */}
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       )}
 
       {!isLoading && (
-      <DataTable
-                title="Marketing Head Table"
-                data={data}
-                columns={customerColumns}
-                searchBy="name"
-                onDelete={handleDelete}
-                isDelete={permissions["Marketing Head"]?.delete === true ? true : false}
+        <DataTable
+          title="Marketing Head Table"
+          data={data}
+          columns={customerColumns}
+          searchBy="name"
+          onDelete={handleDelete}
+          isDelete={
+            permissions["Marketing Head"]?.delete === true ? true : false
+          }
           isEdit={permissions["Marketing Head"]?.update === true ? true : false}
           isView={permissions["Marketing Head"]?.read === true ? true : false}
           disableSearch={true}
           disablePagination={true}
           preserveOrder={true}
-              />
+        />
       )}
-        
-        {/* Pagination Controls */}
-        {pagination && !isLoading && (
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+
+      {/* Pagination Controls */}
+      {pagination && !isLoading && (
+        <Box
+          sx={{
+            mt: 3,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
-            Showing {pagination.total} record{pagination.total !== 1 ? 's' : ''}
+            Showing {pagination.total} record{pagination.total !== 1 ? "s" : ""}
           </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Button
               variant="outlined"
               onClick={handlePreviousPage}
@@ -231,11 +251,11 @@ const MarketingHeadTable = () => {
             >
               Previous
             </Button>
-            
+
             <Typography variant="body2">
               Page {pagination.page} of {pagination.totalPages}
             </Typography>
-            
+
             <Button
               variant="outlined"
               onClick={handleNextPage}
@@ -247,13 +267,13 @@ const MarketingHeadTable = () => {
         </Box>
       )}
 
-        <ConfirmDialog
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          title="Confirm Delete"
-          content="Are you sure you want to delete this Marketing Head? This action cannot be undone."
-          action={handleConfirmDelete}
-        />
+      <ConfirmDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        title="Confirm Delete"
+        content="Are you sure you want to delete this Marketing Head? This action cannot be undone."
+        action={handleConfirmDelete}
+      />
     </DashboardContent>
   );
 };
