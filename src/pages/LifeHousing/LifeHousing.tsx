@@ -9,6 +9,7 @@ import { Column, DataTable } from 'src/custom/dataTable/dataTable';
 import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { deleteHousingData, getAllHousingData } from 'src/utils/api.service';
+import { OpenInNew } from "@mui/icons-material";
 
 const LifeHousing = () => {
   const navigate = useNavigate();
@@ -140,10 +141,24 @@ const LifeHousing = () => {
   return (
     <div>
       <DashboardContent>
-        <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ mb: 5, display: "flex", alignItems: "center" }}>
           <Typography variant="h4" sx={{ flexGrow: 1 }}>
             Life Housing Management
           </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            endIcon={<OpenInNew />}
+            onClick={() =>
+              window.open(
+                "https://customers-housing.lifedeegrand.com/",
+                "_blank",
+              )
+            }
+          >
+            Customer Housing Portal
+          </Button>
         </Box>
 
         {/* Search Input */}
@@ -164,7 +179,7 @@ const LifeHousing = () => {
                   <Button
                     size="small"
                     onClick={handleSearchClear}
-                    sx={{ minWidth: 'auto', p: 0.5 }}
+                    sx={{ minWidth: "auto", p: 0.5 }}
                   >
                     <Iconify icon="mingcute:close-line" />
                   </Button>
@@ -172,8 +187,8 @@ const LifeHousing = () => {
               ),
             }}
             sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'background.paper',
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "background.paper",
               },
             }}
           />
@@ -181,7 +196,7 @@ const LifeHousing = () => {
 
         {/* Loading Indicator */}
         {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -194,22 +209,32 @@ const LifeHousing = () => {
             searchBy="nameOfCustomer"
             isView={false}
             isEdit={false}
-          isDelete={false}
-          onDropDown={false}
-          disableSearch={true}
-          disablePagination={true}
+            isDelete={false}
+            onDropDown={false}
+            disableSearch={true}
+            disablePagination={true}
             preserveOrder={true}
           />
         )}
 
         {/* Pagination Controls */}
         {pagination && !isLoading && (
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box
+            sx={{
+              mt: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
-              Showing {pagination.total} record{pagination.total !== 1 ? 's' : ''}
+              Showing {pagination.total} record
+              {pagination.total !== 1 ? "s" : ""}
             </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Button
                 variant="outlined"
                 onClick={handlePreviousPage}
@@ -217,11 +242,11 @@ const LifeHousing = () => {
               >
                 Previous
               </Button>
-              
+
               <Typography variant="body2">
                 Page {pagination.page} of {pagination.totalPages}
               </Typography>
-              
+
               <Button
                 variant="outlined"
                 onClick={handleNextPage}

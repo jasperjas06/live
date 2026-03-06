@@ -22,7 +22,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import {
+  Controller,
+  FormProvider,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { DashboardContent } from "src/layouts/dashboard";
@@ -91,7 +96,11 @@ const baseCustomerSchema = z.object({
   cedMobile: z.string().optional(),
   // percentge field logic is in estimate for new, but technically part of customer schema too?
   // keeping optional fields as they were relative to customer collection
-  percentage: z.preprocess((val) => Number(val), z.number().optional()),
+  percentage: z.preprocess(
+    (val) =>
+      val === undefined || val === null || val === "" ? undefined : Number(val),
+    z.number().optional(),
+  ),
   projectArea: z.string().optional(),
   nationality: z.string().optional(),
   dob: z.string().optional(),
@@ -126,7 +135,13 @@ const createCustomerSchema = baseCustomerSchema.extend({
     marketer: z.string().optional(), // Made optional to prevent validation errors
     saleType: z.string().min(1, "Sale Type is required"),
     // percentage: z.preprocess((val) => Number(val), z.number().min(0).max(100, 'Percentage allow 0-100')),
-    percentage: z.preprocess((val) => Number(val), z.number().optional()), // Made optional to prevent validation errors
+    percentage: z.preprocess(
+      (val) =>
+        val === undefined || val === null || val === ""
+          ? undefined
+          : Number(val),
+      z.number().optional(),
+    ), // Made optional to prevent validation errors
     emiAmount: z.preprocess(
       (val) => Number(val),
       z.number().min(1, "EMI Amount is required"),
@@ -145,6 +160,9 @@ const createCustomerSchema = baseCustomerSchema.extend({
     saleDeedDoc: z.any().optional(),
     motherDoc: z.any().optional(),
   }),
+  // Plot and flat kept fully optional — Zod won't strip them from form data
+  plot: z.any().optional(),
+  flat: z.any().optional(),
 });
 
 type CustomerFormData = z.infer<typeof baseCustomerSchema>;
@@ -219,7 +237,9 @@ const CustomerForm = () => {
       photo: undefined,
       guardianAddress: "",
       // Estimate form defaults
-      general: {},
+      general: {
+        paymentTerms: "",
+      },
       plot: {},
       flat: {},
     },
@@ -235,6 +255,7 @@ const CustomerForm = () => {
   } = methods;
 
   const onSubmit: SubmitHandler<any> = async (data) => {
+    console.log(data);
     try {
       // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
       let cleanedPhone = data.phone;
@@ -423,7 +444,7 @@ const CustomerForm = () => {
           }
 
           toast.success("Customer updated successfully");
-          navigate("/customer/list");
+          navigate("/customer");
           return;
         }
       } else {
@@ -579,9 +600,17 @@ const CustomerForm = () => {
     if (!id) return;
     try {
       setIsLoading(true);
-      const response = await getACustomer(id, { general: true });
+      const response = await getACustomer(id, { general: true, plot: true });
       if (response?.data?.data) {
         const customerData = response.data.data;
+        // Plot and flat come as top-level keys in the API response
+        const rawPlot = response.data.plot || {};
+        // API returns 'guideLandValue' but the form field is named 'guideRateSqFt'
+        const plotData = {
+          ...rawPlot,
+          guideRateSqFt: rawPlot.guideLandValue ?? rawPlot.guideRateSqFt ?? "",
+        };
+        const flatData = response.data.flat || {};
 
         // Map API response to form data
         const formData = {
@@ -593,8 +622,8 @@ const CustomerForm = () => {
 
           // Map generalId to general form field
           general: customerData.generalId || {},
-          plot: {}, // Initialize empty, will populate if needed
-          flat: {},
+          plot: plotData,
+          flat: flatData,
         };
 
         // Reset form with mapped data
@@ -615,14 +644,6 @@ const CustomerForm = () => {
         // 2. Set Sale Type if available in general data
         if (customerData.generalId?.saleType) {
           setSaleType(customerData.generalId.saleType);
-
-          // If sale type exists, check for plot/flat data
-          // The API response might have them as top-level keys or inside general?
-          // User JSON didn't show plot/flat keys, assuming they might exist if saleType was set.
-          // If they are nested elsewhere, we'd map them here.
-          // For now, assuming standard keys if they exist:
-          if (customerData.plot) methods.setValue("plot", customerData.plot);
-          if (customerData.flat) methods.setValue("flat", customerData.flat);
         }
 
         // 3. Set Autocomplete States for Project, DD, CED
@@ -738,7 +759,6 @@ const CustomerForm = () => {
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
         Customer Registration Form
       </Typography>
-
       <StyledCard>
         <CardContent>
           {isLoading ? (
@@ -751,7 +771,9 @@ const CustomerForm = () => {
               <CircularProgress size={40} />
             </Box>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form
+              onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))}
+            >
               <FormProvider {...methods}>
                 {/* SECTION 1: BASIC DETAILS */}
                 <FormSection>
@@ -895,18 +917,24 @@ const CustomerForm = () => {
                   </Grid> */}
 
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
-                        label="Gender"
-                        select
-                        {...register("gender")}
-                        fullWidth
-                        variant="outlined"
-                      >
-                        <MenuItem value="">Select</MenuItem>
-                        <MenuItem value="Male">Male</MenuItem>
-                        <MenuItem value="Female">Female</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
-                      </TextField>
+                      <Controller
+                        name="gender"
+                        control={methods.control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Gender"
+                            select
+                            fullWidth
+                            variant="outlined"
+                          >
+                            <MenuItem value="">Select</MenuItem>
+                            <MenuItem value="Male">Male</MenuItem>
+                            <MenuItem value="Female">Female</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </TextField>
+                        )}
+                      />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 4 }}>
@@ -1536,7 +1564,6 @@ const CustomerForm = () => {
           )}
         </CardContent>
       </StyledCard>
-
       {/* Success Dialog */}
       <Dialog
         open={successDialogOpen}

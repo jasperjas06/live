@@ -1,4 +1,4 @@
-import { Icon } from '@iconify/react';
+import { Icon } from "@iconify/react";
 import {
   Box,
   Button,
@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, get, useFormContext } from "react-hook-form";
 
 import { fileUpload } from "src/utils/api.service";
@@ -37,11 +37,42 @@ const General: React.FC<GeneralProps> = ({
     control,
     formState: { errors },
     setValue,
+    watch,
   } = useFormContext(); // ✅ get control & errors here
+
+  const saleDeedDocValue = watch("general.saleDeedDoc");
+  const motherDocValue = watch("general.motherDoc");
+
+  // In edit mode: if field already has a URL (from API reset), initialize local state
+  useEffect(() => {
+    if (
+      saleDeedDocValue &&
+      typeof saleDeedDocValue === "string" &&
+      saleDeedDocValue.startsWith("http")
+    ) {
+      const fileName = saleDeedDocValue.split("/").pop() || "Existing document";
+      setFileNames((prev) => ({ ...prev, saleDeedDoc: fileName }));
+      setUploadedUrls((prev) => ({ ...prev, saleDeedDoc: saleDeedDocValue }));
+    }
+  }, [saleDeedDocValue]);
+
+  useEffect(() => {
+    if (
+      motherDocValue &&
+      typeof motherDocValue === "string" &&
+      motherDocValue.startsWith("http")
+    ) {
+      const fileName = motherDocValue.split("/").pop() || "Existing document";
+      setFileNames((prev) => ({ ...prev, motherDoc: fileName }));
+      setUploadedUrls((prev) => ({ ...prev, motherDoc: motherDocValue }));
+    }
+  }, [motherDocValue]);
   const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
   const [fileNames, setFileNames] = useState<{ [key: string]: string }>({});
   const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
-  const [uploadedUrls, setUploadedUrls] = useState<{ [key: string]: string }>({});
+  const [uploadedUrls, setUploadedUrls] = useState<{ [key: string]: string }>(
+    {},
+  );
 
   // COMMENTED OUT - Auto-fill percentage logic - Can be restored in future
   // useEffect(() => {
@@ -94,7 +125,7 @@ const General: React.FC<GeneralProps> = ({
   };
 
   const handleViewFile = (url: string) => {
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
   return (
@@ -170,19 +201,32 @@ const General: React.FC<GeneralProps> = ({
                       hidden
                       onChange={(e) =>
                         e.target.files &&
-                        handleFileUpload(field, e.target.files[0], "saleDeedDoc")
+                        handleFileUpload(
+                          field,
+                          e.target.files[0],
+                          "saleDeedDoc",
+                        )
                       }
                     />
                   </Button>
                 ) : (
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
                       {fileNames.saleDeedDoc}
                     </Typography>
                     <IconButton
                       size="small"
                       color="primary"
-                      onClick={() => handleViewFile(uploadedUrls.saleDeedDoc || field.value)}
+                      onClick={() =>
+                        handleViewFile(uploadedUrls.saleDeedDoc || field.value)
+                      }
                       title="View Document"
                     >
                       <Icon icon="mdi:eye" width={20} />
@@ -247,8 +291,10 @@ const General: React.FC<GeneralProps> = ({
                 {...field}
                 label="Payment Terms"
                 fullWidth
-                error={!!get(errors, 'general.paymentTerms')}
-                helperText={get(errors, 'general.paymentTerms')?.message as string}
+                error={!!get(errors, "general.paymentTerms")}
+                helperText={
+                  get(errors, "general.paymentTerms")?.message as string
+                }
               />
             )}
           />
@@ -266,8 +312,8 @@ const General: React.FC<GeneralProps> = ({
                 label="EMI Amount"
                 fullWidth
                 required
-                error={!!get(errors, 'general.emiAmount')}
-                helperText={get(errors, 'general.emiAmount')?.message as string}
+                error={!!get(errors, "general.emiAmount")}
+                helperText={get(errors, "general.emiAmount")?.message as string}
                 InputLabelProps={{ shrink: true }}
               />
             )}
@@ -286,8 +332,10 @@ const General: React.FC<GeneralProps> = ({
                 label="No. of Installments"
                 fullWidth
                 required
-                error={!!get(errors, 'general.noOfInstallments')}
-                helperText={get(errors, 'general.noOfInstallments')?.message as string}
+                error={!!get(errors, "general.noOfInstallments")}
+                helperText={
+                  get(errors, "general.noOfInstallments")?.message as string
+                }
                 InputLabelProps={{ shrink: true }}
               />
             )}
@@ -321,13 +369,22 @@ const General: React.FC<GeneralProps> = ({
                   </Button>
                 ) : (
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
                       {fileNames.motherDoc}
                     </Typography>
                     <IconButton
                       size="small"
                       color="primary"
-                      onClick={() => handleViewFile(uploadedUrls.motherDoc || field.value)}
+                      onClick={() =>
+                        handleViewFile(uploadedUrls.motherDoc || field.value)
+                      }
                       title="View Document"
                     >
                       <Icon icon="mdi:eye" width={20} />
@@ -358,7 +415,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.status"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, 'general.status')}>
+              <FormControl fullWidth error={!!get(errors, "general.status")}>
                 <InputLabel>Status</InputLabel>
                 <Select {...field} label="Status">
                   <MenuItem value="Enquired">Enquired</MenuItem>
@@ -374,7 +431,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.loan"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, 'general.loan')}>
+              <FormControl fullWidth error={!!get(errors, "general.loan")}>
                 <InputLabel>Loan</InputLabel>
                 <Select {...field} label="Loan">
                   <MenuItem value="Yes">Yes</MenuItem>
@@ -390,7 +447,7 @@ const General: React.FC<GeneralProps> = ({
             name="general.offered"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, 'general.offered')}>
+              <FormControl fullWidth error={!!get(errors, "general.offered")}>
                 <InputLabel>Offered</InputLabel>
                 <Select {...field} label="Offered">
                   <MenuItem value="Yes">Yes</MenuItem>
@@ -407,7 +464,11 @@ const General: React.FC<GeneralProps> = ({
             control={control}
             rules={{ required: "Sale Type is required" }}
             render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, "general.saleType")} required>
+              <FormControl
+                fullWidth
+                error={!!get(errors, "general.saleType")}
+                required
+              >
                 <InputLabel>Sale Type</InputLabel>
                 <Select
                   {...field}
@@ -440,8 +501,8 @@ const General: React.FC<GeneralProps> = ({
                 {...field}
                 label="Edit / Delete Reason"
                 fullWidth
-                error={!!get(errors, 'general.reason')}
-                helperText={get(errors, 'general.reason')?.message as string}
+                error={!!get(errors, "general.reason")}
+                helperText={get(errors, "general.reason")?.message as string}
               />
             )}
           />

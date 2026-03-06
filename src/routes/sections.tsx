@@ -164,7 +164,7 @@ export const routesSection: RouteObject[] = [
       { path: "employee", element: <Employee /> },
       { path: "employee/create", element: <ManageEmployee /> },
       { path: "employee/edit/:id", element: <ManageEmployee /> },
-      { path: "life-alliance", element: <LifeAlliance /> },
+      { path: "life-alliance", element: <LifeHousing /> },
       { path: "life-housing", element: <LifeHousing /> },
       { path: "billing", element: <Billing /> },
       { path: "billing/view/:id", element: <BillingView /> },

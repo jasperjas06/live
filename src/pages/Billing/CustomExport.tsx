@@ -11,47 +11,47 @@ import * as XLSX from 'xlsx';
 const CustomExport = () => {
   const navigate = useNavigate();
   const [isDownloading, setIsDownloading] = useState(false);
-  
+
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
-  
+
   const [fromDate, setFromDate] = useState(getTodayDate());
   const [toDate, setToDate] = useState(getTodayDate());
   const [dateFilter, setDateFilter] = useState('Custom');
   const [status, setStatus] = useState('paid');
-   const [projects, setProjects] = useState<any[]>([]);
-   const [selectedProject, setSelectedProject] = useState<any | null>(null);
-   const [projectSearchTerm, setProjectSearchTerm] = useState("");
-   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const [projectSearchTerm, setProjectSearchTerm] = useState("");
+  const [isProjectsLoading, setIsProjectsLoading] = useState(false);
 
-   useEffect(() => {
-     const fetchProjects = async () => {
-       setIsProjectsLoading(true);
-       try {
-         const response = await getAllProjects({
-           page: 1,
-           limit: 10,
-           search: projectSearchTerm,
-         });
-         if (response.status === 200 && response.data?.data) {
-           setProjects(response.data.data);
-         }
-       } catch (error) {
-         console.error("Failed to fetch projects:", error);
-       } finally {
-         setIsProjectsLoading(false);
-       }
-     };
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsProjectsLoading(true);
+      try {
+        const response = await getAllProjects({
+          page: 1,
+          limit: 10,
+          search: projectSearchTerm,
+        });
+        if (response.status === 200 && response.data?.data) {
+          setProjects(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setIsProjectsLoading(false);
+      }
+    };
 
-     const timer = setTimeout(() => {
-       fetchProjects();
-     }, 500);
+    const timer = setTimeout(() => {
+      fetchProjects();
+    }, 500);
 
-     return () => clearTimeout(timer);
-   }, [projectSearchTerm]);
+    return () => clearTimeout(timer);
+  }, [projectSearchTerm]);
 
   const handleDateFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filter = event.target.value;
@@ -108,14 +108,14 @@ const CustomExport = () => {
 
   const escapeCSVValue = (value: any): string => {
     if (value === null || value === undefined) return '';
-    
+
     const stringValue = String(value);
-    
+
     // If value contains comma, quote, or newline, wrap it in quotes and escape internal quotes
     if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
       return `"${stringValue.replace(/"/g, '""')}"`;
     }
-    
+
     return stringValue;
   };
 
@@ -138,7 +138,7 @@ const CustomExport = () => {
         status?: string;
         projectId?: string;
       } = {};
-      
+
       // If both dates are the same AND it is today's date, send only 'date' param
       // The backend expects 'date' only for Today. For Yesterday (or past dates), it expects a range.
       if (fromDate === toDate && fromDate === getTodayDate()) {
@@ -148,13 +148,13 @@ const CustomExport = () => {
         if (fromDate) params.dateFrom = fromDate;
         if (toDate) params.dateTo = toDate;
       }
-        
+
       // Add status filter if selected
       if (status) {
         params.status = status;
         console.log('Using status filter:', status);
       }
-     
+
       if (selectedProject) {
         params.projectId = selectedProject._id;
       } else {
@@ -169,7 +169,7 @@ const CustomExport = () => {
         console.log('API Response Data:', response.data);
         const billingData = response.data.billing || response.data.data || [];
         const emiData = response.data.emi || [];
-        
+
         if (billingData.length === 0 && emiData.length === 0) {
           toast.error(response.message || 'No data found for the selected date range');
           setIsDownloading(false);
@@ -179,18 +179,19 @@ const CustomExport = () => {
         // --- SHEET 1: BILLING (PAID) ---
         const billingRows = billingData.map((item: any) => {
           // Helper to safely get properties
-          const getVal = (val: any) => val || '';
-          const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : ''; // DD/MM/YYYY
+          const getVal = (val: any) => val || "";
+          const formatDate = (dateStr: string) =>
+            dateStr ? new Date(dateStr).toISOString().split("T")[0] : ""; // YYYY-MM-DD
 
           // Project ID with preference: shortName > _id > N/A
           const projectShortName = item.general?.project?.shortName || item.general?.project?._id || 'N/A';
           // Project Name
           const projectName = item.general?.project?.projectName || 'N/A';
-          
+
           // CED (Customer Executive Director) details
           const cedName = item.customer?.cedId?.name || '';
           const cedId = item.customer?.cedId?.id || item.customer?.cedId?._id || '';
-          
+
           // DD (Direct Director) details
           const ddName = item.customer?.ddId?.name || '';
           const ddId = item.customer?.ddId?.id || item.customer?.ddId?._id || '';
@@ -216,6 +217,7 @@ const CustomExport = () => {
             'Payment Date': formatDate(item.paymentDate),
             'Amount Paid': getVal(item.amountPaid),
             'Booking ID': getVal(item.general?._id),
+            'Billing Id': getVal(item._id),
             'Plot No': getVal(item.customer?.plotNo),
             'EMI No': getVal(item.emiNo),
             'Pay Mode': getVal(item.modeOfPayment),
@@ -234,16 +236,16 @@ const CustomExport = () => {
 
           const customer = item.customer || {};
           const general = item.general || {};
-          
+
           // Project ID with preference: shortName > _id > N/A
           const projectShortName = general.project?.shortName || general.project?._id || customer.projectId || 'N/A';
           // Project Name
           const projectName = general.project?.projectName || 'N/A';
-          
+
           // CED (Customer Executive Director) details
           const cedName = customer.cedId?.name || '';
           const cedId = customer.cedId?.id || customer.cedId?._id || '';
-          
+
           // DD (Direct Director) details
           const ddName = customer.ddId?.name || '';
           const ddId = customer.ddId?.id || customer.ddId?._id || '';
@@ -276,7 +278,7 @@ const CustomExport = () => {
 
         // Add Unpaid EMI Sheet
         if (emiRows.length > 0) {
-            const wsEmi = XLSX.utils.json_to_sheet(emiRows);
+          const wsEmi = XLSX.utils.json_to_sheet(emiRows);
             XLSX.utils.book_append_sheet(wb, wsEmi, 'Pending Collections');
         }
 
@@ -285,7 +287,7 @@ const CustomExport = () => {
 
         // Write and Download
         XLSX.writeFile(wb, filename);
-        
+
         toast.success('Report downloaded successfully');
       } else {
         toast.error(response.message || 'Failed to download report');
