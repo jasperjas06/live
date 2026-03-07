@@ -357,7 +357,16 @@ const downloadPDF = async () => {
                     Created Date
                   </Typography>
                   <Typography variant="body1" sx={{ mt: 0.5 }}>
-                    {formatDate(data.createdAt)}
+                    {data?.paymentDate
+                      ? new Date(data.paymentDate).toLocaleDateString()
+                      : ""}{" "}
+                    {data?.createdAt
+                      ? new Date(data.createdAt).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: true,
+                        })
+                      : ""}
                   </Typography>
                 </Box>
               </Grid>
@@ -426,7 +435,7 @@ const downloadPDF = async () => {
                     variant="body1"
                     sx={{ mt: 0.5, fontWeight: 600, color: "success.main" }}
                   >
-                    {formatCurrency(data.enteredAmount ||data.amountPaid)}
+                    {formatCurrency(data.enteredAmount || data.amountPaid)}
                   </Typography>
                 </Box>
               </Grid>
@@ -568,7 +577,10 @@ const downloadPDF = async () => {
                       Marketer Name
                     </Typography>
                     <Typography variant="body1" sx={{ mt: 0.5 }}>
-                      {data.customer.marketerName || data?.customer?.cedId?.name || data?.customer?.ddId?.name || "N/A"}
+                      {data.customer.marketerName ||
+                        data?.customer?.cedId?.name ||
+                        data?.customer?.ddId?.name ||
+                        "N/A"}
                     </Typography>
                   </Box>
                 </Grid>

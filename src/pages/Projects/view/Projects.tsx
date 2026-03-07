@@ -1,43 +1,115 @@
-import React from 'react';
-import { User, Percent, Calendar, FileText, DollarSign } from 'lucide-react';
+import { Calendar, DollarSign, FileText, Percent, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
+  Alert,
   Box,
   Card,
+  CardContent,
+  CircularProgress,
+  Divider,
   Grid,
   Stack,
-  Divider,
   Typography,
-  CardContent,
-} from '@mui/material';
+} from "@mui/material";
 
-const project = {
-  _id: '687e5ded285deddc94e606f3',
-  projectName: 'Green Valley Phase 2',
-  shortName: 'GV-P2',
-  description: 'Second phase of the eco-housing project with better amenities',
-  duration: '24',
-  emiAmount: 15000,
-  marketer: 'john_mark',
-  schema: 'Fixed Projects',
-  returns: 12,
-  intrest: '8%',
-  totalInvestimate: 0,
-  totalReturnAmount: 0,
-  createdAt: '2025-07-21T15:34:05.608Z',
-  updatedAt: '2025-07-21T15:34:05.608Z',
-};
+import { getAProject } from "src/utils/api.service";
+
+interface Project {
+  _id: string;
+  projectName: string;
+  shortName: string;
+  description: string;
+  duration: string;
+  emiAmount: number;
+  marketer: string;
+  schema: string;
+  returns: number;
+  intrest: string;
+  totalInvestimate: number;
+  totalReturnAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
-const Projects = () => (
+const Projects = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!id) {
+        setError("No project ID provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await getAProject(id);
+
+        if (response.status === 200 && response.data) {
+          setProject(response.data.data);
+          setError(null);
+        } else {
+          setError(response.message || "Failed to fetch project details");
+        }
+      } catch (err) {
+        setError("An error occurred while fetching project details");
+        console.error("Error fetching project:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProject();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  if (!project) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="warning">Project not found</Alert>
+      </Box>
+    );
+  }
+
+  return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" fontWeight={600} gutterBottom>
         Project Overview
@@ -57,21 +129,74 @@ const Projects = () => (
 
           <Grid container spacing={3}>
             {/* Left Column */}
-            <Grid size={{ xs: 12, sm:6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Stack spacing={1.5}>
-                <DetailItem icon={<User size={18} />} label="Marketer" value={project.marketer} />
-                <DetailItem icon={<FileText size={18} />} label="Schema" value={project.schema} />
-                <DetailItem icon={<Percent size={18} />} label="Interest Rate" value={project.intrest} />
-                <DetailItem icon={<DollarSign size={18} />} label="EMI Amount" value={`₹${project.emiAmount.toLocaleString('en-IN')}`} />
+                <DetailItem
+                  icon={<User size={18} />}
+                  label="Marketer"
+                  value={project.marketer}
+                />
+                <DetailItem
+                  icon={<FileText size={18} />}
+                  label="Schema"
+                  value={project.schema}
+                />
+                <DetailItem
+                  icon={<Percent size={18} />}
+                  label="Interest Rate"
+                  value={project.intrest}
+                />
+                <DetailItem
+                  icon={<DollarSign size={18} />}
+                  label="EMI Amount"
+                  value={
+                    project.emiAmount
+                      ? `₹${project.emiAmount.toLocaleString("en-IN")}`
+                      : "N/A"
+                  }
+                />
+                <DetailItem
+                  icon={<DollarSign size={18} />}
+                  label="Total Investment"
+                  value={
+                    project.totalInvestimate
+                      ? `₹${project.totalInvestimate.toLocaleString("en-IN")}`
+                      : "N/A"
+                  }
+                />
               </Stack>
             </Grid>
 
             {/* Right Column */}
-            <Grid size={{ xs: 12, sm:6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Stack spacing={1.5}>
-                <DetailItem icon={<Calendar size={18} />} label="Duration (months)" value={project.duration} />
-                <DetailItem label="Returns (%)" value={`${project.returns}%`} />
-                <DetailItem label="Created At" value={formatDate(project.createdAt)} />
+                <DetailItem
+                  icon={<Calendar size={18} />}
+                  label="Duration (months)"
+                  value={project.duration}
+                />
+                {/* <DetailItem label="Returns (%)" value={project.returns !== undefined && project.returns !== null ? `${project.returns}%` : 'N/A'} /> */}
+                <DetailItem
+                  icon={<DollarSign size={18} />}
+                  label="Total Return Amount"
+                  value={
+                    project.totalReturnAmount
+                      ? `₹${project.totalReturnAmount.toLocaleString("en-IN")}`
+                      : "N/A"
+                  }
+                />
+                {project?.createdAt && (
+                  <DetailItem
+                    label="Created At"
+                    value={formatDate(project.createdAt)}
+                  />
+                )}
+                {project?.updatedAt && (
+                  <DetailItem
+                    label="Updated At"
+                    value={formatDate(project.updatedAt)}
+                  />
+                )}
               </Stack>
             </Grid>
           </Grid>
@@ -79,16 +204,20 @@ const Projects = () => (
       </Card>
     </Box>
   );
+};
 
 // Reusable DetailItem component
-const DetailItem: React.FC<{ icon?: React.ReactNode; label: string; value: string }> = ({
-  icon,
-  label,
-  value,
-}) => (
-  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-    {icon && <Box sx={{ mr: 1, color: 'text.secondary' }}>{icon}</Box>}
-    <Typography variant="subtitle2" sx={{ minWidth: 150, color: 'text.secondary' }}>
+const DetailItem: React.FC<{
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+}> = ({ icon, label, value }) => (
+  <Box sx={{ display: "flex", alignItems: "center" }}>
+    {icon && <Box sx={{ mr: 1, color: "text.secondary" }}>{icon}</Box>}
+    <Typography
+      variant="subtitle2"
+      sx={{ minWidth: 150, color: "text.secondary" }}
+    >
       {label}:
     </Typography>
     <Typography variant="body1">{value}</Typography>
