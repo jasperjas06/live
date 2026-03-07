@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { forwardRef } from "react";
 
 interface BillProps {
@@ -284,7 +285,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {new Date(data.paymentDate).toLocaleDateString()}
+                    {data?.paymentDate
+                      ? dayjs(data.paymentDate).format("DD-MM-YYYY")
+                      : "N/A"}
                   </p>
                 </div>
                 <div
@@ -793,7 +796,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {new Date(data.paymentDate).toLocaleDateString() || "N/A"}
+                    {data?.paymentDate
+                      ? dayjs(data.paymentDate).format("DD-MM-YYYY")
+                      : "N/A"}
                   </p>
                 </div>
                 <div
@@ -1133,7 +1138,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
                     >
                       Created At{" "}
                       {data?.paymentDate
-                        ? new Date(data.paymentDate).toLocaleDateString()
+                        ? dayjs(data.paymentDate).format("DD-MM-YYYY")
                         : ""}{" "}
                       {data?.createdAt
                         ? new Date(data.createdAt).toLocaleTimeString("en-US", {
