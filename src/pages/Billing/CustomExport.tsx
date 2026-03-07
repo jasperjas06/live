@@ -1,12 +1,21 @@
-import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import { Iconify } from 'src/components/iconify';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { getAllProjects, getCustomBillingReport } from 'src/utils/api.service';
-import * as XLSX from 'xlsx';
-
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { Iconify } from "src/components/iconify";
+import { DashboardContent } from "src/layouts/dashboard";
+import { getAllProjects, getCustomBillingReport } from "src/utils/api.service";
+import * as XLSX from "xlsx";
 
 const CustomExport = () => {
   const navigate = useNavigate();
@@ -15,13 +24,13 @@ const CustomExport = () => {
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    return today.toISOString().split("T")[0];
   };
 
   const [fromDate, setFromDate] = useState(getTodayDate());
   const [toDate, setToDate] = useState(getTodayDate());
-  const [dateFilter, setDateFilter] = useState('Custom');
-  const [status, setStatus] = useState('paid');
+  const [dateFilter, setDateFilter] = useState("Custom");
+  const [status, setStatus] = useState("paid");
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [projectSearchTerm, setProjectSearchTerm] = useState("");
@@ -53,40 +62,42 @@ const CustomExport = () => {
     return () => clearTimeout(timer);
   }, [projectSearchTerm]);
 
-  const handleDateFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDateFilterChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const filter = event.target.value;
     setDateFilter(filter);
 
     const today = new Date();
-    let newFromDate = '';
+    let newFromDate = "";
     let newToDate = getTodayDate();
 
     switch (filter) {
-      case 'Yesterday': {
+      case "Yesterday": {
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
-        newFromDate = yesterday.toISOString().split('T')[0];
+        newFromDate = yesterday.toISOString().split("T")[0];
         newToDate = newFromDate;
         break;
       }
-      case 'Today': {
+      case "Today": {
         newFromDate = getTodayDate();
         newToDate = getTodayDate();
         break;
       }
-      case 'Last 1 Week': {
+      case "Last 1 Week": {
         const lastWeek = new Date(today);
         lastWeek.setDate(today.getDate() - 7);
-        newFromDate = lastWeek.toISOString().split('T')[0];
+        newFromDate = lastWeek.toISOString().split("T")[0];
         break;
       }
-      case 'Last 1 Month': {
+      case "Last 1 Month": {
         const lastMonth = new Date(today);
         lastMonth.setMonth(today.getMonth() - 1);
-        newFromDate = lastMonth.toISOString().split('T')[0];
+        newFromDate = lastMonth.toISOString().split("T")[0];
         break;
       }
-      case 'Custom':
+      case "Custom":
       default:
         // Do nothing for Custom, keep existing dates or let user change them
         return;
@@ -98,21 +109,25 @@ const CustomExport = () => {
 
   const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFromDate(e.target.value);
-    setDateFilter('Custom');
+    setDateFilter("Custom");
   };
 
   const handleToDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setToDate(e.target.value);
-    setDateFilter('Custom');
+    setDateFilter("Custom");
   };
 
   const escapeCSVValue = (value: any): string => {
-    if (value === null || value === undefined) return '';
+    if (value === null || value === undefined) return "";
 
     const stringValue = String(value);
 
     // If value contains comma, quote, or newline, wrap it in quotes and escape internal quotes
-    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+    if (
+      stringValue.includes(",") ||
+      stringValue.includes('"') ||
+      stringValue.includes("\n")
+    ) {
       return `"${stringValue.replace(/"/g, '""')}"`;
     }
 
@@ -125,7 +140,7 @@ const CustomExport = () => {
 
       // Validate dates
       if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
-        toast.error('From date cannot be after To date');
+        toast.error("From date cannot be after To date");
         setIsDownloading(false);
         return;
       }
@@ -152,7 +167,7 @@ const CustomExport = () => {
       // Add status filter if selected
       if (status) {
         params.status = status;
-        console.log('Using status filter:', status);
+        console.log("Using status filter:", status);
       }
 
       if (selectedProject) {
@@ -161,17 +176,24 @@ const CustomExport = () => {
         params.projectId = "";
       }
 
-      console.log('API Params being sent:', params);
+      console.log("API Params being sent:", params);
       // Call the API
       const response = await getCustomBillingReport(params as any);
 
       if (response.status === 200 && response.data) {
-        console.log('API Response Data:', response.data);
+        console.log("API Response Data:", response.data);
         const billingData = response.data.billing || response.data.data || [];
         const emiData = response.data.emi || [];
+        const generalData = response.data.general || [];
 
-        if (billingData.length === 0 && emiData.length === 0) {
-          toast.error(response.message || 'No data found for the selected date range');
+        if (
+          billingData.length === 0 &&
+          emiData.length === 0 &&
+          generalData.length === 0
+        ) {
+          toast.error(
+            response.message || "No data found for the selected date range",
+          );
           setIsDownloading(false);
           return;
         }
@@ -184,102 +206,165 @@ const CustomExport = () => {
             dateStr ? new Date(dateStr).toISOString().split("T")[0] : ""; // YYYY-MM-DD
 
           // Project ID with preference: shortName > _id > N/A
-          const projectShortName = item.general?.project?.shortName || item.general?.project?._id || 'N/A';
+          const projectShortName =
+            item.general?.project?.shortName ||
+            item.general?.project?._id ||
+            "N/A";
           // Project Name
-          const projectName = item.general?.project?.projectName || 'N/A';
+          const projectName = item.general?.project?.projectName || "N/A";
 
           // CED (Customer Executive Director) details
-          const cedName = item.customer?.cedId?.name || '';
-          const cedId = item.customer?.cedId?.id || item.customer?.cedId?._id || '';
+          const cedName = item.customer?.cedId?.name || "";
+          const cedId =
+            item.customer?.cedId?.id || item.customer?.cedId?._id || "";
 
           // DD (Direct Director) details
-          const ddName = item.customer?.ddId?.name || '';
-          const ddId = item.customer?.ddId?.id || item.customer?.ddId?._id || '';
+          const ddName = item.customer?.ddId?.name || "";
+          const ddId =
+            item.customer?.ddId?.id || item.customer?.ddId?._id || "";
 
           // Calculations
           const emiAmount = Number(item.general?.emiAmount) || 0;
           const noOfInstallments = Number(item.general?.noOfInstallments) || 0;
           const calculatedTotalAmount = emiAmount * noOfInstallments;
-          const totalAmount = item.general?.totalAmount || item.general?.plotCost || (calculatedTotalAmount > 0 ? calculatedTotalAmount : '');
+          const totalAmount =
+            item.general?.totalAmount ||
+            item.general?.plotCost ||
+            (calculatedTotalAmount > 0 ? calculatedTotalAmount : "");
           const balanceAmount = Number(item.balanceAmount) || 0;
-          const totalPaid = totalAmount ? (Number(totalAmount) - balanceAmount) : '';
+          const totalPaid = totalAmount
+            ? Number(totalAmount) - balanceAmount
+            : "";
 
           return {
-            'Project ID': projectShortName,
-            'Project Name': projectName,
-            'Customer Name': getVal(item.customerName || item?.customer?.name),
-            'Customer ID': getVal(item.customerCode || item?.customer?.id),
-            'Phone': getVal(item.mobileNo || item?.customer?.phone),
-            'CED Name': cedName,
-            'CED ID': cedId,
-            'DD Name': ddName,
-            'DD ID': ddId,
-            'Payment Date': formatDate(item.paymentDate),
-            'Amount Paid': getVal(item.amountPaid),
-            'Booking ID': getVal(item.general?._id),
-            'Billing Id': getVal(item._id),
-            'Plot No': getVal(item.customer?.plotNo),
-            'EMI No': getVal(item.emiNo),
-            'Pay Mode': getVal(item.modeOfPayment),
-            'Remarks': getVal(item.remarks),
-            'Created By': getVal(item.createdBy?.name),
-            'Total Amount': totalAmount,
-            'Total Paid': totalPaid,
-            'Total Balance': getVal(item.balanceAmount),
+            "Project ID": projectShortName,
+            "Project Name": projectName,
+            "Customer Name": getVal(item.customerName || item?.customer?.name),
+            "Customer ID": getVal(item.customerCode || item?.customer?.id),
+            Phone: getVal(item.mobileNo || item?.customer?.phone),
+            "CED Name": cedName,
+            "CED ID": cedId,
+            "DD Name": ddName,
+            "DD ID": ddId,
+            "Payment Date": formatDate(item.paymentDate),
+            "Amount Paid": getVal(item.amountPaid),
+            "Booking ID": getVal(item.general?._id),
+            "Billing Id": getVal(item._id),
+            "Plot No": getVal(item.customer?.plotNo),
+            "EMI No": getVal(item.emiNo),
+            "Pay Mode": getVal(item.modeOfPayment),
+            Remarks: getVal(item.remarks),
+            "Created By": getVal(item.createdBy?.name),
+            "Total Amount": totalAmount,
+            "Total Paid": totalPaid,
+            "Total Balance": getVal(item.balanceAmount),
           };
         });
 
         // --- SHEET 2: UNPAID EMI ---
         const emiRows = emiData.map((item: any) => {
-          const getVal = (val: any) => val || '';
-          const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString('en-GB') : '';
+          const getVal = (val: any) => val || "";
+          const formatDate = (dateStr: string) =>
+            dateStr ? new Date(dateStr).toLocaleDateString("en-GB") : "";
 
           const customer = item.customer || {};
           const general = item.general || {};
 
           // Project ID with preference: shortName > _id > N/A
-          const projectShortName = general.project?.shortName || general.project?._id || customer.projectId || 'N/A';
+          const projectShortName =
+            general.project?.shortName ||
+            general.project?._id ||
+            customer.projectId ||
+            "N/A";
           // Project Name
-          const projectName = general.project?.projectName || 'N/A';
+          const projectName = general.project?.projectName || "N/A";
 
           // CED (Customer Executive Director) details
-          const cedName = customer.cedId?.name || '';
-          const cedId = customer.cedId?.id || customer.cedId?._id || '';
+          const cedName = customer.cedId?.name || "";
+          const cedId = customer.cedId?.id || customer.cedId?._id || "";
 
           // DD (Direct Director) details
-          const ddName = customer.ddId?.name || '';
-          const ddId = customer.ddId?.id || customer.ddId?._id || '';
+          const ddName = customer.ddId?.name || "";
+          const ddId = customer.ddId?.id || customer.ddId?._id || "";
 
           return {
-             'Project ID': projectShortName,
-             'Project Name': projectName,
-             'Customer Name': getVal(customer.name),
-             'Customer ID': getVal(customer.id),
-             'Phone': getVal(customer.phone),
-             'CED Name': cedName,
-             'CED ID': cedId,
-             'DD Name': ddName,
-             'DD ID': ddId,
-             'EMI Amount': getVal(item.emiAmt),
-             'EMI No': getVal(item.emiNo),
-             'Date': formatDate(item.date),
-             'Status': 'Unpaid',
+            "Project ID": projectShortName,
+            "Project Name": projectName,
+            "Customer Name": getVal(customer.name),
+            "Customer ID": getVal(customer.id),
+            Phone: getVal(customer.phone),
+            "CED Name": cedName,
+            "CED ID": cedId,
+            "DD Name": ddName,
+            "DD ID": ddId,
+            "EMI Amount": getVal(item.emiAmt),
+            "EMI No": getVal(item.emiNo),
+            Date: formatDate(item.date),
+            Status: "Unpaid",
+          };
+        });
+
+        // --- SHEET 3: BLOCKED ---
+        const blockedRows = generalData.map((item: any) => {
+          const getVal = (val: any) =>
+            val !== null && val !== undefined ? val : "";
+
+          const project = item.project || {};
+          const customer = item.customer || {};
+
+          // DD details
+          const ddName = customer.ddId?.name || "";
+          const ddPhone = customer.ddId?.phone || "";
+
+          // CED details
+          const cedName = customer.cedId?.name || "";
+          const cedPhone = customer.cedId?.phone || "";
+
+          return {
+            "Project ID": getVal(project.id || project._id),
+            "Project Name": getVal(project.projectName),
+            // "Project Short Name": getVal(project.shortName),
+            // "Project Description": getVal(project.description),
+            // "Project Duration (Months)": getVal(project.duration),
+            // "Project Scheme": getVal(project.schema),
+            "Project EMI Amount": getVal(project.emiAmount),
+            // "Total Investment Amount": getVal(project.totalInvestimate),
+            // "Total Return Amount": getVal(project.totalReturnAmount),
+            // "Interest Rate": getVal(project.intrest),
+            "Customer ID": getVal(customer.id),
+            "Customer Name": getVal(customer.name),
+            "Customer Phone": getVal(customer.phone),
+            // "Customer PAN Number": getVal(customer.panNo),
+            // "Customer Pincode": getVal(customer.pincode),
+            // "Customer Balance Amount": getVal(customer.balanceAmount),
+            // "Customer Batch": getVal(customer.batch),
+            "DD Name": ddName,
+            // "DD Phone": ddPhone,
+            "CED Name": cedName,
+            // "CED Phone": cedPhone,
           };
         });
 
         // Create Workbook
         const wb = XLSX.utils.book_new();
+        if (status === "blocked") {
+          // Add Blocked Sheet
+          if (blockedRows.length > 0) {
+            const wsBlocked = XLSX.utils.json_to_sheet(blockedRows);
+            XLSX.utils.book_append_sheet(wb, wsBlocked, "Blocked");
+          }
+        } else {
+          // Add Billing Sheet (only if there is data)
+          if (billingRows.length > 0) {
+            const wsBilling = XLSX.utils.json_to_sheet(billingRows);
+            XLSX.utils.book_append_sheet(wb, wsBilling, "Billing");
+          }
 
-        // Add Billing Sheet (only if there is data)
-        if (billingRows.length > 0) {
-          const wsBilling = XLSX.utils.json_to_sheet(billingRows);
-          XLSX.utils.book_append_sheet(wb, wsBilling, 'Billing');
-        }
-
-        // Add Unpaid EMI Sheet
-        if (emiRows.length > 0) {
-          const wsEmi = XLSX.utils.json_to_sheet(emiRows);
-            XLSX.utils.book_append_sheet(wb, wsEmi, 'Pending Collections');
+          // Add Unpaid EMI Sheet
+          if (emiRows.length > 0) {
+            const wsEmi = XLSX.utils.json_to_sheet(emiRows);
+            XLSX.utils.book_append_sheet(wb, wsEmi, "Pending Collections");
+          }
         }
 
         // Generate filename
@@ -288,13 +373,13 @@ const CustomExport = () => {
         // Write and Download
         XLSX.writeFile(wb, filename);
 
-        toast.success('Report downloaded successfully');
+        toast.success("Report downloaded successfully");
       } else {
-        toast.error(response.message || 'Failed to download report');
+        toast.error(response.message || "Failed to download report");
       }
     } catch (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to download report. Please try again.');
+      console.error("Download error:", error);
+      toast.error("Failed to download report. Please try again.");
     } finally {
       setIsDownloading(false);
     }
