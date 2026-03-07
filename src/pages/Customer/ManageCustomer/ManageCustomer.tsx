@@ -142,6 +142,11 @@ const createCustomerSchema = baseCustomerSchema.extend({
           : Number(val),
       z.number().optional(),
     ), // Made optional to prevent validation errors
+    totalAmount: z.preprocess(
+      (val) => Number(val),
+      z.number().min(1, "Total Amount is required"),
+    ),
+    startDate: z.string().min(1, "Date is required"),
     emiAmount: z.preprocess(
       (val) => Number(val),
       z.number().min(1, "EMI Amount is required"),
@@ -239,6 +244,8 @@ const CustomerForm = () => {
       // Estimate form defaults
       general: {
         paymentTerms: "",
+        totalAmount: "",
+        startDate: "",
       },
       plot: {},
       flat: {},
@@ -337,7 +344,10 @@ const CustomerForm = () => {
       if (id) {
         // Update existing customer
         // We need to pass _id for update
-        response = await updateCustomer({ ...customerPayload, _id: id }, true);
+        response = await updateCustomer(
+          { ...customerPayload, _id: id, housing: true },
+          true,
+        );
 
         if (response.status === 200) {
           // Handle Estimate Update
@@ -426,6 +436,7 @@ const CustomerForm = () => {
                 percentage: finalPercentage, // Add/update percentage
               },
               customerId: id, // Use existing ID
+              housing: true,
               // For update, we might need _id of the general/plot records if the API requires it.
               // The form data populated from fetch should contain them.
             };
@@ -449,7 +460,10 @@ const CustomerForm = () => {
         }
       } else {
         // Create new customer
-        response = await createCustomer(customerPayload, true);
+        response = await createCustomer(
+          { ...customerPayload, housing: true },
+          true,
+        );
       }
 
       const customerResponse = response;
@@ -544,6 +558,7 @@ const CustomerForm = () => {
               percentage: finalPercentage, // Add extracted percentage
             },
             customerId: mongoId, // Use MongoDB ID for linking
+            housing: true,
           };
 
           if (
@@ -621,7 +636,14 @@ const CustomerForm = () => {
           cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
 
           // Map generalId to general form field
-          general: customerData.generalId || {},
+          general: customerData.generalId
+            ? {
+                ...customerData.generalId,
+                startDate: customerData.generalId.startDate
+                  ? customerData.generalId.startDate.split("T")[0]
+                  : "",
+              }
+            : {},
           plot: plotData,
           flat: flatData,
         };

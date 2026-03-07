@@ -281,6 +281,48 @@ const General: React.FC<GeneralProps> = ({
             )}
           />
         </Grid>{" "} */}
+        {/* Total Amount */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Controller
+            name="general.totalAmount"
+            control={control}
+            rules={{ required: "Total Amount is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="number"
+                label="Total Amount"
+                fullWidth
+                required
+                error={!!get(errors, "general.totalAmount")}
+                helperText={
+                  get(errors, "general.totalAmount")?.message as string
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
+          />
+        </Grid>
+        {/* Start Date */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Controller
+            name="general.startDate"
+            control={control}
+            rules={{ required: "Date is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="date"
+                label="Date"
+                fullWidth
+                required
+                error={!!get(errors, "general.startDate")}
+                helperText={get(errors, "general.startDate")?.message as string}
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
+          />
+        </Grid>
         {/* Payment Terms */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller
