@@ -618,6 +618,9 @@ const CustomerForm = () => {
       const response = await getACustomer(id, { general: true, plot: true });
       if (response?.data?.data) {
         const customerData = response.data.data;
+        // Use generalId from the customer data first, fallback to the top-level general object
+        const generalSource =
+          customerData.generalId || response.data.general || {};
         // Plot and flat come as top-level keys in the API response
         const rawPlot = response.data.plot || {};
         // API returns 'guideLandValue' but the form field is named 'guideRateSqFt'
@@ -635,15 +638,20 @@ const CustomerForm = () => {
           ddId: customerData.ddId?._id || customerData.ddId,
           cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
 
-          // Map generalId to general form field
-          general: customerData.generalId
-            ? {
-                ...customerData.generalId,
-                startDate: customerData.generalId.startDate
-                  ? customerData.generalId.startDate.split("T")[0]
-                  : "",
-              }
-            : {},
+          // Map to general form field using the prioritized source
+          general:
+            Object.keys(generalSource).length > 0
+              ? {
+                  ...generalSource,
+                  startDate: generalSource.startDate
+                    ? generalSource.startDate.split("T")[0]
+                    : "",
+                  loan: generalSource.loan
+                    ? generalSource.loan.charAt(0).toUpperCase() +
+                      generalSource.loan.slice(1).toLowerCase()
+                    : "",
+                }
+              : {},
           plot: plotData,
           flat: flatData,
         };
@@ -664,8 +672,8 @@ const CustomerForm = () => {
         }
 
         // 2. Set Sale Type if available in general data
-        if (customerData.generalId?.saleType) {
-          setSaleType(customerData.generalId.saleType);
+        if (generalSource?.saleType) {
+          setSaleType(generalSource.saleType);
         }
 
         // 3. Set Autocomplete States for Project, DD, CED
