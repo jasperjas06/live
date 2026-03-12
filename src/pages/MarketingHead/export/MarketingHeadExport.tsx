@@ -39,6 +39,8 @@ type DownlineItem = {
   level: number;
   leaderName?: string;
   status: string;
+  id?: string | number;
+  leaderID?: string | number;
 };
 
 const MarketingHeadExport = () => {
@@ -124,7 +126,9 @@ const MarketingHeadExport = () => {
     // Based on user requirements: Level, Name, Leader Name, Phone, Status
     const exportData = downlineData.map((item) => ({
       LevelId: item.level,
+      ID: item.id || "-",
       Name: item.name,
+      "Leader ID": item.leaderID || "-",
       "Leader Name": item.leaderName || "-",
       Phone: item.phone || "-",
       Status: item.status || "-",
@@ -220,7 +224,9 @@ const MarketingHeadExport = () => {
                 <TableHead sx={{ bgcolor: "background.neutral" }}>
                   <TableRow>
                     <TableCell>Level</TableCell>
+                    <TableCell>ID</TableCell>
                     <TableCell>Name</TableCell>
+                    <TableCell>Leader ID</TableCell>
                     <TableCell>Leader Name</TableCell>
                     <TableCell>Phone</TableCell>
                     <TableCell>Status</TableCell>
@@ -230,7 +236,9 @@ const MarketingHeadExport = () => {
                   {downlineData.map((row) => (
                     <TableRow key={row._id} hover>
                       <TableCell>{row.level}</TableCell>
+                      <TableCell>{row.id || "-"}</TableCell>
                       <TableCell>{row.name}</TableCell>
+                      <TableCell>{row.leaderID || "-"}</TableCell>
                       <TableCell>{row.leaderName || "-"}</TableCell>
                       <TableCell>{row.phone || "-"}</TableCell>
                       <TableCell>

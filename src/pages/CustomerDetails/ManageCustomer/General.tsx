@@ -24,6 +24,7 @@ interface GeneralProps {
   setSaleType: React.Dispatch<React.SetStateAction<string>>;
   handleNext: () => void | Promise<void>;
   setTabIndex: React.Dispatch<React.SetStateAction<number>>;
+  id?: string;
 }
 
 const General: React.FC<GeneralProps> = ({
@@ -32,6 +33,7 @@ const General: React.FC<GeneralProps> = ({
   setSaleType,
   handleNext,
   setTabIndex,
+  id,
 }) => {
   const {
     control,
@@ -304,25 +306,27 @@ const General: React.FC<GeneralProps> = ({
           />
         </Grid>
         {/* Start Date */}
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Controller
-            name="general.startDate"
-            control={control}
-            rules={{ required: "Date is required" }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="date"
-                label="Date"
-                fullWidth
-                required
-                error={!!get(errors, "general.startDate")}
-                helperText={get(errors, "general.startDate")?.message as string}
-                InputLabelProps={{ shrink: true }}
-              />
-            )}
-          />
-        </Grid>
+        { !id && (
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="general.startDate"
+              control={control}
+              rules={{ required: "Date is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="date"
+                  label="Date"
+                  fullWidth
+                  required
+                  error={!!get(errors, "general.startDate")}
+                  helperText={get(errors, "general.startDate")?.message as string}
+                  InputLabelProps={{ shrink: true }}
+                />
+              )}
+            />
+          </Grid>
+        )}
         {/* Payment Terms */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller

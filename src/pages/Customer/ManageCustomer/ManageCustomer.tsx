@@ -146,7 +146,7 @@ const createCustomerSchema = baseCustomerSchema.extend({
       (val) => Number(val),
       z.number().min(1, "Total Amount is required"),
     ),
-    startDate: z.string().min(1, "Date is required"),
+    startDate: z.string().optional(),
     emiAmount: z.preprocess(
       (val) => Number(val),
       z.number().min(1, "EMI Amount is required"),
@@ -258,12 +258,22 @@ const CustomerForm = () => {
     formState: { errors },
     reset,
     setValue,
+    setError,
     trigger,
   } = methods;
 
   const onSubmit: SubmitHandler<any> = async (data) => {
     console.log(data);
     try {
+      // In create mode, startDate is mandatory
+      if (!id && !data.startDate) {
+        setError("startDate", {
+          type: "manual",
+          message: "Start Date is required",
+        });
+        return;
+      }
+
       // Clean phone and mobileNo by removing leading zeros (Chrome autofill issue)
       let cleanedPhone = data.phone;
       if (cleanedPhone.startsWith("0")) {
@@ -1539,7 +1549,8 @@ const CustomerForm = () => {
                   <Divider sx={{ my: 4 }} />
                   <FormSection>
                     <SectionTitle variant="h6">Estimate Details</SectionTitle>
-                    <General
+                      <General
+                        id={id}
                       marketer={marketerOptions}
                       saleType={saleType}
                       setSaleType={setSaleType}

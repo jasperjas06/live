@@ -34,7 +34,18 @@ const CustomExport = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [projectSearchTerm, setProjectSearchTerm] = useState("");
+  const [debouncedProjectSearch, setDebouncedProjectSearch] = useState("");
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
+
+  // Debounce: only update debouncedProjectSearch 500ms after typing stops
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedProjectSearch(projectSearchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [projectSearchTerm]);
+
+  // Fetch projects whenever the debounced search term changes
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -43,7 +54,7 @@ const CustomExport = () => {
         const response = await getAllProjects({
           page: 1,
           limit: 10,
-          search: projectSearchTerm,
+          search: debouncedProjectSearch,
         });
         if (response.status === 200 && response.data?.data) {
           setProjects(response.data.data);
@@ -55,12 +66,8 @@ const CustomExport = () => {
       }
     };
 
-    const timer = setTimeout(() => {
-      fetchProjects();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [projectSearchTerm]);
+    fetchProjects();
+  }, [debouncedProjectSearch]);
 
   const handleDateFilterChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -473,8 +480,14 @@ const CustomExport = () => {
                 onChange={(_event, newValue) => {
                   setSelectedProject(newValue);
                 }}
-                onInputChange={(_event, newInputValue) => {
-                  setProjectSearchTerm(newInputValue);
+                filterOptions={(x) => x}
+                onInputChange={(_event, newInputValue, reason) => {
+                  if (reason === "input") {
+                    setProjectSearchTerm(newInputValue);
+                  } else if (reason === "clear") {
+                    // Reset search when user clears the field
+                    setProjectSearchTerm("");
+                  }
                 }}
                 loading={isProjectsLoading}
                 renderInput={(p) => (
