@@ -90,7 +90,11 @@ const baseCustomerSchema = z.object({
   // Optional / domain fields
   plotNo: z.string().optional(),
   gender: z.string().optional(),
-  emiAmount: z.preprocess((val) => Number(val), z.number().optional()),
+  emiAmount: z.preprocess(
+    (val) =>
+      val === undefined || val === null || val === "" ? undefined : Number(val),
+    z.number().optional(),
+  ),
   ddMobile: z.string().optional(),
   cedId: z.string().nullable().optional(), // Allow nullable for optional ObjectId
   cedMobile: z.string().optional(),
@@ -143,17 +147,23 @@ const createCustomerSchema = baseCustomerSchema.extend({
       z.number().optional(),
     ), // Made optional to prevent validation errors
     totalAmount: z.preprocess(
-      (val) => Number(val),
-      z.number().min(1, "Total Amount is required"),
+      (val) =>
+        val === undefined || val === null || val === "" ? undefined : Number(val),
+      z.number({ message: "Total Amount is required" })
+       .min(1, "Total Amount is required"),
     ),
     startDate: z.string().optional(),
     emiAmount: z.preprocess(
-      (val) => Number(val),
-      z.number().min(1, "EMI Amount is required"),
+      (val) =>
+        val === undefined || val === null || val === "" ? undefined : Number(val),
+      z.number({ message: "EMI Amount is required" })
+       .min(1, "EMI Amount is required"),
     ),
     noOfInstallments: z.preprocess(
-      (val) => Number(val),
-      z.number().min(1, "Installments is required"),
+      (val) =>
+        val === undefined || val === null || val === "" ? undefined : Number(val),
+      z.number({ message: "Installments is required" })
+       .min(1, "Installments is required"),
     ),
 
     // Optional estimate fields
@@ -1549,8 +1559,8 @@ const CustomerForm = () => {
                   <Divider sx={{ my: 4 }} />
                   <FormSection>
                     <SectionTitle variant="h6">Estimate Details</SectionTitle>
-                      <General
-                        id={id}
+                    <General
+                      id={id}
                       marketer={marketerOptions}
                       saleType={saleType}
                       setSaleType={setSaleType}
