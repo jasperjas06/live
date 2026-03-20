@@ -157,13 +157,13 @@ const createCustomerSchema = baseCustomerSchema.extend({
       (val) =>
         val === undefined || val === null || val === "" ? undefined : Number(val),
       z.number({ message: "EMI Amount is required" })
-       .min(1, "EMI Amount is required"),
+       .min(0, "EMI Amount must be positive"),
     ),
     noOfInstallments: z.preprocess(
       (val) =>
         val === undefined || val === null || val === "" ? undefined : Number(val),
       z.number({ message: "Installments is required" })
-       .min(1, "Installments is required"),
+       .min(0, "Installments must be positive"),
     ),
 
     // Optional estimate fields
@@ -276,8 +276,8 @@ const CustomerForm = () => {
     console.log(data);
     try {
       // In create mode, startDate is mandatory
-      if (!id && !data.startDate) {
-        setError("startDate", {
+      if (!id && !data.general?.startDate) {
+        setError("general.startDate", {
           type: "manual",
           message: "Start Date is required",
         });
