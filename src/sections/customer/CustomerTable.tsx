@@ -209,12 +209,12 @@ const handleDeleteClick = (id: string | number) => {
   setOpenConfirmDialog(true);
 };
 
-const handleDeleteConfirm = async () => {
+const handleDeleteConfirm = async (reason?: string) => {
   if (!deleteId) return;
   setOpenConfirmDialog(false);
 
   try {
-    await deleteCustomer(deleteId);
+    await deleteCustomer(deleteId, reason);
     getCustomerData();
     toast.success('Customer deleted successfully');
   } catch (error) {
@@ -353,7 +353,6 @@ const handleCloseConfirmDialog = () => {
           </Box>
         </Box>
       )}
-
       <ConfirmDialog
         open={openConfirmDialog}
         onClose={handleCloseConfirmDialog}
@@ -362,6 +361,7 @@ const handleCloseConfirmDialog = () => {
         action={handleDeleteConfirm}
         cancelText="Cancel"
         actionText="Delete"
+        requireReason={true}
       />
     </DashboardContent> 
   );

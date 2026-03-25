@@ -165,10 +165,10 @@ const ProjectsTable = () => {
     setOpenDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (reason?: string) => {
     if (deleteId) {
       try {
-        await deleteProject(String(deleteId));
+        await deleteProject(String(deleteId), reason);
         getProjectsData();
       } catch (error) {
         console.error('Failed to delete project:', error);
@@ -303,6 +303,7 @@ const ProjectsTable = () => {
         title="Confirm Delete"
         content="Are you sure you want to delete this project? This action cannot be undone."
         action={handleConfirmDelete}
+        requireReason={true}
       />
     </DashboardContent>
   );

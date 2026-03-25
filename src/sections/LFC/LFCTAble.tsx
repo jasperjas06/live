@@ -17,6 +17,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { useNavigate } from 'react-router-dom';
 import { deleteLFC, getAllLFC } from 'src/utils/api.service';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
+import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
 
 type Customer = {
   id: string;
@@ -29,6 +30,8 @@ type Customer = {
 
 const LFCTable = () => {
   const [data,setData] = useState<any>([])
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
   const navigate = useNavigate();
   
   const getLFCData = async() =>{
@@ -60,15 +63,21 @@ const LFCTable = () => {
 
   ];
   
-  const handleDelete = async (id: string | number) => {
-    const confirmed = window.confirm('Are you sure you want to delete this Prpject Detail?');
-    if (!confirmed) return;
-  
+  const handleDelete = (id: string | number) => {
+    setDeleteId(id);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmDelete = async (reason?: string) => {
+    if (!deleteId) return;
     try {
-      await deleteLFC(String(id)); // convert to string if needed by API
+      await deleteLFC(String(deleteId), reason); // convert to string if needed by API
       getLFCData(); // re-fetch data (not getAllCustomer again)
     } catch (error) {
       console.error('Failed to delete customer:', error);
+    } finally {
+      setOpenConfirmDialog(false);
+      setDeleteId(null);
     }
   };
 
@@ -97,6 +106,14 @@ const LFCTable = () => {
                 onDelete={handleDelete}
               />
             </Card>
+      <ConfirmDialog
+        open={openConfirmDialog}
+        onClose={() => { setOpenConfirmDialog(false); setDeleteId(null); }}
+        title="Confirm Delete"
+        content="Are you sure you want to delete this Project Detail? This action cannot be undone."
+        action={handleConfirmDelete}
+        requireReason={true}
+      />
     </DashboardContent>
   );
 };

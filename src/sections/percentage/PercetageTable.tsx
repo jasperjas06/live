@@ -115,10 +115,10 @@ const PercetageTable = () => {
         setOpenDeleteDialog(true);
       };
     
-      const handleConfirmDelete = async () => {
+      const handleConfirmDelete = async (reason?: string) => {
         if (deleteId) {
           try {
-            await deletePercentage(String(deleteId));
+            await deletePercentage(String(deleteId), reason);
             getAllData();
           } catch (error) {
             console.error('Failed to delete percentage:', error);
@@ -248,6 +248,7 @@ const PercetageTable = () => {
         title="Confirm Delete"
         content="Are you sure you want to delete this percentage? This action cannot be undone."
         action={handleConfirmDelete}
+        requireReason={true}
       />
       </DashboardContent>
     </div>

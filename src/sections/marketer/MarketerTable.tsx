@@ -96,10 +96,10 @@ const MarketerTable = () => {
     setOpenDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (reason?: string) => {
     if (deleteId) {
       try {
-        const response: any = await deleteMarketer(deleteId);
+        const response: any = await deleteMarketer(String(deleteId), reason);
         if (response) {
           toast.success('Marketer deleted successfully');
           getAllData();
@@ -253,6 +253,7 @@ const MarketerTable = () => {
           title="Confirm Delete"
           content="Are you sure you want to delete this marketer? This action cannot be undone."
           action={handleConfirmDelete}
+          requireReason={true}
         />
     </DashboardContent>
   );

@@ -272,10 +272,10 @@ const BillingTable = () => {
     setOpenDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (reason?: string) => {
     if (deleteId) {
       try {
-        await deleteBilling(String(deleteId));
+        await deleteBilling(String(deleteId), reason);
         getAllData();
       } catch (error) {
         console.error("Failed to delete billing:", error);
@@ -410,7 +410,8 @@ const BillingTable = () => {
           title="Customer Table"
           data={data}
           columns={customerColumns}
-          isDelete={permissions?.Billing?.delete === true ? true : false}
+          // TODO: Uncomment once backend supports EMI reversion for billing deletion
+          isDelete={permissions?.Billing?.delete && isAdmin ? true : false}
           isEdit={permissions?.Billing?.update === true ? true : false}
           isView={permissions?.Billing?.read === true ? true : false}
           onDelete={handleDelete}
@@ -467,6 +468,7 @@ const BillingTable = () => {
         title="Confirm Delete"
         content="Are you sure you want to delete this billing record? This action cannot be undone."
         action={handleConfirmDelete}
+        requireReason={true}
       />
     </DashboardContent>
   );

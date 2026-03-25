@@ -27,6 +27,7 @@ import { NVTTableRow } from 'src/pages/NVT/nvt-table-row';
 import { useNavigate } from 'react-router-dom'; 
 import { deleteNVT, getAllNVT } from 'src/utils/api.service';
 import { Column, DataTable } from 'src/custom/dataTable/dataTable';
+import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
 
 interface Project {
      id: string;
@@ -42,6 +43,8 @@ export function NVTTable() {
   const [filterName, setFilterName] = useState('');
   const [data,setData] = useState([])
   const navigate = useNavigate()
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
 
 const getData = async () => {
   try {
@@ -62,18 +65,21 @@ const getData = async () => {
 useEffect(() => {
   getData();
 }, []);
-  const handleDelete = async (id: string | number) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this NVT?",
-    );
-    if (!confirmed) return;
+  const handleDelete = (id: string | number) => {
+    setDeleteId(id);
+    setOpenConfirmDialog(true);
+  };
 
+  const handleConfirmDelete = async (reason?: string) => {
+    if (!deleteId) return;
     try {
-      console.log(id);
-      await deleteNVT(String(id)); // convert to string if needed by API
-      getData(); // re-fetch data (not getAllCustomer again)
+      await deleteNVT(String(deleteId), reason);
+      getData(); 
     } catch (error) {
-      console.error("Failed to delete customer:", error);
+      console.error("Failed to delete NVT:", error);
+    } finally {
+      setOpenConfirmDialog(false);
+      setDeleteId(null);
     }
   };
        const customerColumns: Column<Project>[] = [
@@ -110,7 +116,14 @@ useEffect(() => {
           isEdit={permissions?.NVT?.update === true ? true : false}
           isView={permissions?.NVT?.read === true ? true : false}
                   />
-     
+      <ConfirmDialog
+        open={openConfirmDialog}
+        onClose={() => { setOpenConfirmDialog(false); setDeleteId(null); }}
+        title="Confirm Delete"
+        content="Are you sure you want to delete this NVT? This action cannot be undone."
+        action={handleConfirmDelete}
+        requireReason={true}
+      />
     </DashboardContent>
   );
 }

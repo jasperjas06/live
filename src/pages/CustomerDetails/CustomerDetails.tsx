@@ -14,6 +14,7 @@ import { deleteCustomer, getAllEstimateByCustomerId } from 'src/utils/api.servic
 
 import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
+import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
 
 type Customer = {
   id: string;
@@ -32,6 +33,8 @@ const CustomerDetails = () => {
     console.log(useParams(),"params");
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
 
   const getCustomerData = async () => {
     try {
@@ -73,15 +76,21 @@ const CustomerDetails = () => {
   { id: 'noEmiPending', label: 'Pending EMI', sortable: true },
 ];
 
-const handleDelete = async (id: string | number) => {
-  const confirmed = window.confirm('Are you sure you want to delete this customer?');
-  if (!confirmed) return;
+const handleDelete = (id: string | number) => {
+  setDeleteId(id);
+  setOpenConfirmDialog(true);
+};
 
+const handleConfirmDelete = async (reason?: string) => {
+  if (!deleteId) return;
   try {
-    await deleteCustomer(String(id)); // convert to string if needed by API
+    await deleteCustomer(String(deleteId), reason); // convert to string if needed by API
     getCustomerData(); // re-fetch data (not getAllCustomer again)
   } catch (error) {
     console.error('Failed to delete customer:', error);
+  } finally {
+    setOpenConfirmDialog(false);
+    setDeleteId(null);
   }
 };
 
@@ -115,6 +124,14 @@ const handleDelete = async (id: string | number) => {
           isEdit={false}
         />
       </Card>
+      <ConfirmDialog
+        open={openConfirmDialog}
+        onClose={() => { setOpenConfirmDialog(false); setDeleteId(null); }}
+        title="Confirm Delete"
+        content="Are you sure you want to delete this customer? This action cannot be undone."
+        action={handleConfirmDelete}
+        requireReason={true}
+      />
     </DashboardContent>
   );
 };

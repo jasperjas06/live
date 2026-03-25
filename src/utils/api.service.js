@@ -130,9 +130,9 @@ export const updateCustomer = async (data, includeCustomer = false) => {
   }
 };
 
-export const deleteCustomer = async (id) => {
+export const deleteCustomer = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/customer/delete`, {
       data: data,
       headers: getHeaders(),
@@ -291,9 +291,9 @@ export const getAllProjects = async (params = {}) => {
   }
 };
 
-export const deleteProject = async (id) => {
+export const deleteProject = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/project/delete`, {
       data: data,
       headers: getHeaders(),
@@ -434,9 +434,9 @@ export const updateMarketingHead = async (data) => {
   }
 };
 
-export const deleteMarketingHead = async (id) => {
+export const deleteMarketingHead = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/market/head/delete`, {
       data: data,
       headers: getHeaders(),
@@ -654,9 +654,9 @@ export const getAPercentage = async (id) => {
   }
 };
 
-export const deletePercentage = async (id) => {
+export const deletePercentage = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/percentage/delete`, {
       data: data,
       headers: getHeaders(),
@@ -899,9 +899,9 @@ export const getAllModCustomer = async (params = {}) => {
   }
 };
 
-export const deleteMOD = async (id) => {
+export const deleteMOD = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/mod/delete`, {
       data: data,
       headers: getHeaders(),
@@ -1040,9 +1040,9 @@ export const getANVT = async (id) => {
   }
 };
 
-export const deleteNVT = async (id) => {
+export const deleteNVT = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/nvt/delete`, {
       data: data,
       headers: getHeaders(),
@@ -1158,9 +1158,9 @@ export const getALFC = async (id) => {
   }
 };
 
-export const deleteLFC = async (id) => {
+export const deleteLFC = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(`${base_url}api/lfc/delete`, {
       data: data,
       headers: getHeaders(),
@@ -1823,9 +1823,9 @@ export const updateBilling = async (data) => {
   }
 };
 
-export const deleteBilling = async (id) => {
+export const deleteBilling = async (id, reason) => {
   try {
-    const data = { _id: id };
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(
       `${base_url}api/common/billing/delete`,
       {
@@ -2325,11 +2325,13 @@ export const getAllMarketer = async (params = {}) => {
   }
 };
 
-export const deleteMarketer = async (id) => {
+export const deleteMarketer = async (id, reason) => {
   try {
+    const data = { _id: id, ...(reason && { reason }) };
     const response = await axios.delete(
       `${base_url}api/market/detail/delete/${id}`,
       {
+        data,
         headers: getHeaders(),
       },
     );

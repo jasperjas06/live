@@ -117,12 +117,12 @@ const MODTable = () => {
       setOpenConfirmDialog(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = async (reason?: string) => {
     if (!deleteId) return;
     setOpenConfirmDialog(false);
 
     try {
-      await deleteMOD(deleteId);
+      await deleteMOD(deleteId, reason);
       getMOD(); 
       toast.success("MOD deleted successfully");
     } catch (error) {
@@ -324,6 +324,7 @@ const MODTable = () => {
         action={handleDeleteConfirm}
         cancelText="Cancel"
         actionText="Delete"
+        requireReason={true}
       />
 
     </DashboardContent>
