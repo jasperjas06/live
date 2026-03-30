@@ -33,7 +33,6 @@ import {
   /* checkEmi, */ createbilling,
   getAllCustomer,
   getAllEmi,
-  getAllEstimateByCustomerId,
   getBillingById,
   updateBilling,
 } from "src/utils/api.service";
@@ -67,7 +66,17 @@ const roleSchema = yup.object().shape({
   status: yup.string().required("Status is required"),
   remarks: yup.string().notRequired(),
   modeOfPayment: yup.string().required("Mode Of Payment is required"),
-  referenceId: yup.string().notRequired(),
+  referenceId: yup.string().when("modeOfPayment", {
+    is: (val: any) => {
+      const mode = Array.isArray(val) ? val[0] : val;
+      return (
+        mode &&
+        (mode.toLowerCase() === "card" || mode.toLowerCase() === "online")
+      );
+    },
+    then: (schema) => schema.required("Reference ID is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   cardNo: yup.string().notRequired(),
   cardHolderName: yup.string().notRequired(),
   paymentDate: yup.string().required("Payment Date is required"),
@@ -417,6 +426,19 @@ const BillingForm = () => {
     }
   }, [id]);
 
+  // Load mode of payment from session storage on mount for create mode
+  useEffect(() => {
+    if (!id) {
+      const lastMode = sessionStorage.getItem("lastModeOfPayment");
+      if (lastMode) {
+        setValue("modeOfPayment", lastMode, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    }
+  }, [id, setValue]);
+
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
@@ -448,6 +470,9 @@ const BillingForm = () => {
         : await createbilling(apiData);
 
       if (response.status === 200) {
+        if (!id) {
+          sessionStorage.setItem("lastModeOfPayment", data.modeOfPayment);
+        }
         toast.success(response.message);
         navigate(-1);
       } else {
@@ -581,68 +606,6 @@ const BillingForm = () => {
                           shouldValidate: false,
                         });
                         setEmiError("");
-
-                        // Auto-fill Mode of Payment only in Create Mode
-                        if (!id && selectedId) {
-                          try {
-                            const res = await getAllEstimateByCustomerId({
-                              cusId: selectedId,
-                            });
-                            if (
-                              res?.data?.success &&
-                              res?.data?.data?.length > 0
-                            ) {
-                              const estimateData = res.data.data[0];
-                              const billings = estimateData?.billing || [];
-
-                              if (billings.length > 0) {
-                                // Find the most recent bill that isn't cancelled
-                                const validBillings = billings.filter(
-                                  (bill: any) =>
-                                    bill.status !== "Cancelled" &&
-                                    bill.modeOfPayment,
-                                );
-
-                                console.log(
-                                  validBillings[0].modeOfPayment,
-                                  "test",
-                                );
-
-                                // Assuming the array is ordered chronologically (oldest to newest)
-                                // or newest first. We'll take the last item just in case.
-                                // If dates are present, a sort would be safer, but picking the last one
-                                // or the first one depends on backend sort order.
-                                // The user's example had createdAt "2026-03-04T10:44:21.716Z"
-
-                                // Let's sort them by createdAt descending to ensure we get the absolute latest
-                                validBillings.sort((a: any, b: any) => {
-                                  return (
-                                    new Date(b.createdAt).getTime() -
-                                    new Date(a.createdAt).getTime()
-                                  );
-                                });
-
-                                const latestBill = validBillings[0];
-
-                                if (latestBill && latestBill.modeOfPayment) {
-                                  setValue(
-                                    "modeOfPayment",
-                                    latestBill.modeOfPayment.toLowerCase(),
-                                    {
-                                      shouldValidate: true,
-                                      shouldDirty: true,
-                                    },
-                                  );
-                                }
-                              }
-                            }
-                          } catch (error) {
-                            console.error(
-                              "Error fetching estimates for autofill:",
-                              error,
-                            );
-                          }
-                        }
                       }}
                       ListboxProps={{
                         onScroll: (event: React.SyntheticEvent) => {
@@ -925,7 +888,12 @@ const BillingForm = () => {
                         render={({ field, fieldState }) => (
                           <TextField
                             {...field}
-                            label="Reference ID"
+                            label={
+                              <>
+                                Reference ID{" "}
+                                <span style={{ color: "red" }}>*</span>
+                              </>
+                            }
                             fullWidth
                             error={!!fieldState.error}
                             helperText={fieldState.error?.message}
@@ -1228,6 +1196,6 @@ const BillingForm = () => {
       </StyledCard>
     </DashboardContent>
   );
-};
+};;
 
 export default BillingForm;

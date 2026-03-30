@@ -2184,6 +2184,7 @@ export const getCustomBillingReport = async ({
   date,
   status,
   projectId,
+  customerId,
 }) => {
   try {
     let url = `${base_url}api/common/billing/get/all/report?`;
@@ -2194,6 +2195,7 @@ export const getCustomBillingReport = async ({
     if (dateTo) params.push(`dateTo=${dateTo}`);
     if (status) params.push(`status=${status}`);
     if (projectId) params.push(`projectId=${projectId}`);
+    if (customerId) params.push(`customerId=${customerId}`);
 
     url += params.join("&");
 

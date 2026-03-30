@@ -487,22 +487,6 @@ const General: React.FC<GeneralProps> = ({
             )}
           />
         </Grid>
-        {/* Offered */}
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Controller
-            name="general.offered"
-            control={control}
-            render={({ field }) => (
-              <FormControl fullWidth error={!!get(errors, "general.offered")}>
-                <InputLabel>Offered</InputLabel>
-                <Select {...field} label="Offered">
-                  <MenuItem value="Yes">Yes</MenuItem>
-                  <MenuItem value="No">No</MenuItem>
-                </Select>
-              </FormControl>
-            )}
-          />
-        </Grid>
         {/* Sale Type */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Controller

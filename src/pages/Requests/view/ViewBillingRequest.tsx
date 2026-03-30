@@ -168,129 +168,227 @@ const ViewBillingRequest = () => {
         </Typography>
       </Box>
 
-      <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+      <Box
+        sx={{
+          backgroundColor: "white",
+          p: 3,
+          borderRadius: 2,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+        }}
+      >
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Request ID
           </Typography>
           <Typography variant="body2" fontFamily="monospace">
-             {data._id}
+            {data._id}
           </Typography>
         </Box>
 
         <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                User Details
-            </Typography>
-            <Typography variant="body1" fontWeight={500}>
-                {data.userId?.name}
-            </Typography>
-             <Typography variant="body2" color="text.secondary">
-                {data.userId?.phone} | {data.userId?.email}
-            </Typography>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            User Details
+          </Typography>
+          <Typography variant="body1" fontWeight={500}>
+            {data.userId?.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {data.userId?.phone} | {data.userId?.email}
+          </Typography>
         </Box>
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Request For
           </Typography>
-          <Typography variant="body1" sx={{textTransform: 'capitalize'}}>
+          <Typography variant="body1" sx={{ textTransform: "capitalize" }}>
             {isCreateRequest ? "Verify Bill" : data.requestFor}
           </Typography>
         </Box>
 
-         <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Message
           </Typography>
-          <Typography variant="body1">
-            {data.message || "N/A"}
-          </Typography>
+          <Typography variant="body1">{data.message || "N/A"}</Typography>
         </Box>
 
         {!isCreateRequest && (
-            <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Excel Date Range
+              Excel Date Range
             </Typography>
             <Typography variant="body1">
-                {data.excelFromDate && data.excelToDate 
-                    ? `${new Date(data.excelFromDate).toLocaleDateString()} - ${new Date(data.excelToDate).toLocaleDateString()}` 
-                    : "N/A"}
+              {data.excelFromDate && data.excelToDate
+                ? `${new Date(data.excelFromDate).toLocaleDateString()} - ${new Date(data.excelToDate).toLocaleDateString()}`
+                : "N/A"}
             </Typography>
-            </Box>
+          </Box>
         )}
 
         {isCreateRequest && data.billingDetails && (
-            <Box sx={{ mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 1 }}>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                    Billing Details
+          <Box sx={{ mb: 3, p: 2, bgcolor: "#f8f9fa", borderRadius: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+              Billing Details
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Mode of Payment
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
-                    <Box>
-                        <Typography variant="caption" color="text.secondary">Mode of Payment</Typography>
-                        <Typography variant="body2">{data.billingDetails.modeOfPayment || "N/A"}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption" color="text.secondary">Payment Date</Typography>
-                         <Typography variant="body2">
-                            {data.billingDetails.paymentDate ? new Date(data.billingDetails.paymentDate).toLocaleDateString() : "N/A"}
-                        </Typography>
-                    </Box>
-                     <Box>
-                        <Typography variant="caption" color="text.secondary">Remarks</Typography>
-                        <Typography variant="body2">{data.billingDetails.remarks || "N/A"}</Typography>
-                    </Box>
-                    {(data.billingDetails.modeOfPayment === "Card" || data.billingDetails.modeOfPayment === "Online") && (
-                        <>
-                         <Box>
-                            <Typography variant="caption" color="text.secondary">Card/Ref No</Typography>
-                            <Typography variant="body2">{data.billingDetails.cardNo || "N/A"}</Typography>
-                        </Box>
-                        <Box>
-                            <Typography variant="caption" color="text.secondary">Holder Name</Typography>
-                            <Typography variant="body2">{data.billingDetails.cardHolderName || "N/A"}</Typography>
-                        </Box>
-                        </>
-                    )}
-                </Box>
+                <Typography variant="body2">
+                  {data.billingDetails.modeOfPayment || "N/A"}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Payment Date
+                </Typography>
+                <Typography variant="body2">
+                  {data.billingDetails.paymentDate
+                    ? new Date(
+                        data.billingDetails.paymentDate,
+                      ).toLocaleDateString()
+                    : "N/A"}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Remarks
+                </Typography>
+                <Typography variant="body2">
+                  {data.billingDetails.remarks || "N/A"}
+                </Typography>
+              </Box>
+              {(data.billingDetails.modeOfPayment === "Card" ||
+                data.billingDetails.modeOfPayment === "Online") && (
+                <>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Card/Ref No
+                    </Typography>
+                    <Typography variant="body2">
+                      {data.billingDetails.cardNo || "N/A"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Holder Name
+                    </Typography>
+                    <Typography variant="body2">
+                      {data.billingDetails.cardHolderName || "N/A"}
+                    </Typography>
+                  </Box>
+                </>
+              )}
             </Box>
+          </Box>
         )}
 
         {isCreateRequest && data.emi && data.emi.length > 0 && (
-             <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    EMI Details
-                </Typography>
-                <Box sx={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                        <thead>
-                            <tr style={{ backgroundColor: '#f4f6f8', textAlign: 'left' }}>
-                                <th style={{ padding: '8px', borderBottom: '1px solid #dfe3e8' }}>Customer</th>
-                                <th style={{ padding: '8px', borderBottom: '1px solid #dfe3e8' }}>EMI No</th>
-                                <th style={{ padding: '8px', borderBottom: '1px solid #dfe3e8' }}>Due Date</th>
-                                <th style={{ padding: '8px', borderBottom: '1px solid #dfe3e8' }}>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.emi.map((item: any, index: number) => (
-                                <tr key={item._id || index}>
-                                    <td style={{ padding: '8px', borderBottom: '1px solid #edf2f7' }}>{item.customer?.name || "N/A"}</td>
-                                    <td style={{ padding: '8px', borderBottom: '1px solid #edf2f7' }}>{item.emiNo}</td>
-                                    <td style={{ padding: '8px', borderBottom: '1px solid #edf2f7' }}>
-                                        {item.date ? new Date(item.date).toLocaleDateString() : "N/A"}
-                                    </td>
-                                    <td style={{ padding: '8px', borderBottom: '1px solid #edf2f7' }}>₹{item.emiAmt}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </Box>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              EMI Details
+            </Typography>
+            <Box sx={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: "0.875rem",
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: "#f4f6f8", textAlign: "left" }}>
+                    <th
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid #dfe3e8",
+                      }}
+                    >
+                      Customer
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid #dfe3e8",
+                      }}
+                    >
+                      EMI No
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid #dfe3e8",
+                      }}
+                    >
+                      Due Date
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        borderBottom: "1px solid #dfe3e8",
+                      }}
+                    >
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.emi.map((item: any, index: number) => (
+                    <tr key={item._id || index}>
+                      <td
+                        style={{
+                          padding: "8px",
+                          borderBottom: "1px solid #edf2f7",
+                        }}
+                      >
+                        {" "}
+                        {(() => {
+                          const cust = item.customer;
+                          if (!cust) return "N/A";
+                          if (typeof cust === "string") return cust;
+                          const name = cust.name || "N/A";
+                          const identifier = cust.id || cust._id;
+                          return identifier ? `${name} (${identifier})` : name;
+                        })()}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px",
+                          borderBottom: "1px solid #edf2f7",
+                        }}
+                      >
+                        {item.emiNo}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px",
+                          borderBottom: "1px solid #edf2f7",
+                        }}
+                      >
+                        {item.date
+                          ? new Date(item.date).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px",
+                          borderBottom: "1px solid #edf2f7",
+                        }}
+                      >
+                        ₹{item.emiAmt}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </Box>
+          </Box>
         )}
 
-         <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Created At
           </Typography>
@@ -299,7 +397,7 @@ const ViewBillingRequest = () => {
           </Typography>
         </Box>
 
-         <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
             Updated At
           </Typography>
@@ -322,17 +420,18 @@ const ViewBillingRequest = () => {
         )}
 
         {data.approvedBy && (
-            <Box sx={{ mb: 3 }}>
-                {/* <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <Box sx={{ mb: 3 }}>
+            {/* <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Approved By
                 </Typography>
                 <Typography variant="body2">
                     ID: {data.approvedBy}
                 </Typography> */}
-                <Typography variant="body2" color="text.secondary">
-                    {data.approvedDate && `Date: ${new Date(data.approvedDate).toLocaleString()}`}
-                </Typography>
-            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {data.approvedDate &&
+                `Date: ${new Date(data.approvedDate).toLocaleString()}`}
+            </Typography>
+          </Box>
         )}
       </Box>
 
@@ -344,7 +443,9 @@ const ViewBillingRequest = () => {
           variant="contained"
           color="error"
           disabled={actionLoading || data.status !== "pending"}
-          startIcon={actionLoading ? <CircularProgress size={16} /> : <X size={18} />}
+          startIcon={
+            actionLoading ? <CircularProgress size={16} /> : <X size={18} />
+          }
         >
           {actionLoading ? "Processing..." : "Reject"}
         </Button>
@@ -354,51 +455,68 @@ const ViewBillingRequest = () => {
           variant="contained"
           color="success"
           disabled={actionLoading || data.status !== "pending"}
-          startIcon={actionLoading ? <CircularProgress size={16} /> : <Check size={18} />}
+          startIcon={
+            actionLoading ? <CircularProgress size={16} /> : <Check size={18} />
+          }
         >
           {actionLoading ? "Processing..." : "Approve"}
         </Button>
       </Box>
 
       {/* Approval Dialog */}
-      <Dialog open={openApproveDialog} onClose={() => setOpenApproveDialog(false)}>
+      <Dialog
+        open={openApproveDialog}
+        onClose={() => setOpenApproveDialog(false)}
+      >
         <DialogTitle>Approve Request</DialogTitle>
         <DialogContent>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-                Please enter the validity period (in hours) for this approval.
-            </Typography>
-            <TextField
-                autoFocus
-                margin="dense"
-                label="Validity (Hours)"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={validity}
-                onChange={(e) => setValidity(e.target.value)}
-            />
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Please enter the validity period (in hours) for this approval.
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Validity (Hours)"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={validity}
+            onChange={(e) => setValidity(e.target.value)}
+          />
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setOpenApproveDialog(false)}>Cancel</Button>
-            <Button onClick={handleApproveConfirm} variant="contained" color="primary">
-                Approve
-            </Button>
+          <Button onClick={() => setOpenApproveDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleApproveConfirm}
+            variant="contained"
+            color="primary"
+          >
+            Approve
+          </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Reject Dialog */}
-      <Dialog open={openRejectDialog} onClose={() => setOpenRejectDialog(false)}>
+      <Dialog
+        open={openRejectDialog}
+        onClose={() => setOpenRejectDialog(false)}
+      >
         <DialogTitle>Reject Request</DialogTitle>
         <DialogContent>
-            <Typography variant="body1">
-                Are you sure you want to reject this request? This action cannot be undone.
-            </Typography>
+          <Typography variant="body1">
+            Are you sure you want to reject this request? This action cannot be
+            undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setOpenRejectDialog(false)}>Cancel</Button>
-            <Button onClick={handleRejectConfirm} variant="contained" color="error">
-                Reject
-            </Button>
+          <Button onClick={() => setOpenRejectDialog(false)}>Cancel</Button>
+          <Button
+            onClick={handleRejectConfirm}
+            variant="contained"
+            color="error"
+          >
+            Reject
+          </Button>
         </DialogActions>
       </Dialog>
     </DashboardContent>

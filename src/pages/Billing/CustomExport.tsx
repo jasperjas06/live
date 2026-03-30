@@ -14,7 +14,11 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Iconify } from "src/components/iconify";
 import { DashboardContent } from "src/layouts/dashboard";
-import { getAllProjects, getCustomBillingReport } from "src/utils/api.service";
+import {
+  getAllCustomer,
+  getAllProjects,
+  getCustomBillingReport,
+} from "src/utils/api.service";
 import * as XLSX from "xlsx";
 
 const CustomExport = () => {
@@ -27,15 +31,21 @@ const CustomExport = () => {
     return today.toISOString().split("T")[0];
   };
 
-  const [fromDate, setFromDate] = useState(getTodayDate());
-  const [toDate, setToDate] = useState(getTodayDate());
-  const [dateFilter, setDateFilter] = useState("Custom");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [dateFilter, setDateFilter] = useState("All Time");
   const [status, setStatus] = useState("paid");
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [projectSearchTerm, setProjectSearchTerm] = useState("");
   const [debouncedProjectSearch, setDebouncedProjectSearch] = useState("");
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
+
+  const [customerOptions, setCustomerOptions] = useState<any[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
+  const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState("");
+  const [isCustomerLoading, setIsCustomerLoading] = useState(false);
 
   // Debounce: only update debouncedProjectSearch 500ms after typing stops
   useEffect(() => {
@@ -44,6 +54,36 @@ const CustomExport = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [projectSearchTerm]);
+
+  // Debounce customer search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedCustomerSearch(customerSearchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [customerSearchTerm]);
+
+  // Fetch customers whenever the debounced search term changes
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setIsCustomerLoading(true);
+      try {
+        const response = await getAllCustomer({
+          page: 1,
+          limit: 10,
+          search: debouncedCustomerSearch,
+        });
+        if (response.status === 200 && response.data?.data) {
+          setCustomerOptions(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+      } finally {
+        setIsCustomerLoading(false);
+      }
+    };
+    fetchCustomers();
+  }, [debouncedCustomerSearch]);
 
   // Fetch projects whenever the debounced search term changes
 
@@ -80,6 +120,11 @@ const CustomExport = () => {
     let newToDate = getTodayDate();
 
     switch (filter) {
+      case "All Time": {
+        newFromDate = "";
+        newToDate = "";
+        break;
+      }
       case "Yesterday": {
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
@@ -145,8 +190,10 @@ const CustomExport = () => {
     try {
       setIsDownloading(true);
 
+      const effectiveFromDate = fromDate || "2020-01-01";
+      const effectiveToDate = toDate || getTodayDate();
       // Validate dates
-      if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
+      if (new Date(effectiveFromDate) > new Date(effectiveToDate)) {
         toast.error("From date cannot be after To date");
         setIsDownloading(false);
         return;
@@ -159,16 +206,21 @@ const CustomExport = () => {
         dateTo?: string;
         status?: string;
         projectId?: string;
+        customerId?: string;
       } = {};
 
       // If both dates are the same AND it is today's date, send only 'date' param
       // The backend expects 'date' only for Today. For Yesterday (or past dates), it expects a range.
-      if (fromDate === toDate && fromDate === getTodayDate()) {
+      if (
+        effectiveFromDate === effectiveToDate &&
+        effectiveFromDate === getTodayDate() &&
+        fromDate !== ""
+      ) {
         params.date = fromDate;
       } else {
         // Otherwise, send both dateFrom and dateTo
-        if (fromDate) params.dateFrom = fromDate;
-        if (toDate) params.dateTo = toDate;
+        params.dateFrom = effectiveFromDate;
+        params.dateTo = effectiveToDate;
       }
 
       // Add status filter if selected
@@ -183,6 +235,11 @@ const CustomExport = () => {
         params.projectId = "";
       }
 
+      if (selectedCustomer) {
+        params.customerId = selectedCustomer._id;
+      } else {
+        params.customerId = "";
+      }
       console.log("API Params being sent:", params);
       // Call the API
       const response = await getCustomBillingReport(params as any);
@@ -430,6 +487,7 @@ const CustomExport = () => {
                 sx={{ minWidth: "200px" }}
               >
                 {[
+                  "All Time",
                   "Custom",
                   "Yesterday",
                   "Today",
@@ -510,6 +568,47 @@ const CustomExport = () => {
                 )}
                 sx={{ minWidth: "200px", flex: 1 }}
               />
+
+              <Autocomplete
+                options={customerOptions}
+                getOptionLabel={(option) => {
+                  const identifier = option.id || option._id || "";
+                  const name = option.name || "";
+                  return identifier ? `${name} (${identifier})` : name;
+                }}
+                value={selectedCustomer}
+                onChange={(_event, newValue) => {
+                  setSelectedCustomer(newValue);
+                }}
+                filterOptions={(x) => x}
+                onInputChange={(_event, newInputValue, reason) => {
+                  if (reason === "input") {
+                    setCustomerSearchTerm(newInputValue);
+                  } else if (reason === "clear") {
+                    setCustomerSearchTerm("");
+                  }
+                }}
+                loading={isCustomerLoading}
+                renderInput={(p) => (
+                  <TextField
+                    {...p}
+                    label="Customer"
+                    helperText="Optional: Filter by customer"
+                    InputProps={{
+                      ...p.InputProps,
+                      endAdornment: (
+                        <>
+                          {isCustomerLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {p.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                sx={{ minWidth: "200px", flex: 1 }}
+              />
             </Box>
 
             {/* <Box sx={{ mt: 2, p: 2, bgcolor: 'background.neutral', borderRadius: 1 }}>
@@ -546,7 +645,7 @@ const CustomExport = () => {
                   )
                 }
                 onClick={handleDownload}
-                disabled={isDownloading || !fromDate || !toDate}
+                disabled={isDownloading}
               >
                 {isDownloading ? "Downloading..." : "Download Report"}
               </Button>
@@ -556,6 +655,6 @@ const CustomExport = () => {
       </Card>
     </DashboardContent>
   );
-};
+};;
 
 export default CustomExport;

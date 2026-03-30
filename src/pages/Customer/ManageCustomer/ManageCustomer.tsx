@@ -129,6 +129,8 @@ const baseCustomerSchema = z.object({
   diamountDirectorPhone: z.string().optional(),
   guardianAddress: z.string().optional(),
   photo: z.any().optional(),
+  offered: z.string().optional(),
+  offers: z.string().optional(),
 });
 
 // Schema for creating new customer (includes estimate details)
@@ -170,7 +172,6 @@ const createCustomerSchema = baseCustomerSchema.extend({
     paymentTerms: z.string().optional(),
     status: z.string().optional(),
     loan: z.string().optional(),
-    offered: z.string().optional(),
     reason: z.string().optional(),
     saleDeedDoc: z.any().optional(),
     motherDoc: z.any().optional(),
@@ -178,6 +179,14 @@ const createCustomerSchema = baseCustomerSchema.extend({
   // Plot and flat kept fully optional — Zod won't strip them from form data
   plot: z.any().optional(),
   flat: z.any().optional(),
+}).superRefine((data, ctx) => {
+  if (data.offered === "Yes" && !data.offers) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Offers is required when Offered is Yes",
+      path: ["offers"],
+    });
+  }
 });
 
 type CustomerFormData = z.infer<typeof baseCustomerSchema>;
@@ -251,6 +260,8 @@ const CustomerForm = () => {
       diamountDirectorPhone: "",
       photo: undefined,
       guardianAddress: "",
+      offered: "No",
+      offers: "",
       // Estimate form defaults
       general: {
         paymentTerms: "",
@@ -357,6 +368,8 @@ const CustomerForm = () => {
         diamountDirectorPhone: data.diamountDirectorPhone,
         guardianAddress: data.guardianAddress,
         photo: data.photo,
+        offered: data.offered,
+        offers: data.offers,
       };
 
       let response;
@@ -657,6 +670,8 @@ const CustomerForm = () => {
           projectId: customerData.projectId?._id || customerData.projectId,
           ddId: customerData.ddId?._id || customerData.ddId,
           cedId: customerData.cedId?._id || customerData.cedId, // Map cedId object to ID
+          offered: customerData.offered || generalSource.offered || "No",
+          offers: customerData.offers || "",
 
           // Map to general form field using the prioritized source
           general:
@@ -1139,6 +1154,42 @@ const CustomerForm = () => {
                         rows={2}
                       />
                     </Grid>
+
+                    {/* Offered and Offers Conditional Rendering */}
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Controller
+                        name="offered"
+                        control={methods.control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Offered"
+                            select
+                            fullWidth
+                            variant="outlined"
+                          >
+                            <MenuItem value="Yes">Yes</MenuItem>
+                            <MenuItem value="No">No</MenuItem>
+                          </TextField>
+                        )}
+                      />
+                    </Grid>
+                    {methods.watch("offered") === "Yes" && (
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <TextField
+                          label={
+                            <>
+                              Offers <span style={{ color: "red" }}>*</span>
+                            </>
+                          }
+                          {...register("offers")}
+                          error={!!errors.offers}
+                          helperText={errors.offers?.message as string}
+                          fullWidth
+                          variant="outlined"
+                        />
+                      </Grid>
+                    )}
                   </Grid>
                 </FormSection>
 
