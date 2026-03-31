@@ -1950,6 +1950,27 @@ export const getAllEmi = async ({ customerId, paid, populate }) => {
   }
 };
 
+
+export const updateEmi = async (data) => {
+  try {
+    const response = await axios.put(`${base_url}api/common/emi/update`, data, {
+      headers: getHeaders(),
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error || error.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 // Customer Estimate APIS
 export const createCustomerEstimate = async (data) => {
   try {

@@ -1,8 +1,7 @@
-import type { Column } from 'src/custom/dataTable/dataTable';
+import type { Column } from "src/custom/dataTable/dataTable";
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -15,657 +14,930 @@ import PaidIcon from "@mui/icons-material/Paid";
 import SquareFootIcon from "@mui/icons-material/SquareFoot";
 
 import {
-    Box,
-    Card,
-    CardContent,
-    Chip,
-    Divider,
-    Grid,
-    LinearProgress,
-    linearProgressClasses,
-    Typography
-} from '@mui/material';
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  linearProgressClasses,
+  TextField,
+  Typography,
+} from "@mui/material";
 
-import { deleteCustomer, getCommissionByCustomerId, getOneEstimateByGeneralId } from 'src/utils/api.service';
+import {
+  deleteCustomer,
+  getCommissionByCustomerId,
+  getOneEstimateByGeneralId,
+  updateEmi,
+} from "src/utils/api.service";
 
-import { PercentIcon } from 'lucide-react';
-import { varAlpha } from 'minimal-shared/utils';
-import { DataTable } from 'src/custom/dataTable/dataTable';
-import { DashboardContent } from 'src/layouts/dashboard';
-import ConfirmDialog from 'src/custom/dialog/ConfirmDialog';
+import { PercentIcon } from "lucide-react";
+import { varAlpha } from "minimal-shared/utils";
+import { Iconify } from "src/components/iconify";
+import { DataTable } from "src/custom/dataTable/dataTable";
+import ConfirmDialog from "src/custom/dialog/ConfirmDialog";
+import { DashboardContent } from "src/layouts/dashboard";
 
 type Customer = {
-    id: string;
-    name: string;
-    marketer: string;
-    saleType: string;
-    noEmiPaid: number;
-    noEmiPending: number;
+  id: string;
+  name: string;
+  marketer: string;
+  saleType: string;
+  noEmiPaid: number;
+  noEmiPending: number;
 };
 
 type Plot = {
-    id: string;
-    guideRatePerSqFt?: number;
-    guideLandValue?: number;
-    landValue?: number;
-    regValue?: number;
-    additionalCharges?: number;
-    totalValue?: number;
-}
+  id: string;
+  guideRatePerSqFt?: number;
+  guideLandValue?: number;
+  landValue?: number;
+  regValue?: number;
+  additionalCharges?: number;
+  totalValue?: number;
+};
 
 type EMI = {
-    id: string;
-    emiId: string;
-    emiNo: number;
-    date: Date;
-    emiAmt: number;
-    paidDate?: Date;
-    paidAmt?: number;
-}
+  id: string;
+  emiId: string;
+  emiNo: number;
+  date: Date | string;
+  rawDate?: string;
+  emiAmt: number;
+  paidDate?: Date | string;
+  rawPaidDate?: string;
+  paidAmt?: number;
+};
 
 type Billing = {
-    introducer: string;
-    emiNo: number;
-    modeOfPayment: string;
-    transactionType: string;
-    cardNo?: string;
-    cardHolderName?: string;
-    paymentDate: Date;
-    amountPaid: number;
-    balanceAmount: number;
-    status: string;
-    remarks?: string;
-    editDeleteReason?: string;
-}
+  id?: string;
+  introducer: string;
+  emiNo: number;
+  modeOfPayment: string;
+  transactionType: string;
+  cardNo?: string;
+  cardHolderName?: string;
+  paymentDate: Date;
+  amountPaid: number;
+  balanceAmount: number;
+  status: string;
+  remarks?: string;
+  editDeleteReason?: string;
+};
 
 type Marketer = {
-    emiNo: number;
-    marketerName: string;
-    paidDate: string;
-    paidAmt: Number;
-    commPercentage: Number;
-    commAmount: Number;
-    percentage: number;
-}
+  emiNo: number;
+  marketerName: string;
+  paidDate: string;
+  paidAmt: Number;
+  commPercentage: Number;
+  commAmount: Number;
+  percentage: number;
+};
 
 type Flat = {
-    flat: string;
-    block: string;
-    floor: string;
-    bedRoom: number;
-    guideRateSqft: number;
-    paymentTerm: string;
-    totalValue: number;
-    udsSqft: number;
-    propertyTax: number;
-    carPark: string;
-    onBookingPercent: number;
-    lintelPercent: number;
-    roofPercent: number;
-    plasterPercent: number;
-    flooringPercent: number;
-    landValue: number;
-    landRegValue: number;
-    constCost: number;
-    constRegValue: number;
-    carParkCost: number;
-    ebDeposit: number;
-    sewageWaterTax: number;
-    gst: number;
-    corpusFund: number;
-    additionalCharges: number;
-}
+  flat: string;
+  block: string;
+  floor: string;
+  bedRoom: number;
+  guideRateSqft: number;
+  paymentTerm: string;
+  totalValue: number;
+  udsSqft: number;
+  propertyTax: number;
+  carPark: string;
+  onBookingPercent: number;
+  lintelPercent: number;
+  roofPercent: number;
+  plasterPercent: number;
+  flooringPercent: number;
+  landValue: number;
+  landRegValue: number;
+  constCost: number;
+  constRegValue: number;
+  carParkCost: number;
+  ebDeposit: number;
+  sewageWaterTax: number;
+  gst: number;
+  corpusFund: number;
+  additionalCharges: number;
+};
 
 const InfoRow = ({
-    icon,
-    label,
-    value,
+  icon,
+  label,
+  value,
 }: {
-    icon?: React.ReactNode;
-    label: string;
-    value: React.ReactNode | any;
+  icon?: React.ReactNode;
+  label: string;
+  value: React.ReactNode | any;
 }) => (
-    <Box display="flex" alignItems="center" mb={2}>
-        <Box mr={2}>{icon}</Box>
-        <Box flex={1}>
-            <Typography variant="body2" color="text.secondary">
-                {label}
-            </Typography>
-            <Typography variant="subtitle2" fontWeight={500}>
-                {value}
-            </Typography>
-        </Box>
+  <Box display="flex" alignItems="center" mb={2}>
+    <Box mr={2}>{icon}</Box>
+    <Box flex={1}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="subtitle2" fontWeight={500}>
+        {value}
+      </Typography>
     </Box>
+  </Box>
 );
 
 const RenderFallback = () => (
   <Box
     sx={{
-      display: 'flex',
-      flex: '1 1 auto',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: "flex",
+      flex: "1 1 auto",
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
     <LinearProgress
       sx={{
         width: 1,
         maxWidth: 320,
-        bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
-        [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
+        bgcolor: (theme) =>
+          varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
+        [`& .${linearProgressClasses.bar}`]: { bgcolor: "text.primary" },
       }}
     />
   </Box>
 );
 
 const CustomerDetails = () => {
+  const { estimateId } = useParams();
+  const navigate = useNavigate();
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [emiData, setEmiData] = useState<any[]>([]);
+  const [flotData, setFlotData] = useState<any>({});
+  const [plotData, setPlotData] = useState<any>({});
+  const [billingData, setBillingData] = useState<any[]>([]);
+  const [marketerData, setMarketerData] = useState<any[]>([]);
+  const [customerId, setCustomerId] = useState<string>("");
+  const [customerData, setCustomerData] = useState<any>(null);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
 
-    const { estimateId } = useParams();
-    const navigate = useNavigate();
-    const [data, setData] = useState<any[]>([]);
-    const [loading , setLoading] = useState<boolean>(false);
-    const [emiData, setEmiData] = useState<any[]>([]);
-    const [flotData, setFlotData] = useState<any>({});
-    const [plotData, setPlotData] = useState<any>({});
-    const [billingData, setBillingData] = useState<any[]>([]);
-    const [marketerData, setMarketerData] = useState<any[]>([]);
-    const [customerId, setCustomerId] = useState<string>('');
-    const [customerData, setCustomerData] = useState<any>(null);
-    const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const [isEditEmiOpen, setIsEditEmiOpen] = useState(false);
+  const [editEmiForm, setEditEmiForm] = useState({
+    id: "",
+    paidAmt: "",
+    date: "",
+    paidDate: "",
+  });
 
-    const formatDate = (dateString: any) => {
-        if (!dateString) return '-'
-        const date = new Date(dateString)
-        // Format: DD-MM-YYYY
-        return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).replace(/ /g, '-')
-    }
+  const handleEditClick = (row: any) => {
+    // Prepare initial form data from row's raw values, formatted for <input type="date">
+    setEditEmiForm({
+      id: row.id,
+      paidAmt: row.paidAmt && row.paidAmt !== "-" ? String(row.paidAmt) : "",
+      date: row.rawDate
+        ? new Date(row.rawDate).toISOString().split("T")[0]
+        : "",
+      paidDate: row.rawPaidDate
+        ? new Date(row.rawPaidDate).toISOString().split("T")[0]
+        : "",
+    });
+    setIsEditEmiOpen(true);
+  };
 
-    const getCustomerData = async () => {
-        try {
-            setLoading(true)
-            const res = await getOneEstimateByGeneralId({
-                genId: estimateId
-            });
-            if (res?.status === 200) {
-                console.log(res, "res");
-                                
-                // Store customer data
-                const customer = res.data?.data?.general?.customer;
-                if (customer) {
-                    setCustomerData({
-                        id: customer?.id || '-',
-                        name: customer?.name || '-',
-                        phone: customer?.phone || '-',
-                        pincode: customer?.pincode || '-',
-                        ddName: customer?.ddId?.name || '-',
-                        cedName: customer?.cedId?.name || '-',
-                    });
-                }
-                
-                // Store customer ID for commission API call
-                const cusId = res.data.data.general?.customer?._id || res.data.data.general?.customer;
-                if (cusId) {
-                    setCustomerId(cusId);
-                }
-                
-                if (res.data.data.emi.length > 0) {
-                    let emiData = res?.data.data.emi
-                      .map((item: any) => {
-                        return {
-                          id: item._id || "N/A",
-                          emiId: item._id || "N/A",
-                          emiNo: item.emiNo || "N/A",
-                          date: item.date || "N/A",
-                          emiAmt: item.emiAmt || "N/A",
-                          paidDate: formatDate(item.paidDate),
-                          paidAmt: item.paidAmt || "",
-                        };
-                      })
-                      .sort((a: any, b: any) => {
-                        // Treat 'N/A' as infinity to push items without an EMI number to the bottom
-                        const valA =
-                          a.emiNo === "N/A" ? Infinity : Number(a.emiNo);
-                        const valB =
-                          b.emiNo === "N/A" ? Infinity : Number(b.emiNo);
-                        return valA - valB;
-                      });
-                    setEmiData(emiData)
-                }
-                if (res.data.data.plot.length > 0) {
-                    let plotData = res?.data.data.plot.map((item: any) => {
-                        return {
-                            id: item._id || 'N/A',
-                            guideRatePerSqFt: item.guideRatePerSqFt || 'N/A',
-                            guideLandValue: item.guideLandValue || 'N/A',
-                            landValue: item.landValue || 'N/A',
-                            regValue: item.regValue || 'N/A',
-                            additionalCharges: item.additionalCharges || 'N/A',
-                            totalValue: item.totalValue || 'N/A',
-                        }
-                    })
-                    setPlotData(res?.data.data.plot[0])
-                }
-                if (res.data.data.flat.length > 0) {
-                    let flotData = res?.data.data.flat.map((item: any) => {
-                        return {
-                            flat: item.flat || 'N/A',
-                            block: item.block || 'N/A',
-                            floor: item.floor || 'N/A',
-                            bedRoom: item.bedRoom || 'N/A',
-                            guideRateSqft: item.guideRateSqft || 'N/A',
-                            paymentTerm: item.paymentTerm || 'N/A',
-                            totalValue: item.totalValue || 'N/A',
-                        }
-                    })
-                    setFlotData(res?.data.data.flat[0])
-                }
-                if (res.data.data.billing.length > 0) {
-                    let billingData = res?.data.data.billing.map((item: any) => {
-                        return {
-                            id: item._id || 'N/A',
-                            introducer: item.introducer?.name || 'N/A',
-                            emiNo: item.emiNo || 'N/A',
-                            modeOfPayment: item.modeOfPayment || 'N/A',
-                            transactionType: item.transactionType || 'N/A',
-                            cardNo: item?.cardNo || 'N/A',
-                            cardHolderName: item?.cardHolderName || 'N/A',
-                            paymentDate: formatDate(item.paymentDate),
-                            amountPaid: item.amountPaid || 'N/A',
-                            balanceAmount: item.balanceAmount || 'N/A',
-                            status: item.status || 'N/A',
-                            remarks: item.remarks || 'N/A',
-                            editDeleteReason: item.editDeleteReason || 'N/A',
-                        }
-                    })
-                    setBillingData(billingData)
-                }
-            }
-        } catch (error) {
-            setData([])
-            console.log(error);
-        } finally {
-            setLoading(false)
-        }
+  const handleEditSubmit = async () => {
+    const payload: any = {
+      emiId: editEmiForm.id,
+      paidAmt: editEmiForm.paidAmt ? Number(editEmiForm.paidAmt) : null,
     };
+    // Only include if truthy to prevent breaking empty dates if API doesn't like them
+    if (editEmiForm.date) payload.date = editEmiForm.date;
+    if (editEmiForm.paidDate) payload.paidDate = editEmiForm.paidDate;
 
-    const getCommissionData = async () => {
-        if (!customerId) return;
-        
-        try {
-            const res = await getCommissionByCustomerId(customerId);
-            if (res?.status === 200 && res.data?.data?.length > 0) {
-                console.log(res, "commission res");
-                  
-                // Sort the data by EMI number in descending order first
-                const sortedData = [...res.data.data].sort((a, b) => {
-                    const emiNoA = a.emi?.emiNo || 0;
-                    const emiNoB = b.emi?.emiNo || 0;
-                    return emiNoB - emiNoA; // Descending order (12, 11, 10, ...)
-                });
-                
-                // Flatten the marketer array from each EMI record
-                let marketerData: any[] = [];
-                sortedData.forEach((item: any) => {
-                    // Each item has an emi object and a marketer array
-                    const emiInfo = item.emi || {};
-                    const marketers = item.marketer || [];
-                    
-                    // Process each marketer in the array
-                    marketers.forEach((marketer: any) => {
-                          // Format commission amount to 2 decimal places
-                        const formattedCommAmount = marketer.commAmount 
-                            ? parseFloat(marketer.commAmount).toFixed(2)
-                            : '-';
-                        
-                        marketerData.push({
-                            id: item._id || '-',
-                            emiNo: emiInfo.emiNo || '-',
-                            marketerName: marketer.name || '-',
-                            paidDate: formatDate(emiInfo.paidDate) || '-',
-                            paidAmt: emiInfo.paidAmt || '-',
-                            commPercentage: marketer.percentage || '-',
-                            commAmount: formattedCommAmount
-                        });
-                    });
-                });
-                setMarketerData(marketerData);
-            }
-        } catch (error) {
-            console.log('Commission fetch error:', error);
-            setMarketerData([]);
-        }
-    };
+    console.log("Submitting EMI Update payload:", payload);
 
-    useEffect(() => {
+    try {
+      const res = await updateEmi(payload);
+      if (res.status === 200) {
+        // Refresh data after successful update
         getCustomerData();
-    }, [estimateId]);
-
-    useEffect(() => {
-        if (customerId) {
-            getCommissionData();
-        }
-    }, [customerId]);
-
-    const formatCurrency = (amount: number) => {
-        if (!amount) return 'N/A'
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(amount)
+        setIsEditEmiOpen(false);
+      } else {
+        console.error("Failed to update EMI:", res.message);
+        // In a wider app, we'd trigger a toast/snackbar here
+      }
+    } catch (error) {
+      console.error("Error updating EMI API:", error);
     }
+  };
 
-    const emiColumns: Column<EMI>[] = [
-        { id: 'emiNo', label: 'Emi No', sortable: true },
-        { id: 'emiId', label: 'Emi Id', sortable: true },
-        { id: 'date', label: 'Date', sortable: true },
-        { id: 'paidDate', label: 'Paid Date', sortable: true },
-        { id: 'paidAmt', label: 'Paid Amount', sortable: true },
-    ];
+  const formatDate = (dateString: any) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    // Format: DD-MM-YYYY
+    return isNaN(date.getTime())
+      ? "-"
+      : date
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-");
+  };
 
-    const billingColumns: Column<Billing>[] = [
-        { id: 'emiNo', label: 'Emi No', sortable: true },
-        // { id: 'introducer', label: 'Introducer', sortable: true },
-        { id: 'modeOfPayment', label: 'Mode Of Payment', sortable: true },
-        { id: 'paymentDate', label: 'Payment Date', sortable: true },
-        { id: 'amountPaid', label: 'Amount Paid', sortable: true },
-        { id: 'balanceAmount', label: 'Balance Amount', sortable: true },
-        { id: 'status', label: 'Status', sortable: true },
-    ]
+  const getCustomerData = async () => {
+    try {
+      setLoading(true);
+      const res = await getOneEstimateByGeneralId({
+        genId: estimateId,
+      });
+      if (res?.status === 200) {
+        console.log(res, "res");
 
-    const marketerColumns: Column<Marketer>[] = [
-        { id: 'marketerName', label: 'Name', sortable: true },
-        { id: 'emiNo', label: 'Emi No', sortable: true },
-        { id: 'paidDate', label: 'Paid Date', sortable: true },
-        { id: 'paidAmt', label: 'Paid Amount', sortable: true },
-        { id: 'commPercentage', label: 'Commission Percentage', sortable: true },
-        { id: 'commAmount', label: 'Commission Amount', sortable: true },
-        // { id: 'percentage', label: 'Percentage', sortable: true },
-    ]
-
-
-    const handleDelete = (id: string | number) => {
-        setDeleteId(id);
-        setOpenConfirmDialog(true);
-    };
-
-    const handleConfirmDelete = async (reason?: string) => {
-        if (!deleteId) return;
-        try {
-            await deleteCustomer(String(deleteId), reason); // convert to string if needed by API
-            getCustomerData(); // re-fetch data (not getAllCustomer again)
-        } catch (error) {
-            console.error('Failed to delete customer:', error);
-        } finally {
-            setOpenConfirmDialog(false);
-            setDeleteId(null);
+        // Store customer data
+        const customer = res.data?.data?.general?.customer;
+        if (customer) {
+          setCustomerData({
+            id: customer?.id || "-",
+            name: customer?.name || "-",
+            phone: customer?.phone || "-",
+            pincode: customer?.pincode || "-",
+            ddName: customer?.ddId?.name || "-",
+            cedName: customer?.cedId?.name || "-",
+          });
         }
-    };
 
+        // Store customer ID for commission API call
+        const cusId =
+          res.data.data.general?.customer?._id ||
+          res.data.data.general?.customer;
+        if (cusId) {
+          setCustomerId(cusId);
+        }
 
-    return (
-        <DashboardContent>
-            <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
-                <Typography variant="h4" sx={{ flexGrow: 1 }}>
-                    Estimate Complete Details
+        if (res.data.data.emi.length > 0) {
+          let emiData = res?.data.data.emi
+            .map((item: any) => {
+              return {
+                id: item._id || "N/A",
+                emiId: item._id || "N/A",
+                emiNo: item.emiNo || "N/A",
+                date: formatDate(item.date) || "N/A",
+                rawDate: item.date,
+                emiAmt: item.emiAmt || "N/A",
+                paidDate: formatDate(item.paidDate),
+                rawPaidDate: item.paidDate,
+                paidAmt: item.paidAmt || "",
+              };
+            })
+            .sort((a: any, b: any) => {
+              // Treat 'N/A' as infinity to push items without an EMI number to the bottom
+              const valA = a.emiNo === "N/A" ? Infinity : Number(a.emiNo);
+              const valB = b.emiNo === "N/A" ? Infinity : Number(b.emiNo);
+              return valA - valB;
+            });
+          setEmiData(emiData);
+        }
+        if (res.data.data.plot.length > 0) {
+          let plotData = res?.data.data.plot.map((item: any) => {
+            return {
+              id: item._id || "N/A",
+              guideRatePerSqFt: item.guideRatePerSqFt || "N/A",
+              guideLandValue: item.guideLandValue || "N/A",
+              landValue: item.landValue || "N/A",
+              regValue: item.regValue || "N/A",
+              additionalCharges: item.additionalCharges || "N/A",
+              totalValue: item.totalValue || "N/A",
+            };
+          });
+          setPlotData(res?.data.data.plot[0]);
+        }
+        if (res.data.data.flat.length > 0) {
+          let flotData = res?.data.data.flat.map((item: any) => {
+            return {
+              flat: item.flat || "N/A",
+              block: item.block || "N/A",
+              floor: item.floor || "N/A",
+              bedRoom: item.bedRoom || "N/A",
+              guideRateSqft: item.guideRateSqft || "N/A",
+              paymentTerm: item.paymentTerm || "N/A",
+              totalValue: item.totalValue || "N/A",
+            };
+          });
+          setFlotData(res?.data.data.flat[0]);
+        }
+        if (res.data.data.billing.length > 0) {
+          let billingData = res?.data.data.billing.map((item: any) => {
+            return {
+              id: item._id || "N/A",
+              introducer: item.introducer?.name || "N/A",
+              emiNo: item.emiNo || "N/A",
+              modeOfPayment: item.modeOfPayment || "N/A",
+              transactionType: item.transactionType || "N/A",
+              cardNo: item?.cardNo || "N/A",
+              cardHolderName: item?.cardHolderName || "N/A",
+              paymentDate: formatDate(item.paymentDate),
+              amountPaid: item.amountPaid || "N/A",
+              balanceAmount: item.balanceAmount || "N/A",
+              status: item.status || "N/A",
+              remarks: item.remarks || "N/A",
+              editDeleteReason: item.editDeleteReason || "N/A",
+            };
+          });
+          setBillingData(billingData);
+        }
+      }
+    } catch (error) {
+      setData([]);
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCommissionData = async () => {
+    if (!customerId) return;
+
+    try {
+      const res = await getCommissionByCustomerId(customerId);
+      if (res?.status === 200 && res.data?.data?.length > 0) {
+        console.log(res, "commission res");
+
+        // Sort the data by EMI number in descending order first
+        const sortedData = [...res.data.data].sort((a, b) => {
+          const emiNoA = a.emi?.emiNo || 0;
+          const emiNoB = b.emi?.emiNo || 0;
+          return emiNoB - emiNoA; // Descending order (12, 11, 10, ...)
+        });
+
+        // Flatten the marketer array from each EMI record
+        let marketerData: any[] = [];
+        sortedData.forEach((item: any) => {
+          // Each item has an emi object and a marketer array
+          const emiInfo = item.emi || {};
+          const marketers = item.marketer || [];
+
+          // Process each marketer in the array
+          marketers.forEach((marketer: any) => {
+            // Format commission amount to 2 decimal places
+            const formattedCommAmount = marketer.commAmount
+              ? parseFloat(marketer.commAmount).toFixed(2)
+              : "-";
+
+            marketerData.push({
+              id: item._id || "-",
+              emiNo: emiInfo.emiNo || "-",
+              marketerName: marketer.name || "-",
+              paidDate: formatDate(emiInfo.paidDate) || "-",
+              paidAmt: emiInfo.paidAmt || "-",
+              commPercentage: marketer.percentage || "-",
+              commAmount: formattedCommAmount,
+            });
+          });
+        });
+        setMarketerData(marketerData);
+      }
+    } catch (error) {
+      console.log("Commission fetch error:", error);
+      setMarketerData([]);
+    }
+  };
+
+  useEffect(() => {
+    getCustomerData();
+  }, [estimateId]);
+
+  useEffect(() => {
+    if (customerId) {
+      getCommissionData();
+    }
+  }, [customerId]);
+
+  const formatCurrency = (amount: number) => {
+    if (!amount) return "N/A";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const emiColumns: Column<EMI>[] = [
+    { id: "emiNo", label: "Emi No", sortable: true },
+    { id: "emiId", label: "Emi Id", sortable: true },
+    { id: "date", label: "Date", sortable: true },
+    { id: "paidDate", label: "Paid Date", sortable: true },
+    { id: "paidAmt", label: "Paid Amount", sortable: true },
+    {
+      id: "id",
+      label: "Action",
+      render: (value: any, row: any) => (
+        <IconButton
+          onClick={() => handleEditClick(row)}
+          color="primary"
+          size="small"
+        >
+          <Iconify icon="solar:pen-bold" />
+        </IconButton>
+      ),
+    },
+  ];
+
+  const billingColumns: Column<Billing>[] = [
+    { id: "emiNo", label: "Emi No", sortable: true },
+    // { id: 'introducer', label: 'Introducer', sortable: true },
+    { id: "modeOfPayment", label: "Mode Of Payment", sortable: true },
+    { id: "paymentDate", label: "Payment Date", sortable: true },
+    { id: "amountPaid", label: "Amount Paid", sortable: true },
+    { id: "balanceAmount", label: "Balance Amount", sortable: true },
+    {
+      id: "id" as any,
+      label: "Action",
+      render: (value: any, row: any) => (
+        <IconButton
+          onClick={() => navigate(`/billing/edit/${row.id}`)}
+          color="primary"
+          size="small"
+        >
+          <Iconify icon="solar:pen-bold" />
+        </IconButton>
+      ),
+    },
+  ] as Column<Billing>[];
+
+  const marketerColumns: Column<Marketer>[] = [
+    { id: "marketerName", label: "Name", sortable: true },
+    { id: "emiNo", label: "Emi No", sortable: true },
+    { id: "paidDate", label: "Paid Date", sortable: true },
+    { id: "paidAmt", label: "Paid Amount", sortable: true },
+    { id: "commPercentage", label: "Commission Percentage", sortable: true },
+    { id: "commAmount", label: "Commission Amount", sortable: true },
+    // { id: 'percentage', label: 'Percentage', sortable: true },
+  ];
+
+  const handleDelete = (id: string | number) => {
+    setDeleteId(id);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmDelete = async (reason?: string) => {
+    if (!deleteId) return;
+    try {
+      await deleteCustomer(String(deleteId), reason); // convert to string if needed by API
+      getCustomerData(); // re-fetch data (not getAllCustomer again)
+    } catch (error) {
+      console.error("Failed to delete customer:", error);
+    } finally {
+      setOpenConfirmDialog(false);
+      setDeleteId(null);
+    }
+  };
+
+  return (
+    <DashboardContent>
+      <Box sx={{ mb: 5, display: "flex", alignItems: "center" }}>
+        <Typography variant="h4" sx={{ flexGrow: 1 }}>
+          Estimate Complete Details
+        </Typography>
+      </Box>
+      {loading ? (
+        <RenderFallback />
+      ) : (
+        <>
+          {/* Customer Information Card */}
+          {customerData && (
+            <Card
+              elevation={3}
+              sx={{ borderRadius: 3, mb: 3, bgcolor: "grey.100" }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  gutterBottom
+                  color="text.primary"
+                >
+                  Customer Information
                 </Typography>
-            </Box>
-            {loading ? <RenderFallback /> : <>
-            {/* Customer Information Card */}
-            {customerData && (
-                <Card elevation={3} sx={{ borderRadius: 3, mb: 3, bgcolor: 'grey.100' }}>
-                    <CardContent>
-                        <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
-                            Customer Information
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-                        <Grid container spacing={2}>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Customer ID
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.id}
-                                </Typography>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Name
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.name}
-                                </Typography>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Phone
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.phone}
-                                </Typography>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Pincode
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.pincode}
-                                </Typography>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    DD Name
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.ddName}
-                                </Typography>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    CED Name
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={500}>
-                                    {customerData.cedName}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </CardContent>
-                </Card>
-            )}
-            {Object.keys(flotData).length > 0 && <Grid >
-                <Card elevation={3} sx={{ borderRadius: 3, mb: 3 }}>
-                    <CardContent>
-                        {/* Title */}
-                        <Box display="flex" alignItems="center" mb={2}>
-                            <HomeIcon color="primary" sx={{ mr: 1 }} />
-                            <Typography variant="h6" fontWeight={600}>
-                                Flat Overview
-                            </Typography>
-                        </Box>
-
-                        {/* --- BASIC DETAILS --- */}
-                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                            Basic Details
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-
-                        <Grid container  >
-                            <Grid size={{ xs: 12, sm: 12, md: 6 }} >
-                                <InfoRow label="Flat" value={flotData.flat} icon={<HomeIcon />} />
-                                <InfoRow label="Block" value={flotData.block} icon={<BusinessIcon />} />
-                                <InfoRow label="Floor" value={flotData.floor} icon={<LocationCityIcon />} />
-                                <InfoRow label="Bedroom(s)" value={flotData.bedRoom} icon={<MeetingRoomIcon />} />
-                                <InfoRow label="UDS Sqft" value={flotData.udsSqft} icon={<SquareFootIcon />} />
-                                <InfoRow
-                                    label="Guide Rate (per sqft)"
-                                    value={formatCurrency(flotData.guideRateSqft)}
-                                    icon={<MonetizationOnIcon />}
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 12, md: 6 }} >
-                                <InfoRow
-                                    label="Property Tax"
-                                    value={formatCurrency(flotData.propertyTax)}
-                                    icon={<AccountBalanceIcon />}
-                                />
-                                <InfoRow
-                                    label="Car Parking"
-                                    value={flotData.carPark}
-                                    icon={<LocalParkingIcon />}
-                                />
-                                <InfoRow label="On Booking %" value={`${flotData.onBookingPercent}%`} icon={<PercentIcon />} />
-                                <InfoRow label="Lintel %" value={`${flotData.lintelPercent}%`}  icon={<PercentIcon />} />
-                                <InfoRow label="Roof %" value={`${flotData.roofPercent}%`}  icon={<PercentIcon />} />
-                                <InfoRow label="Plaster %" value={`${flotData.plasterPercent}%`}  icon={<PercentIcon />} />
-                                <InfoRow label="Flooring %" value={`${flotData.flooringPercent}%`}  icon={<PercentIcon />} />
-                            </Grid>
-                        </Grid>
-
-                        {/* --- FINANCIAL DETAILS --- */}
-                        <Typography variant="subtitle1" fontWeight={600} mt={3} gutterBottom>
-                            Financial Details
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-
-                        <Grid container>
-                            <Grid size={{ xs: 12, sm: 12, md: 6 }} >
-                                <InfoRow label="Land Value" value={formatCurrency(flotData.landValue)} icon={<PaidIcon />}  />
-                                <InfoRow
-                                    label="Land Registration Value"
-                                    value={formatCurrency(flotData.landRegValue)}
-                                    icon={<PaidIcon />}
-                                />
-                                <InfoRow
-                                    label="Construction Cost"
-                                    value={formatCurrency(flotData.constCost)}
-                                    icon={<PaidIcon />}
-                                />
-                                <InfoRow
-                                    label="Construction Reg. Value"
-                                    value={formatCurrency(flotData.constRegValue)}
-                                    icon={<PaidIcon />}
-                                />
-                                <InfoRow label="Car Park Cost" value={formatCurrency(flotData.carParkCost)} icon={<PaidIcon />} />
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 12, md: 6 }} >
-                                <InfoRow label="EB Deposit" value={formatCurrency(flotData.ebDeposit)} icon={<PaidIcon />} />
-                                <InfoRow
-                                    label="Sewage & Water Tax"
-                                    value={formatCurrency(flotData.sewageWaterTax)}
-                                    icon={<PaidIcon />}
-                                />
-                                <InfoRow label="GST" value={formatCurrency(flotData.gst)} icon={<PaidIcon />} />
-                                <InfoRow label="Corpus Fund" value={formatCurrency(flotData.corpusFund)} icon={<PaidIcon />} />
-                                <InfoRow
-                                    label="Additional Charges"
-                                    value={formatCurrency(flotData.additionalCharges)}
-                                    icon={<PaidIcon />}
-                                />
-                                <InfoRow
-                                    label="Total Value"
-                                    value={formatCurrency(flotData.totalValue)}
-                                    icon={<PaidIcon />}
-                                />
-                            </Grid>
-                        </Grid>
-
-                        {/* Payment Term */}
-                        <Box display="flex" alignItems="center" mt={2}>
-                            <Typography variant="body2" color="text.secondary" mr={1}>
-                                Payment Term:
-                            </Typography>
-                            <Chip
-                                label={flotData.paymentTerm}
-                                color="primary"
-                                variant="outlined"
-                                size="small"
-                            />
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Grid>}
-            {Object.keys(plotData).length > 0 &&  <Card elevation={3} sx={{ borderRadius: 3, mb: 3 }}>
-                <CardContent>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                        Plot Overview
+                <Divider sx={{ mb: 2 }} />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Customer ID
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.id}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Name
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.name}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Phone
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.phone}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Pincode
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.pincode}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      DD Name
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.ddName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      CED Name
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                      {customerData.cedName}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          )}
+          {Object.keys(flotData).length > 0 && (
+            <Grid>
+              <Card elevation={3} sx={{ borderRadius: 3, mb: 3 }}>
+                <CardContent>
+                  {/* Title */}
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <HomeIcon color="primary" sx={{ mr: 1 }} />
+                    <Typography variant="h6" fontWeight={600}>
+                      Flat Overview
+                    </Typography>
+                  </Box>
 
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                            <InfoRow label="Guide Rate (per sqft)" value={plotData.guideRatePerSqFt} icon={<MonetizationOnIcon />} />
-                            <InfoRow label="Guide Land Value" value={plotData.guideLandValue} icon={<MonetizationOnIcon />} />
-                            <InfoRow label="Land Value" value={plotData.landValue} icon={<MonetizationOnIcon />} />
-                        </Grid>
+                  {/* --- BASIC DETAILS --- */}
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    Basic Details
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
 
-                        <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                            <InfoRow label="Registration Value" value={plotData.regValue} icon={<MonetizationOnIcon />} />
-                            <InfoRow label="Additional Charges" value={plotData.additionalCharges} icon={<MonetizationOnIcon />} />
-                            <InfoRow label="Total Value" value={plotData.totalValue} icon={<PaidIcon />} />
-                        </Grid>
+                  <Grid container>
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <InfoRow
+                        label="Flat"
+                        value={flotData.flat}
+                        icon={<HomeIcon />}
+                      />
+                      <InfoRow
+                        label="Block"
+                        value={flotData.block}
+                        icon={<BusinessIcon />}
+                      />
+                      <InfoRow
+                        label="Floor"
+                        value={flotData.floor}
+                        icon={<LocationCityIcon />}
+                      />
+                      <InfoRow
+                        label="Bedroom(s)"
+                        value={flotData.bedRoom}
+                        icon={<MeetingRoomIcon />}
+                      />
+                      <InfoRow
+                        label="UDS Sqft"
+                        value={flotData.udsSqft}
+                        icon={<SquareFootIcon />}
+                      />
+                      <InfoRow
+                        label="Guide Rate (per sqft)"
+                        value={formatCurrency(flotData.guideRateSqft)}
+                        icon={<MonetizationOnIcon />}
+                      />
                     </Grid>
-                </CardContent>
-            </Card>}
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                EMI
-            </Typography>
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <InfoRow
+                        label="Property Tax"
+                        value={formatCurrency(flotData.propertyTax)}
+                        icon={<AccountBalanceIcon />}
+                      />
+                      <InfoRow
+                        label="Car Parking"
+                        value={flotData.carPark}
+                        icon={<LocalParkingIcon />}
+                      />
+                      <InfoRow
+                        label="On Booking %"
+                        value={`${flotData.onBookingPercent}%`}
+                        icon={<PercentIcon />}
+                      />
+                      <InfoRow
+                        label="Lintel %"
+                        value={`${flotData.lintelPercent}%`}
+                        icon={<PercentIcon />}
+                      />
+                      <InfoRow
+                        label="Roof %"
+                        value={`${flotData.roofPercent}%`}
+                        icon={<PercentIcon />}
+                      />
+                      <InfoRow
+                        label="Plaster %"
+                        value={`${flotData.plasterPercent}%`}
+                        icon={<PercentIcon />}
+                      />
+                      <InfoRow
+                        label="Flooring %"
+                        value={`${flotData.flooringPercent}%`}
+                        icon={<PercentIcon />}
+                      />
+                    </Grid>
+                  </Grid>
 
-            <Card>
-                <DataTable
-                    title="Customer Table"
-                    data={emiData}
-                    columns={emiColumns}
-                    searchBy="emiId"
-                    onDelete={handleDelete}
-                    onDropDown={false}
-                    preserveOrder={true}
-                />
+                  {/* --- FINANCIAL DETAILS --- */}
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    mt={3}
+                    gutterBottom
+                  >
+                    Financial Details
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Grid container>
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <InfoRow
+                        label="Land Value"
+                        value={formatCurrency(flotData.landValue)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Land Registration Value"
+                        value={formatCurrency(flotData.landRegValue)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Construction Cost"
+                        value={formatCurrency(flotData.constCost)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Construction Reg. Value"
+                        value={formatCurrency(flotData.constRegValue)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Car Park Cost"
+                        value={formatCurrency(flotData.carParkCost)}
+                        icon={<PaidIcon />}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                      <InfoRow
+                        label="EB Deposit"
+                        value={formatCurrency(flotData.ebDeposit)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Sewage & Water Tax"
+                        value={formatCurrency(flotData.sewageWaterTax)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="GST"
+                        value={formatCurrency(flotData.gst)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Corpus Fund"
+                        value={formatCurrency(flotData.corpusFund)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Additional Charges"
+                        value={formatCurrency(flotData.additionalCharges)}
+                        icon={<PaidIcon />}
+                      />
+                      <InfoRow
+                        label="Total Value"
+                        value={formatCurrency(flotData.totalValue)}
+                        icon={<PaidIcon />}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* Payment Term */}
+                  <Box display="flex" alignItems="center" mt={2}>
+                    <Typography variant="body2" color="text.secondary" mr={1}>
+                      Payment Term:
+                    </Typography>
+                    <Chip
+                      label={flotData.paymentTerm}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+          {Object.keys(plotData).length > 0 && (
+            <Card elevation={3} sx={{ borderRadius: 3, mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Plot Overview
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <InfoRow
+                      label="Guide Rate (per sqft)"
+                      value={plotData.guideRatePerSqFt}
+                      icon={<MonetizationOnIcon />}
+                    />
+                    <InfoRow
+                      label="Guide Land Value"
+                      value={plotData.guideLandValue}
+                      icon={<MonetizationOnIcon />}
+                    />
+                    <InfoRow
+                      label="Land Value"
+                      value={plotData.landValue}
+                      icon={<MonetizationOnIcon />}
+                    />
+                  </Grid>
+
+                  <Grid size={{ xs: 12, sm: 12, md: 6 }}>
+                    <InfoRow
+                      label="Registration Value"
+                      value={plotData.regValue}
+                      icon={<MonetizationOnIcon />}
+                    />
+                    <InfoRow
+                      label="Additional Charges"
+                      value={plotData.additionalCharges}
+                      icon={<MonetizationOnIcon />}
+                    />
+                    <InfoRow
+                      label="Total Value"
+                      value={plotData.totalValue}
+                      icon={<PaidIcon />}
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
             </Card>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Billings
-            </Typography>
-            <Card>
-                <DataTable
-                    title="Customer Table"
-                    data={billingData}
-                    columns={billingColumns}
-                    searchBy="name"
-                    onDelete={handleDelete}
-                    onDropDown={false}
-                    preserveOrder={true}
-                />
-            </Card>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Marketer
-            </Typography>
-            <Card>
-                <DataTable
-                    title="Customer Table"
-                    data={marketerData}
-                    columns={marketerColumns}
-                    searchBy="name"
-                    onDelete={handleDelete}
-                    onDropDown={false}
-                    preserveOrder={true}
-                />
-            </Card>
-            <ConfirmDialog
-                open={openConfirmDialog}
-                onClose={() => { setOpenConfirmDialog(false); setDeleteId(null); }}
-                title="Confirm Delete"
-                content="Are you sure you want to delete this customer? This action cannot be undone."
-                action={handleConfirmDelete}
-                requireReason={true}
+          )}
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            EMI
+          </Typography>
+
+          <Card>
+            <DataTable
+              title="Customer Table"
+              data={emiData}
+              columns={emiColumns}
+              searchBy="emiId"
+              onDelete={handleDelete}
+              onDropDown={false}
+              preserveOrder={true}
+              isView={false}
             />
-            </>
-            }
-        </DashboardContent>
-    );
+          </Card>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Billings
+          </Typography>
+          <Card>
+            <DataTable
+              title="Customer Table"
+              data={billingData}
+              columns={billingColumns}
+              searchBy="name"
+              onDelete={handleDelete}
+              onDropDown={false}
+              preserveOrder={true}
+              isView={false}
+            />
+          </Card>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Marketer
+          </Typography>
+          <Card>
+            <DataTable
+              title="Customer Table"
+              data={marketerData}
+              columns={marketerColumns}
+              searchBy="name"
+              onDelete={handleDelete}
+              onDropDown={false}
+              preserveOrder={true}
+            />
+          </Card>
+          {/* EMI Edit Dialog */}
+          <Dialog
+            open={isEditEmiOpen}
+            onClose={() => setIsEditEmiOpen(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>Edit EMI Details</DialogTitle>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleEditSubmit();
+              }}
+            >
+              <DialogContent>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 3,
+                    pt: 2,
+                  }}
+                >
+                  <TextField
+                    label="Date"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    value={editEmiForm.date}
+                    onChange={(e) =>
+                      setEditEmiForm({ ...editEmiForm, date: e.target.value })
+                    }
+                  />
+                  <TextField
+                    label="Paid Date"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    value={editEmiForm.paidDate}
+                    onChange={(e) =>
+                      setEditEmiForm({
+                        ...editEmiForm,
+                        paidDate: e.target.value,
+                      })
+                    }
+                  />
+                  <TextField
+                    label="Paid Amount"
+                    type="number"
+                    fullWidth
+                    value={editEmiForm.paidAmt}
+                    onChange={(e) =>
+                      setEditEmiForm({
+                        ...editEmiForm,
+                        paidAmt: e.target.value,
+                      })
+                    }
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setIsEditEmiOpen(false)} color="inherit">
+                  Cancel
+                </Button>
+                <Button type="submit" variant="contained" color="primary">
+                  Update
+                </Button>
+              </DialogActions>
+            </form>
+          </Dialog>
+          <ConfirmDialog
+            open={openConfirmDialog}
+            onClose={() => {
+              setOpenConfirmDialog(false);
+              setDeleteId(null);
+            }}
+            title="Confirm Delete"
+            content="Are you sure you want to delete this customer? This action cannot be undone."
+            action={handleConfirmDelete}
+            requireReason={true}
+          />
+        </>
+      )}
+    </DashboardContent>
+  );
 };
 
 export default CustomerDetails;
