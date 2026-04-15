@@ -2164,24 +2164,73 @@ export const getBillingsByCustomerId = async (id) => {
 };
 
 // Logs APIS
-export const getAllLogs = async ({ date, page, limit, export: isExport }) => {
+// DEPLOYMENT_DATE: the date from which the new log DB collection is active.
+// Dates before this use the legacy endpoint; today and onwards use the new endpoint.
+const DEPLOYMENT_DATE = "2026-04-15";
+
+export const getAllLogs = async ({ date, page, limit, export: isExport, search = undefined }) => {
   try {
-    let url = `${base_url}api/logs/get/all?`;
+    // Route to legacy endpoint for today & all past dates; new endpoint for future dates only
+    const endpoint =
+      date && date <= DEPLOYMENT_DATE
+        ? "api/logs/get/all/previous"
+        : "api/logs/get/all";
+
+    const isNewEndpoint = endpoint === "api/logs/get/all";
+
+    let url = `${base_url}${endpoint}?`;
     const params = [];
 
     if (date) params.push(`date=${date}`);
     if (page) params.push(`page=${page}`);
     if (limit) params.push(`limit=${limit}`);
     if (isExport) params.push(`export=${isExport}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
 
     url += params.join("&");
 
     const response = await axios.get(url, {
       headers: getHeaders(),
     });
+
+    const raw = response.data;
+
+    // ── Normalize data items ──────────────────────────────────────────────
+    // New API uses different field names; we remap them to the legacy shape
+    // so LogsTable.tsx renders both sources with zero changes.
+    const normalizedData = (raw.data || []).map((item) =>
+      isNewEndpoint
+        ? {
+            _id: item._id,
+            moduleName: item.collectionName,              // collectionName → moduleName
+            createdAt: item.createdAt,
+            createdBy: item.createdBy,
+            roleId: null,                                 // not present in new API
+            customerCode: item.documentId?.customerCode || null, // nested → flat
+            action: item.action,                          // bonus: CREATE | UPDATE | DELETE
+          }
+        : item                                            // legacy shape is already correct
+    );
+
+    // ── Normalize pagination ──────────────────────────────────────────────
+    // New API uses page/limit/total; legacy uses currentPage/pageSize/totalCount
+    const rawPag = raw.pagination || {};
+    const normalizedPagination = isNewEndpoint
+      ? {
+          currentPage: rawPag.page,
+          pageSize: rawPag.limit,
+          totalCount: rawPag.total,
+          totalPages: rawPag.totalPages,
+        }
+      : rawPag; // legacy pagination shape is already correct
+
     return {
-      data: response.data,
-      message: response?.data?.message,
+      data: {
+        ...raw,
+        data: normalizedData,
+        pagination: normalizedPagination,
+      },
+      message: raw.message,
       status: 200,
     };
   } catch (error) {

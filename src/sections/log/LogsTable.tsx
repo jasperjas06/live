@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Card,
+  Chip,
   CircularProgress,
   IconButton,
   Paper,
@@ -33,6 +34,7 @@ interface LogItem {
   createdBy?: any; // could be string or populated user object
   roleId: string | null;
   customerCode?: string;
+  action?: string; // CREATE | UPDATE | DELETE — from new API only, undefined for legacy
 }
 
 interface LogsResponse {
@@ -203,6 +205,7 @@ const LogsTable = () => {
       // Transform data for Excel
       const excelData = exportData.map((log: LogItem) => ({
         "Module Name": log?.moduleName || "N/A",
+        Action: log?.action || "-",
         ID: log?._id || "N/A",
         "Customer Code": log?.customerCode || "-",
         "Created By":
@@ -258,6 +261,7 @@ const LogsTable = () => {
       // Transform data for Excel
       const excelData = exportData.map((log: LogItem) => ({
         "Module Name": log?.moduleName || "N/A",
+        Action: log?.action || "-",
         ID: log?._id || "N/A",
         "Customer Code": log?.customerCode || "-",
         "Created By":
@@ -370,6 +374,11 @@ const LogsTable = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
+                    Action
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
                     Id
                   </Typography>
                 </TableCell>
@@ -388,13 +397,13 @@ const LogsTable = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
                     <Typography variant="body2" color="text.secondary">
                       No logs found for {selectedDate}
                     </Typography>
@@ -417,6 +426,27 @@ const LogsTable = () => {
                       <Typography variant="body2" fontWeight={500}>
                         {log?.moduleName || "-"}
                       </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {log?.action ? (
+                        <Chip
+                          label={log.action}
+                          size="small"
+                          color={
+                            log.action === "CREATE"
+                              ? "success"
+                              : log.action === "DELETE"
+                                ? "error"
+                                : "warning"
+                          }
+                          variant="outlined"
+                          sx={{ fontWeight: 500, fontSize: "0.75rem" }}
+                        />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          -
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
