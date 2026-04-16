@@ -14,11 +14,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Iconify } from "src/components/iconify";
 import { DashboardContent } from "src/layouts/dashboard";
-import {
-  getAllCustomer,
-  getAllProjects,
-  getCustomBillingReport,
-} from "src/utils/api.service";
+import { createBillingReportJob, getAllCustomer, getAllProjects, getCustomBillingReport } from "src/utils/api.service";
 import * as XLSX from "xlsx";
 
 const CustomExport = () => {
@@ -186,12 +182,16 @@ const CustomExport = () => {
     return stringValue;
   };
 
+  
+  const effectiveFromDate = fromDate || "2020-01-01";
+  const effectiveToDate = toDate || getTodayDate();
+  const diffDays = Math.ceil(Math.abs(new Date(effectiveToDate).getTime() - new Date(effectiveFromDate).getTime()) / (1000 * 60 * 60 * 24));
+  const isLargeReport = diffDays > 62;
+
   const handleDownload = async () => {
     try {
       setIsDownloading(true);
 
-      const effectiveFromDate = fromDate || "2020-01-01";
-      const effectiveToDate = toDate || getTodayDate();
       // Validate dates
       if (new Date(effectiveFromDate) > new Date(effectiveToDate)) {
         toast.error("From date cannot be after To date");
@@ -241,7 +241,19 @@ const CustomExport = () => {
         params.customerId = "";
       }
       console.log("API Params being sent:", params);
-      // Call the API
+           
+      if (isLargeReport) {
+        const jobRes = await createBillingReportJob(params as any);
+        if (jobRes.status === 200) {
+           toast.success("Date range exceeds 2 months. Report queued and will be sent to your email.", { duration: 5000 });
+        } else {
+           toast.error(jobRes.message || "Failed to initiate background job for report.");
+        }
+        setIsDownloading(false);
+        return;
+      }
+
+      // Call standard API
       const response = await getCustomBillingReport(params as any);
 
       if (response.status === 200 && response.data) {
@@ -618,6 +630,13 @@ const CustomExport = () => {
               </Typography>
             </Box> */}
 
+            {isLargeReport && (
+              <Box sx={{ p: 2, bgcolor: 'warning.lighter', borderRadius: 1, border: '1px solid', borderColor: 'warning.light' }}>
+                <Typography variant="body2" color="warning.dark">
+                  ℹ️ <strong>Large date range selected:</strong> This report exceeds 2 months. It will be generated in the background and sent to admin email.
+                </Typography>
+              </Box>
+            )}
             <Box
               sx={{
                 mt: 3,
@@ -641,13 +660,13 @@ const CustomExport = () => {
                   isDownloading ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    <Iconify icon="mingcute:download-line" />
+                    isLargeReport ? <Iconify icon="mingcute:mail-send-line" /> : <Iconify icon="mingcute:download-line" />
                   )
                 }
                 onClick={handleDownload}
                 disabled={isDownloading}
               >
-                {isDownloading ? "Downloading..." : "Download Report"}
+              {isDownloading ? "Processing..." : (isLargeReport ? "Email Report" : "Download Report")}
               </Button>
             </Box>
           </Box>

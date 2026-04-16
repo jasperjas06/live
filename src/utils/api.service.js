@@ -2454,3 +2454,36 @@ export const bulkEditBillingData = async (formData) => {
     };
   }
 };
+
+
+// New API: Create Background Job for reports > 62 days
+export const createBillingReportJob = async (params = {}) => {
+  try {
+    let url = `${base_url}api/billing/report/job/create?`;
+    const queryParams = [];
+
+    if (params.date) queryParams.push(`date=${params.date}`);
+    if (params.dateFrom) queryParams.push(`dateFrom=${params.dateFrom}`);
+    if (params.dateTo) queryParams.push(`dateTo=${params.dateTo}`);
+    if (params.status) queryParams.push(`status=${params.status}`);
+    if (params.projectId) queryParams.push(`projectId=${params.projectId}`);
+    if (params.customerId) queryParams.push(`customerId=${params.customerId}`);
+
+    url += queryParams.join("&");
+
+    const response = await axios.post(url, {}, {
+      headers: getHeaders(),
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      data: error.response?.data,
+      message: error.response?.data?.message || "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
