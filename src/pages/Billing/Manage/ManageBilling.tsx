@@ -821,6 +821,25 @@ const BillingForm = () => {
                             // disabled={isDisabled}
                             error={!!fieldState.error}
                             helperText={fieldState.error?.message}
+                             onKeyDown={(e) => {
+                              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                                e.preventDefault();
+                              }
+                            }}
+                            onWheel={(e) => {
+                              if (e.target instanceof HTMLElement) {
+                                e.target.blur();
+                              }
+                            }}
+                            sx={{
+                              "& input[type=number]": {
+                                MozAppearance: "textfield",
+                              },
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
+                                WebkitAppearance: "none",
+                                margin: 0,
+                              },
+                            }}
                           />
                         );
                       }}
