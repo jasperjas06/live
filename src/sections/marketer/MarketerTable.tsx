@@ -148,6 +148,15 @@ const MarketerTable = () => {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Marketer
         </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Iconify icon="solar:eye-bold" />}
+            onClick={() => navigate('/commission?type=marketer')}
+          >
+            Commissions
+          </Button>
         <Button
           variant="contained"
           color="inherit"
@@ -157,6 +166,7 @@ const MarketerTable = () => {
         >
           New Marketer
         </Button>
+        </Box>
       </Box>
 
        {/* Search Input */}

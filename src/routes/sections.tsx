@@ -74,6 +74,7 @@ export const BulkUploadBilling = lazy(
   () => import("src/sections/billing/BulkUploadBilling"),
 );
 export const Logs = lazy(() => import("src/pages/log/Logs"));
+export const CommissionPage = lazy(() => import("src/pages/Commission/index"));
 // ----------------------------------------------------------------------
 // Loading fallback (when lazy pages load)
 const renderFallback = () => (
@@ -180,6 +181,7 @@ export const routesSection: RouteObject[] = [
       { path: "billing/edit/:id", element: <ManageBilling /> },
       { path: "billing/bulk-upload", element: <BulkUploadBilling /> },
       { path: "logs", element: <Logs /> },
+      { path: "commission", element: <CommissionPage /> },
     ],
   },
   {

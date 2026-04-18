@@ -104,6 +104,31 @@ export const getACustomer = async (id, params = {}) => {
   }
 };
 
+
+export const getCustomerDetailOverall = async (id) => {
+  try {
+    const response = await axios.get(`${base_url}api/customer/detail/${id}`, {
+      headers: getHeaders(),
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+
 export const updateCustomer = async (data, includeCustomer = false) => {
   try {
     const url = includeCustomer
@@ -186,6 +211,41 @@ export const getCommissionByCustomerId = async (customerId) => {
 export const createProjects = async (data) => {
   try {
     const response = await axios.post(`${base_url}api/project/create`, data, {
+      headers: getHeaders(),
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+
+export const getCommissionByMarketer = async (id, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+    if (params.dateFrom) queryParams.append("dateFrom", params.dateFrom);
+    if (params.dateTo) queryParams.append("dateTo", params.dateTo);
+    if (params.onlyMarketer !== undefined) queryParams.append("onlyMarketer", String(params.onlyMarketer));
+
+    const queryString = queryParams.toString();
+    const url = `${base_url}api/commission/marketer/${id}${queryString ? `?${queryString}` : ""}`;
+
+    const response = await axios.get(url, {
       headers: getHeaders(),
     });
     return {

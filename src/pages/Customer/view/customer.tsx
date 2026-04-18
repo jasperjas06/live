@@ -7,10 +7,13 @@ import {
   MapPin,
   Phone,
   User,
-  UserCircle
+  UserCircle,
+  Download
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import { useParams } from 'react-router-dom';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 
 import {
@@ -21,10 +24,17 @@ import {
   Grid,
   Paper,
   Stack,
-  Typography
+  Typography,
+    Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress
 } from '@mui/material';
+import CustomerOverallReport from './CustomerOverallReport';
 
-import { getACustomer } from 'src/utils/api.service';
+import { getACustomer, getCustomerDetailOverall } from 'src/utils/api.service';
 
 interface ReferencePerson {
   _id: string;
@@ -64,6 +74,71 @@ const CustomerProfile = () => {
   const { id } = useParams();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
+
+  
+  // Report state
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenReport = async () => {
+    if (!id) return;
+    try {
+      setLoadingReport(true);
+      const response = await getCustomerDetailOverall(id);
+      if (response.data?.data) {
+        setReportData(response.data.data);
+        setReportOpen(true);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return;
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Add subsequent pages if the content overflows A4 height bounds
+      while (heightLeft > 2) {
+        position = position - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(`Customer_Overall_Detail_${customer?.name || 'Report'}.pdf`);
+    } catch (error) {
+      console.error("PDF Generation failed", error);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
@@ -113,9 +188,19 @@ const CustomerProfile = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4" fontWeight={600} gutterBottom>
                 Customer Details
               </Typography>
+               <Button 
+          variant="contained" 
+          startIcon={loadingReport ? <CircularProgress size={20} color="inherit" /> : <Download size={18} />}
+          onClick={handleOpenReport}
+          disabled={loadingReport}
+        >
+          {loadingReport ? 'Generating...' : 'Get Customer Overall PDF'}
+        </Button>
+      </Box>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         {/* Header Section */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -259,6 +344,48 @@ const CustomerProfile = () => {
           </Grid>
         </Grid>
       </Paper>
+
+      
+      {/* Overall Report Preview Dialog */}
+      <Dialog 
+        open={reportOpen} 
+        onClose={() => setReportOpen(false)} 
+        maxWidth={false}
+        PaperProps={{ sx: { width: '80%', maxWidth: '210mm' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Customer Overall Report Preview
+        </DialogTitle>
+        <DialogContent dividers sx={{ backgroundColor: '#525659', p: 0 }}>
+          <Box sx={{ 
+            height: '75vh', 
+            overflow: 'auto', 
+            p: 4, 
+            display: 'flex', 
+            justifyContent: 'center',
+            alignItems: 'flex-start' 
+          }}>
+            <Box sx={{
+              boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+            }}>
+              <CustomerOverallReport ref={reportRef} data={reportData} />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          <Button onClick={() => setReportOpen(false)} color="inherit" variant="outlined">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDownloadPDF} 
+            color="primary" 
+            variant="contained" 
+            startIcon={<Download size={18} />}
+          >
+            Download PDF
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

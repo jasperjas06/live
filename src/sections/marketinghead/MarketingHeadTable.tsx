@@ -149,12 +149,20 @@ const MarketingHeadTable = () => {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Marketing Head
         </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Iconify icon="solar:eye-bold" />}
+            onClick={() => navigate('/commission?type=marketing-head')}
+          >
+            Commissions
+          </Button>
         <Button
           variant="outlined"
           color="inherit"
           startIcon={<Iconify icon="mingcute:download-line" />}
           onClick={() => navigate("export")}
-          sx={{ mr: 1 }}
         >
           Export
         </Button>
@@ -167,6 +175,7 @@ const MarketingHeadTable = () => {
         >
           New Marketing Head
         </Button>
+        </Box>
       </Box>
 
       {/* Search Input */}
