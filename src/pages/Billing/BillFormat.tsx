@@ -72,8 +72,8 @@ const numberToWords = (num: number): string => {
   return str.trim();
 };
 
-const BillView = forwardRef<HTMLDivElement, { data: any }>(
-  ({ data }, billRef) => {
+const BillView = forwardRef<HTMLDivElement, { data: any; isPreview?: boolean }>(
+  ({ data , isPreview }, billRef) => {
     // const {
     //   totalAmount,
     //   previousPaidAmount,
@@ -93,9 +93,9 @@ const BillView = forwardRef<HTMLDivElement, { data: any }>(
           textAlign: "center",
           display: "flex",
           alignItems: "center",
-          position: "absolute",
-          left: "-99999px",
-          top: "-99999px",
+          position: isPreview ? "relative" : "absolute",
+          left: isPreview ? "auto" : "-99999px",
+          top: isPreview ? "auto" : "-99999px",
           flexDirection: "column",
         }}
       >

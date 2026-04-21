@@ -2223,6 +2223,31 @@ export const getBillingsByCustomerId = async (id) => {
   }
 };
 
+
+export const sendSmsBilling = async (data) => {
+  try {
+    const response = await axios.post(`${base_url}api/common/send/sms`, data, {
+      headers: getHeaders(),
+    });
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    console.log("Error sending SMS:", error);
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 // Logs APIS
 // DEPLOYMENT_DATE: the date from which the new log DB collection is active.
 // Dates before this use the legacy endpoint; today and onwards use the new endpoint.

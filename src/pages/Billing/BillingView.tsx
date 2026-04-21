@@ -1,18 +1,50 @@
-import { Print } from "@mui/icons-material";
+import { Sms as SmsIcon, Print } from "@mui/icons-material";
 import DownloadIcon from '@mui/icons-material/Download';
-import { Backdrop, Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography } from '@mui/material';
+import { Backdrop, Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Typography,   Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,} from '@mui/material';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getBillingsByCustomerId } from 'src/utils/api.service';
+import { getBillingsByCustomerId, sendSmsBilling } from 'src/utils/api.service';
 import BillView from "./BillFormat";
 import dayjs from "dayjs";
+import toast from "react-hot-toast";
 
 const BillingView = () => {
     const [data, setData] = useState<any>({})
     const [loading, setLoading] = useState(true)
     const { id } = useParams()
+    const [smsOpen, setSmsOpen] = useState(false);
+    const [smsLoading, setSmsLoading] = useState(false);
+
+    
+  const handleSendSms = async () => {
+    try {
+      setSmsLoading(true);
+      const customerId = data?.customer?._id || data?.customer?.id;
+      const billingId = data?._id || data?.id || id;
+      
+      if (!customerId || !billingId) {
+        toast.error("Customer ID or Billing ID is missing. Cannot send SMS.");
+        return;
+      }
+
+      const res = await sendSmsBilling({ customerId, billingId });
+      if (res.status === 200) {
+        toast.success("SMS sent successfully");
+        setSmsOpen(false);
+      } else {
+        toast.error(res.message || "Failed to send SMS");
+      }
+    } catch (error) {
+      toast.error("An error occurred while sending SMS");
+    } finally {
+      setSmsLoading(false);
+    }
+  };
 
   const getData = async () => {
     try {
@@ -239,6 +271,15 @@ const BillingView = () => {
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
             variant="contained"
+            color="secondary"
+            startIcon={<SmsIcon />}
+            onClick={() => setSmsOpen(true)}
+            sx={{ textTransform: "none" }}
+          >
+            Send SMS
+          </Button>
+          <Button
+            variant="contained"
             startIcon={<DownloadIcon />}
             onClick={downloadAsExcel}
             sx={{ textTransform: "none" }}
@@ -255,6 +296,41 @@ const BillingView = () => {
           </Button>
         </div>
       </Box>
+
+      
+      <Dialog
+        open={smsOpen}
+        onClose={() => setSmsOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: "warning.main", fontWeight: "bold" }}>
+          Confirm SMS Send
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+            Are you sure you want to send an SMS to this customer at mobile number{" "}
+            <strong>{data?.customer?.phone || "N/A"}</strong>? Please review the
+            bill details carefully before clicking Proceed.
+          </Typography>
+          <Box sx={{ border: "1px solid #ddd", borderRadius: 2, p: 2, bgcolor: "#f9f9f9", display: "flex", justifyContent: "center", overflowX: "auto" }}>
+            <BillView data={data} isPreview={true} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSmsOpen(false)} disabled={smsLoading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSendSms}
+            variant="contained"
+            color="primary"
+            disabled={smsLoading}
+          >
+            {smsLoading ? <CircularProgress size={24} /> : "Proceed"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Transaction Information */}
       <Card
