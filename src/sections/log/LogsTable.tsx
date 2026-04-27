@@ -87,6 +87,18 @@ const LogsTable = () => {
     searchParams.get("date") || new Date().toISOString().split("T")[0],
   );
 
+  // Search filter
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const getLogs = async (isExport = false) => {
     try {
       setLoading(true);
@@ -96,8 +108,9 @@ const LogsTable = () => {
         date: selectedDate,
         page: isExport ? undefined : page + 1,
         limit: isExport ? undefined : rowsPerPage,
+        search: debouncedSearch || undefined,
         export: isExport ? "true" : undefined,
-      });
+      } as any);
 
       if (response.status === 200) {
         const logsData: LogsResponse = response.data;
@@ -129,7 +142,7 @@ const LogsTable = () => {
 
   useEffect(() => {
     getLogs();
-  }, [page, rowsPerPage, selectedDate]);
+  }, [page, rowsPerPage, selectedDate, debouncedSearch]);
 
   // Update URL params when state changes
   useEffect(() => {
@@ -327,6 +340,18 @@ const LogsTable = () => {
             InputLabelProps={{ shrink: true }}
             sx={{ minWidth: 200 }}
           />
+
+           <TextField
+            label="Search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search by module, code, etc."
+            sx={{ minWidth: 250 }}
+          />
+
 
           <Box sx={{ flexGrow: 1 }} />
 

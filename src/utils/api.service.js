@@ -2253,7 +2253,7 @@ export const sendSmsBilling = async (data) => {
 // Dates before this use the legacy endpoint; today and onwards use the new endpoint.
 const DEPLOYMENT_DATE = "2026-04-15";
 
-export const getAllLogs = async ({ date, page, limit, export: isExport, search = undefined }) => {
+export const getAllLogs = async ({ date, page, limit, export: isExport, search = undefined}) => {
   try {
     // Route to legacy endpoint for today & all past dates; new endpoint for future dates only
     const endpoint =
