@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 import {
   Autocomplete,
   Box,
+  Button,
   Card,
   CircularProgress,
   Paper,
@@ -64,6 +66,9 @@ const Commission = () => {
   const [page, setPage] = useState(initPage > 0 ? initPage - 1 : 0);
   const [rowsPerPage, setRowsPerPage] = useState(initLimit);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Export
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleTypeChange = (
     event: React.MouseEvent<HTMLElement>,
@@ -178,6 +183,106 @@ const Commission = () => {
     }
   }, []); // Only run once on mount
 
+  
+  const handleExport = async () => {
+    if (!selectedPerson?._id) return;
+    
+    setIsExporting(true);
+    try {
+      const queryParams: any = {
+        isExport: true,
+        onlyMarketer: personType === "marketer",
+      };
+      if (dateFrom) queryParams.dateFrom = dateFrom;
+      if (dateTo) queryParams.dateTo = dateTo;
+
+      const response: any = await getCommissionByMarketer(selectedPerson._id, queryParams);
+      
+      if (response.status && response.data?.data) {
+        const exportData = response.data.data.map((row: any) => {
+          const marketerDetail = row.marketer?.find((m: any) => m.marketerId === selectedPerson._id) || row.marketer?.[0];
+          const isDirect = marketerDetail?.percentage !== "1%";
+          
+          return {
+            "Customer Code": row.customerCode || "-",
+            "EMI No": row.emiNo || "-",
+            "Payment Date": row.paymentDate ? dayjs(row.paymentDate).format('DD MMM YYYY') : "-",
+            "Comm. Amount": marketerDetail?.commAmount ? `₹ ${marketerDetail.commAmount}` : "₹ 0",
+            "EMI Amount": marketerDetail?.emiAmount ? `₹ ${marketerDetail.emiAmount}` : "₹ 0",
+            "Percentage": marketerDetail?.percentage || "-",
+            "Earn Type": isDirect ? "Direct" : "Commission"
+          };
+        });
+
+        // Add summary rows at the bottom
+        if (response.data.commission) {
+            exportData.push({} as any); // Empty row
+            exportData.push({
+               "Customer Code": "SUMMARY",
+               "EMI No": "",
+               "Payment Date": "",
+               "Comm. Amount": "",
+               "EMI Amount": "",
+               "Percentage": "",
+               "Earn Type": ""
+            } as any);
+            exportData.push({
+               "Customer Code": "Total Earn Direct",
+               "EMI No": `₹ ${response.data.commission.totalEarnDirect || 0}`,
+               "Payment Date": "",
+               "Comm. Amount": "",
+               "EMI Amount": "",
+               "Percentage": "",
+               "Earn Type": ""
+            } as any);
+            exportData.push({
+               "Customer Code": "Total Earn Commission",
+               "EMI No": `₹ ${response.data.commission.totalEarnCommission || 0}`,
+               "Payment Date": "",
+               "Comm. Amount": "",
+               "EMI Amount": "",
+               "Percentage": "",
+               "Earn Type": ""
+            } as any);
+            exportData.push({
+               "Customer Code": "Total Earn",
+               "EMI No": `₹ ${response.data.commission.totalEarn || 0}`,
+               "Payment Date": "",
+               "Comm. Amount": "",
+               "EMI Amount": "",
+               "Percentage": "",
+               "Earn Type": ""
+            } as any);
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Commissions");
+
+        // Format column widths for better readability
+        worksheet["!cols"] = [
+          { wch: 22 }, // Customer Code
+          { wch: 12 }, // EMI No
+          { wch: 18 }, // Payment Date
+          { wch: 18 }, // Comm. Amount
+          { wch: 18 }, // EMI Amount
+          { wch: 12 }, // Percentage
+          { wch: 15 }  // Earn Type
+        ];
+
+        const fileName = `Commission_${selectedPerson.name?.replace(/\s+/g, '_')}_${dayjs().format('YYYY-MM-DD')}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+      } else {
+        console.error("Export failed: No data found");
+      }
+      
+    } catch (error) {
+      console.error("Error exporting commission:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -193,6 +298,16 @@ const Commission = () => {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Commission Calculation
         </Typography>
+        {selectedPerson && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExport}
+            disabled={isExporting}
+          >
+            {isExporting ? <CircularProgress size={24} color="inherit" /> : 'Export to Excel'}
+          </Button>
+        )}
       </Box>
 
       <Card sx={{ p: 3, mb: 3 }}>

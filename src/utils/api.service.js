@@ -241,6 +241,7 @@ export const getCommissionByMarketer = async (id, params = {}) => {
     if (params.dateFrom) queryParams.append("dateFrom", params.dateFrom);
     if (params.dateTo) queryParams.append("dateTo", params.dateTo);
     if (params.onlyMarketer !== undefined) queryParams.append("onlyMarketer", String(params.onlyMarketer));
+    if (params.isExport !== undefined) queryParams.append("isExport", String(params.isExport));
 
     const queryString = queryParams.toString();
     const url = `${base_url}api/commission/marketer/${id}${queryString ? `?${queryString}` : ""}`;

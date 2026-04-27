@@ -64,7 +64,7 @@ const roleSchema = yup.object().shape({
   billingMonth: yup.string().required("Billing Month is required"),
   emi: yup.string(),
   status: yup.string().required("Status is required"),
-  remarks: yup.string().notRequired(),
+  remarks: yup.string().required("Remarks are required"),
   modeOfPayment: yup.string().required("Mode Of Payment is required"),
   referenceId: yup.string().when("modeOfPayment", {
     is: (val: any) => {
@@ -93,7 +93,7 @@ export interface BillingFormData {
   cardHolderName?: string | undefined;
   paymentDate: string;
   status: string;
-  remarks?: string | undefined;
+  remarks: string;
   amount: number;
 }
 
@@ -1001,6 +1001,7 @@ const BillingForm = () => {
                       name="remarks"
                       defaultValue=""
                       rules={{
+                        required: "Remarks are required",
                         maxLength: {
                           value: 200,
                           message: "Remark cannot exceed 200 characters",
@@ -1009,7 +1010,11 @@ const BillingForm = () => {
                       render={({ field, fieldState }) => (
                         <TextField
                           {...field}
-                          label="Remarks"
+                          label={
+                            <>
+                              Remarks <span style={{ color: "red" }}>*</span>
+                            </>
+                          }
                           fullWidth
                           multiline
                           rows={3}
