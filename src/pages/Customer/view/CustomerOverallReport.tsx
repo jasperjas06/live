@@ -84,7 +84,7 @@ const CustomerOverallReport = forwardRef<HTMLDivElement, ReportProps>(({ data },
                     <td style={{ width: '40%', border: 'none', verticalAlign: 'top', padding: '6px 8px' }}>
                       <div style={{ display: 'flex', marginBottom: '4px' }}>
                         <div style={{ width: '60px' }}>Ref.Id</div>
-                        <div>{customer?.customerCode || ''}</div>
+                        <div>{customer?._id ? String(customer._id).slice(0, 5) : ''}</div>
                       </div>
                       <div style={{ display: 'flex', marginBottom: '4px' }}>
                         <div style={{ width: '60px' }}>Phone</div>
@@ -117,7 +117,7 @@ const CustomerOverallReport = forwardRef<HTMLDivElement, ReportProps>(({ data },
                         <div>{marketerName}</div>
                       </div>
                       <div style={{ display: 'flex' }}>
-                        <div style={{ width: '130px', textAlign: 'left' }}>Mobile :</div>
+                        <div style={{ width: '60px', textAlign: 'left' }}>Mobile :</div>
                         <div>{marketerPhone}</div>
                       </div>
                     </td>
@@ -127,7 +127,7 @@ const CustomerOverallReport = forwardRef<HTMLDivElement, ReportProps>(({ data },
                     <td style={{ width: '30%', border: 'none', verticalAlign: 'bottom', padding: '6px 8px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div>Plot No</div>
-                        <div>11</div>
+                        <div>{customer.plotNo  || ""}</div>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div>Rate per Sqft</div>
