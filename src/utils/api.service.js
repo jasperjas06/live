@@ -575,6 +575,34 @@ export const createMarketer = async (data) => {
   }
 };
 
+
+export const upgradeMarketerHead = async (id) => {
+  try {
+    const response = await axios.put(
+      `${base_url}api/market/head/upgrade/head`,
+      { id },
+      {
+        headers: getHeaders(),
+      },
+    );
+    return {
+      data: response.data,
+      message: response?.data?.message,
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      message:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
 export const updateMarketer = async (data) => {
   try {
     const response = await axios.put(

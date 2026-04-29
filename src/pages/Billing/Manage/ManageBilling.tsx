@@ -330,7 +330,7 @@ const BillingForm = () => {
         }
         const res = await getAllEmi({
           customerId: cusId,
-          paid: "false",
+          paid: undefined,
           populate: "true",
         });
         console.log(res, "res");
@@ -340,6 +340,7 @@ const BillingForm = () => {
             label: item.emiNo,
             emiAmt: item.emiAmt,
             date: item.date,
+            paidDate: item.paidDate,
             noOfInstallments: item.general?.noOfInstallments,
             status: item.general?.status,
             customerName: item.customer?.name,
@@ -542,6 +543,165 @@ const BillingForm = () => {
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 }, fontWeight: 600 }}>
         {id ? "Edit Billing" : "Create Billing"}
       </Typography>
+
+      {cusId && (
+        <StyledCard sx={{ mb: 3 }}>
+          <CardContent>
+            <SectionTitle variant="h6">
+              EMI Details{" "}
+              {selectedCustomer?.label ? `- ${selectedCustomer.label}` : ""}
+            </SectionTitle>
+
+            {loading ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                minHeight={100}
+              >
+                <CircularProgress size={28} />
+              </Box>
+            ) : emiOptions.length === 0 ? (
+              <Box sx={{ py: 2, textAlign: "center" }}>
+                <Typography color="text.secondary">
+                  No EMIs found for this customer
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Review the EMIs below to decide whether to choose Previous,
+                  Current, or Advance as the billing month.
+                </Typography>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "repeat(2, 1fr)",
+                      sm: "repeat(4, 1fr)",
+                      md: "repeat(5, 1fr)",
+                      lg: "repeat(6, 1fr)",
+                      xl: "repeat(7, 1fr)",
+                    },
+                    gap: 1,
+                    maxHeight: 280,
+                    overflowY: "auto",
+                    pr: 1,
+                  }}
+                >
+                  {emiOptions.map((emi: any) => {
+                    const emiDate = new Date(emi.date);
+                    const now = new Date();
+                    const isPaid = !!emi.paidDate;
+                    const accentColor = isPaid ? "#2e7d32" : "#ed6c02";
+
+                    const isCurrentMonth =
+                      emiDate.getMonth() === now.getMonth() &&
+                      emiDate.getFullYear() === now.getFullYear();
+                    const isPast =
+                      emiDate.getFullYear() < now.getFullYear() ||
+                      (emiDate.getFullYear() === now.getFullYear() &&
+                        emiDate.getMonth() < now.getMonth());
+                    const billingTag = isCurrentMonth
+                      ? "Current"
+                      : isPast
+                        ? "Previous"
+                        : "Advance";
+
+                    return (
+                      <Box
+                        key={emi.value}
+                        sx={{
+                          border: "1px solid #e0e0e0",
+                          borderLeft: `3px solid ${accentColor}`,
+                          borderRadius: 1,
+                          px: 0.75,
+                          py: 0.5,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 0.25,
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            fontWeight={700}
+                            sx={{ fontSize: "0.75rem" }}
+                          >
+                            #{emi.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: accentColor,
+                              fontWeight: 600,
+                              fontSize: "0.65rem",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {isPaid ? "Paid" : "Unpaid"}
+                          </Typography>
+                        </Box>
+
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{ fontSize: "0.7rem" }}
+                          >
+                            {emiDate.toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "2-digit",
+                            })}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            fontWeight={700}
+                            sx={{ fontSize: "0.7rem" }}
+                          >
+                            ₹{emi.emiAmt}
+                          </Typography>
+                        </Box>
+
+                        {!isPaid && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: accentColor,
+                              fontWeight: 600,
+                              fontSize: "0.65rem",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {billingTag}
+                          </Typography>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </>
+            )}
+          </CardContent>
+        </StyledCard>
+      )}
 
       <StyledCard>
         <CardContent>

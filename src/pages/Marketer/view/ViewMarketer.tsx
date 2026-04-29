@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EmailIcon from '@mui/icons-material/Email';
@@ -7,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import {
+  Button,
   Box,
   Card,
   CardContent,
@@ -15,17 +17,22 @@ import {
   Typography,
 } from '@mui/material';
 
-import { getAMarketer, getMarketerHierarchy } from 'src/utils/api.service';
+import { getAMarketer, getMarketerHierarchy,upgradeMarketerHead } from 'src/utils/api.service';
 import type { Column } from 'src/custom/dataTable/dataTable';
+import ConfirmDialog from 'src/custom/dialog/ConfirmDialog'
 import { DataTable } from 'src/custom/dataTable/dataTable';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 const ViewMarketer = () => {
   const { id } = useParams();
+   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
     const [hierarchyData, setHierarchyData] = useState<any>({ upline: [], downline: [] });
   const [hierarchyLoading, setHierarchyLoading] = useState(true); 
+    const [promoting, setPromoting] = useState(false);
+  const [openPromoteDialog, setOpenPromoteDialog] = useState(false);
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
   const getData = async () => {
     try {
@@ -52,6 +59,28 @@ const ViewMarketer = () => {
       console.error('Error fetching hierarchy:', error);
     } finally {
       setHierarchyLoading(false);
+    }
+  };
+
+  
+  const handlePromoteMarketer = async () => {
+    if (!id) return;
+    try {
+      setPromoting(true);
+      const response = await upgradeMarketerHead(id);
+      if (response.status === 200) {
+        toast.success(response.message || 'Marketer promoted successfully');
+        const newId = response.data?.data?._id || id;
+        navigate(`/marketing-head/view/${newId}`, { replace: true });
+        return;
+      }
+      toast.error(response.message || 'Failed to promote marketer');
+    } catch (error) {
+      console.error('Error promoting marketer:', error);
+      toast.error('Failed to promote marketer');
+    } finally {
+      setPromoting(false);
+      setOpenPromoteDialog(false);
     }
   };
 
@@ -83,9 +112,21 @@ const ViewMarketer = () => {
 
   return (
     <DashboardContent>
-      <Typography variant="h4" fontWeight={600} gutterBottom>
-        Marketer Details
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h4" fontWeight={600} gutterBottom>
+          Marketer Details
+        </Typography>
+        {isAdmin && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenPromoteDialog(true)}
+            disabled={promoting || loading || !id}
+          >
+            {promoting ? 'Promoting...' : 'Promote Marketer'}
+          </Button>
+        )}
+      </Box>
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 12, md: 6 }}>
@@ -154,6 +195,14 @@ const ViewMarketer = () => {
           isView={false}
         />
       </Box>
+      <ConfirmDialog
+        open={openPromoteDialog}
+        onClose={() => setOpenPromoteDialog(false)}
+        title="Promote Marketer"
+        content={`You are moving ${data?.name ? `"${data.name}"` : 'this marketer'}${data?.level ? ` from Level ${data.level}` : ''} to Level 1. Other marketers under them will move up by one level. This action cannot be undone. Are you sure you want to continue?`}
+        action={handlePromoteMarketer}
+        actionText={promoting ? 'Promoting...' : 'Promote'}
+      />
     </DashboardContent>
   );
 };
