@@ -207,8 +207,8 @@ const Commission = () => {
             "Customer Code": row.customerCode || "-",
             "EMI No": row.emiNo || "-",
             "Payment Date": row.paymentDate ? dayjs(row.paymentDate).format('DD MMM YYYY') : "-",
-            "Comm. Amount": marketerDetail?.commAmount ? `₹ ${marketerDetail.commAmount}` : "₹ 0",
-            "EMI Amount": marketerDetail?.emiAmount ? `₹ ${marketerDetail.emiAmount}` : "₹ 0",
+            "Comm. Amount": marketerDetail?.commAmount ? marketerDetail.commAmount : 0,
+            "EMI Amount": marketerDetail?.emiAmount ? marketerDetail.emiAmount : 0,
             "Percentage": marketerDetail?.percentage || "-",
             "Earn Type": isDirect ? "Direct" : "Commission"
           };
