@@ -42,7 +42,7 @@ const RoleMenuMapping = () => {
   // Debounce search input
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+      setDebouncedSearch(searchTerm.trim());
       // Reset to page 1 when search term changes
       if (searchTerm !== debouncedSearch) {
         setCurrentPage(1);

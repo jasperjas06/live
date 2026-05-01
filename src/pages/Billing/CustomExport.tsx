@@ -46,7 +46,7 @@ const CustomExport = () => {
   // Debounce: only update debouncedProjectSearch 500ms after typing stops
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedProjectSearch(projectSearchTerm);
+      setDebouncedProjectSearch(projectSearchTerm.trim());
     }, 500);
     return () => clearTimeout(timer);
   }, [projectSearchTerm]);
@@ -54,7 +54,7 @@ const CustomExport = () => {
   // Debounce customer search term
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedCustomerSearch(customerSearchTerm);
+      setDebouncedCustomerSearch(customerSearchTerm.trim());
     }, 500);
     return () => clearTimeout(timer);
   }, [customerSearchTerm]);

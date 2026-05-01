@@ -60,7 +60,7 @@ const MarketingHeadExport = () => {
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+      setDebouncedSearch(searchTerm.trim());
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);

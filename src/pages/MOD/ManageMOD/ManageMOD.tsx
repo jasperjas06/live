@@ -231,7 +231,7 @@ const MODForm = () => {
     // Debounce Customer Search
     useEffect(() => {
       const timer = setTimeout(() => {
-        setDebouncedCustomerSearch(customerSearch);
+        setDebouncedCustomerSearch(customerSearch.trim());
         if (customerSearch !== debouncedCustomerSearch) {
           setCustomerPage(1);
           setCustomerOptions([]);

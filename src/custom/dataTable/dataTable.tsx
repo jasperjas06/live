@@ -118,7 +118,7 @@ export function DataTable<T extends { id: string | number }>({
 
   const filteredData = (searchBy && !disableSearch)
     ? data.filter((row) =>
-        String(row[searchBy]).toLowerCase().includes(search.toLowerCase())
+        String(row[searchBy]).toLowerCase().includes(search.trim().toLowerCase())
       )
     : data;
 

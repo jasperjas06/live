@@ -71,7 +71,7 @@ const MODTable = () => {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+      setDebouncedSearch(searchTerm.trim());
       if (searchTerm !== debouncedSearch) {
         setCurrentPage(1);
       }

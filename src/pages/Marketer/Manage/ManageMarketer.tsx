@@ -113,7 +113,7 @@ const MarketerForm = () => {
   };
 
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm.trim(), 500);
 
   const getALLMarketingHeadsData = async(search = '')=>{
     try {

@@ -58,7 +58,7 @@ const Requests = () => {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+      setDebouncedSearch(searchTerm.trim());
       if (searchTerm !== debouncedSearch) {
         setPage(0);
       }

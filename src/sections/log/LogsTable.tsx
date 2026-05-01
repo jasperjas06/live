@@ -94,7 +94,7 @@ const LogsTable = () => {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(search);
+      setDebouncedSearch(search.trim());
     }, 500);
     return () => clearTimeout(timer);
   }, [search]);

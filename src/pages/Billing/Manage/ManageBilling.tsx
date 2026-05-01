@@ -240,7 +240,7 @@ const BillingForm = () => {
   // Debounce customer search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedCustomerSearch(customerSearch);
+      setDebouncedCustomerSearch(customerSearch.trim());
       // Reset to page 1 when search changes
       if (customerSearch !== debouncedCustomerSearch) {
         setCustomerPage(1);
