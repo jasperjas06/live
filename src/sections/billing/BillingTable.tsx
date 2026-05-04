@@ -102,10 +102,15 @@ const BillingTable = () => {
             item?.customer?.cedId?.name ||
             "-",
           marketerHead: item?.customer?.ddId?.name || "-",
-          paidDate:
-            item.emi?.paidDate?.split("T")[0] ||
-            item?.paymentDate?.split("T")[0] ||
-            "-",
+          paidDate:(() => {
+            const raw = item.emi?.paidDate || item?.paymentDate;
+            if (!raw) return "-";
+            return new Date(raw).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+          })(),
           customerName:
             item?.general?.customer?.name || item?.customer?.name || "-",
           // emiId: item.emi?._id || 'N/A',
