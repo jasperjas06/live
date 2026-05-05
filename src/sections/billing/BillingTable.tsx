@@ -105,11 +105,7 @@ const BillingTable = () => {
           paidDate:(() => {
             const raw = item.emi?.paidDate || item?.paymentDate;
             if (!raw) return "-";
-            return new Date(raw).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            });
+            return new Date(raw).toLocaleDateString("en-GB").replace(/\//g, "-");
           })(),
           customerName:
             item?.general?.customer?.name || item?.customer?.name || "-",
