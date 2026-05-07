@@ -159,7 +159,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any; isPreview?: boolean }>(
                     fontWeight: "900",
                   }}
                 >
-                  LIFE HOUSING ENTERPRISES
+                  DEEGRAND LIFE HOUSING & PROPERTIES PVT LTD
                 </h1>
                 <p
                   style={{
@@ -172,7 +172,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any; isPreview?: boolean }>(
                   }}
                 >
                   NO.107/1,1st FLOOR,AMPA MANOR,NELSON MANICKAM
-                  ROAD,AMINJIKARAI,CHENNAI-29
+                  ROAD,AMINJIKARAI,CHENNAI-600029
                 </p>
                 <p
                   style={{
@@ -1161,7 +1161,7 @@ const BillView = forwardRef<HTMLDivElement, { data: any; isPreview?: boolean }>(
                   for{" "}
                   <span style={{ fontWeight: "600", paddingLeft: "5px" }}>
                     {" "}
-                    LIFE HOUSING ENTERPRISES
+                    DEEGRAND LIFE HOUSING & PROPERTIES PVT LTD
                   </span>
                 </p>
               </div>
