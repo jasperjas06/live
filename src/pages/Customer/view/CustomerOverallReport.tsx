@@ -205,7 +205,7 @@ const CustomerOverallReport = forwardRef<HTMLDivElement, ReportProps>(({ data },
                 </div>
                 <div style={{ flex: 1, fontFamily: '"Times New Roman", Times, serif' }}>
                   <div style={{ fontSize: '14pt', fontWeight: 'bold', fontStyle: 'italic', color: '#000' }}>
-                    LIFE HOUSING & PROPERTIES
+                    DEEGRAND LIFE HOUSING & PROPERTIES PVT LTD
                   </div>
                   <div style={{ fontSize: '10pt', fontStyle: 'italic', lineHeight: 1.2 }}>
                     NO.107/1,1st FLOOR,AMPA MANOR,NELSON MANICKAM
